@@ -36,6 +36,12 @@
 
       <dependency>
         <groupId>io.freedriver</groupId>
+        <artifactId>math-jpa</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>io.freedriver</groupId>
         <artifactId>serial</artifactId>
         <version>${project.version}</version>
       </dependency>
@@ -43,6 +49,12 @@
       <dependency>
         <groupId>io.freedriver</groupId>
         <artifactId>victron</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>io.freedriver</groupId>
+        <artifactId>victron-jpa</artifactId>
         <version>${project.version}</version>
       </dependency>
 
@@ -77,8 +89,10 @@
   <modules>
     <module>base</module>
     <module>math</module>
+    <module>math-jpa</module>
     <module>serial</module>
     <module>victron</module>
+    <module>victron-jpa</module>
     <module>electrodacus</module>
     <module>ee</module>
   </modules>
