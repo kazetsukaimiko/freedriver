@@ -2,7 +2,9 @@ package io.freedriver.electrodacus.sbms;
 
 import io.freedriver.serial.SerialPortResourceSupplier;
 import io.freedriver.serial.SerialReader;
-import jssc.SerialPort;
+import io.freedriver.serial.params.BaudRate;
+import io.freedriver.serial.params.BaudRates;
+import io.freedriver.serial.params.SerialParams;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -43,15 +45,16 @@ public class SBMS0Finder {
     }
 
     public static Stream<SBMSMessage> open(Path path) {
-        return open(path, SerialPort.BAUDRATE_115200);
+        return open(path, new SerialParams().setBaudRate(BaudRates.BAUDRATE_115200));
     }
 
-    public static Stream<SBMSMessage> open(String path, int baudRate) {
-        return open(Paths.get(path), baudRate);
+    public static Stream<SBMSMessage> open(String path, BaudRate baudRate) {
+        return open(Paths.get(path), new SerialParams().setBaudRate(baudRate));
     }
 
-    public static Stream<SBMSMessage> open(Path path, int baudRate) {
-        return new SerialReader(new SerialPortResourceSupplier(path, baudRate)).byteStream()
+    public static Stream<SBMSMessage> open(Path path, SerialParams serialParams) {
+        return new SerialReader(new SerialPortResourceSupplier(path, serialParams))
+                .byteStream()
                 .map(data -> SBMSMessage.of(path, data))
                 .flatMap(Optional::stream);
     }

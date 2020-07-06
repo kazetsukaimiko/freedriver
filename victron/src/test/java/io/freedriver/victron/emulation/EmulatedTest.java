@@ -1,8 +1,14 @@
 package io.freedriver.victron.emulation;
 
 import io.freedriver.serial.SerialListener;
-import io.freedriver.serial.SerialResourceException;
-import io.freedriver.victron.*;
+import io.freedriver.serial.exception.SerialResourceException;
+import io.freedriver.victron.ColumnGenerator;
+import io.freedriver.victron.VEDirectColumn;
+import io.freedriver.victron.VEDirectColumnValue;
+import io.freedriver.victron.VEDirectDeviceType;
+import io.freedriver.victron.VEDirectMessage;
+import io.freedriver.victron.VEDirectReader;
+import io.freedriver.victron.VictronProduct;
 import org.junit.jupiter.api.Test;
 
 import java.time.Instant;
@@ -14,7 +20,12 @@ import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 public class EmulatedTest {
     private final Logger LOGGER = Logger.getLogger(EmulatedTest.class.getName());

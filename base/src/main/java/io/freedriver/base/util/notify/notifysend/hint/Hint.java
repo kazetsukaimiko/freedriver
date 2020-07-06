@@ -5,9 +5,6 @@ package io.freedriver.base.util.notify.notifysend.hint;
  * TYPE:NAME:VALUE
  * Specifies basic extra data to pass. Valid types are int, double, string and byte.
  */
-
-
-
 public abstract class Hint<T> {
     private final String name;
     private T value;
@@ -31,6 +28,4 @@ public abstract class Hint<T> {
     public String toString() {
         return String.join(":", getType().toString(), getName(), String.valueOf(getValue()));
     }
-
-
 }

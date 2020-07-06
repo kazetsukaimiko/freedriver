@@ -4,7 +4,7 @@ import io.freedriver.serial.SerialListener;
 import io.freedriver.serial.SerialPortResourceSupplier;
 import io.freedriver.serial.SerialReader;
 import io.freedriver.serial.SerialResource;
-import jssc.SerialPortList;
+import io.freedriver.serial.discovery.SerialDiscovery;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -125,8 +125,7 @@ public class VEDirectReader extends SerialReader {
      * @return A Stream of Paths to known Serial ports.
      */
     private static Stream<Path> allSerialPorts() {
-        return Stream.of(SerialPortList.getPortNames())
-                .map(Paths::get);
+        return SerialDiscovery.getSerialDevices();
     }
 
     /**
