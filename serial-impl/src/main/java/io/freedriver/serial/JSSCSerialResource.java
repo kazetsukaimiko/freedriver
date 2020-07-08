@@ -30,7 +30,12 @@ public class JSSCSerialResource implements SerialResource {
         if (!serialPort.isOpened()) {
             try {
                 serialPort.openPort();
-                serialPort.setParams(serialParams);
+                serialPort.setParams(
+                        serialParams.getBaudRate(),
+                        serialParams.getDataBits(),
+                        serialParams.getStopBits(),
+                        serialParams.getParity()
+                );
             } catch (SerialPortException e) {
                 throw new SerialResourceException("Could not configure port " + serialPort.getPortName(), e);
             }

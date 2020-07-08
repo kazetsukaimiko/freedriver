@@ -1,6 +1,7 @@
 package io.freedriver.jsonlink;
 
 import io.freedriver.jsonlink.config.ConnectorConfig;
+import io.freedriver.serial.JSSCSerialResource;
 import io.freedriver.serial.params.SerialParams;
 
 import java.io.IOException;
@@ -58,7 +59,8 @@ public final class Connectors {
     private static synchronized Future<Connector> createConnector(String device) {
         LOGGER.info("Creating connector: " + device);
         return THREADPOOL.submit(() -> {
-            SerialConnector serialConnector = new SerialConnector(new SerialParams().buildResource(Paths.get(device)));
+            SerialConnector serialConnector = new SerialConnector(
+                    new JSSCSerialResource(Paths.get(device), new SerialParams()));
             LOGGER.info("Getting UUID:");
             serialConnector.getUUID();
             ALL_CONNECTORS.add(serialConnector);

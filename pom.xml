@@ -46,12 +46,14 @@
         <artifactId>serial-api</artifactId>
         <version>${project.version}</version>
       </dependency>
-
+      
+      <!--
       <dependency>
         <groupId>io.freedriver</groupId>
         <artifactId>serial-natives</artifactId>
         <version>${project.version}</version>
       </dependency>
+      -->
 
       <dependency>
         <groupId>io.freedriver</groupId>
@@ -112,7 +114,9 @@
     <module>math-jpa</module>
 
     <module>serial-api</module>
+    <!--
     <module>serial-natives</module>
+    -->
     <module>serial-impl</module>
 
     <module>victron</module>
