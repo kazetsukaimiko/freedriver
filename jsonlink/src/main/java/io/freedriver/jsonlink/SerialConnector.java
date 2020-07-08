@@ -51,6 +51,7 @@ public class SerialConnector implements Connector, AutoCloseable {
 
     private static UUID failToGetUUID(SerialResource serialResource) {
         try {
+            LOGGER.warning("Failed to open SerialConnector for " + serialResource.getName());
             serialResource.close();
             return null;
         } catch (RuntimeException rte) {
