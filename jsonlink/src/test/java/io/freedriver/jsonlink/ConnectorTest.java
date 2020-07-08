@@ -133,7 +133,7 @@ public class ConnectorTest {
 
     public static Stream<Connector> openDevice(String device) {
         try {
-            return Connectors.findOrOpen(device, pool)
+            return Connectors.findOrOpenAsync(device, pool)
                     .get()
                     .stream();
         } catch (Exception e) {

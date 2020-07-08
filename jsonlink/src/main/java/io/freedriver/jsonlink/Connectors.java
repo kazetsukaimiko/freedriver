@@ -56,18 +56,20 @@ public final class Connectors {
                 .map(ConcurrentConnector::new);
     }
 
-    private static synchronized Future<Connector> createConnector(String device) {
+    private static synchronized Future<Connector> createConnectorFuture(String device) {
         LOGGER.info("Creating connector: " + device);
-        Future<Connector> builder = THREADPOOL.submit(() -> {
-            LOGGER.info("Spawning");
-            SerialConnector serialConnector = new SerialConnector(
-                    new JSSCSerialResource(Paths.get(device), new SerialParams()));
-            LOGGER.info("Getting UUID:");
-            serialConnector.getUUID();
-            ALL_CONNECTORS.add(serialConnector);
-            return new ConcurrentConnector(serialConnector);
-        });
+        Future<Connector> builder = THREADPOOL.submit(() -> createConnector(device));
         return builder;
+    }
+
+    private static synchronized Connector createConnector(String device) {
+        LOGGER.info("Spawning");
+        SerialConnector serialConnector = new SerialConnector(
+                new JSSCSerialResource(Paths.get(device), new SerialParams()));
+        LOGGER.info("Getting UUID:");
+        serialConnector.getUUID();
+        ALL_CONNECTORS.add(serialConnector);
+        return new ConcurrentConnector(serialConnector);
     }
 
     public static synchronized Map<String, FailedConnector> getFailedConnectors() {
@@ -79,40 +81,42 @@ public final class Connectors {
         return FAILED_CONNECTORS;
     }
 
-    public static synchronized CompletableFuture<Optional<Connector>> findOrOpen(
+    public static synchronized Optional<Connector> findOrOpen(String device) {
+        Optional<Connector> found = findByDeviceId(device);
+        if (found.isPresent()) {
+            Connector inQuestion = found.get();
+            if (inQuestion.isClosed()) {
+                ALL_CONNECTORS.remove(inQuestion);
+            } else {
+                return found;
+            }
+        }
+        if (!getFailedConnectors().containsKey(device)) {
+            try {
+                return Optional.of(createConnectorFuture(device).get(100000, TimeUnit.MILLISECONDS));
+            } catch (InterruptedException | ExecutionException e) {
+                //throw new ConnectorException("Couldn't create connector " + device, e);
+                LOGGER.log(Level.SEVERE, "Failed building connector " + device, e);
+//                    getFailedConnectors()
+//                            .put(device, FailedConnector.failed(device));
+            } catch (TimeoutException e) {
+                LOGGER.log(Level.WARNING, "Timed out building connector " + device);
+//                    getFailedConnectors()
+//                            .put(device, FailedConnector.timedOut(device));
+            }
+        }
+        return Optional.empty();
+    }
+
+    public static synchronized CompletableFuture<Optional<Connector>> findOrOpenAsync(
             String device, ExecutorService pool) {
         return CompletableFuture
-                .supplyAsync(() -> {
-            Optional<Connector> found = findByDeviceId(device);
-            if (found.isPresent()) {
-                Connector inQuestion = found.get();
-                if (inQuestion.isClosed()) {
-                    ALL_CONNECTORS.remove(inQuestion);
-                } else {
-                    return found;
-                }
-            }
-            if (!getFailedConnectors().containsKey(device)) {
-                try {
-                    return Optional.of(createConnector(device).get(100000, TimeUnit.MILLISECONDS));
-                } catch (InterruptedException | ExecutionException e) {
-                    //throw new ConnectorException("Couldn't create connector " + device, e);
-                    LOGGER.log(Level.SEVERE, "Failed building connector " + device, e);
-                    getFailedConnectors()
-                            .put(device, FailedConnector.failed(device));
-                } catch (TimeoutException e) {
-                    LOGGER.log(Level.WARNING, "Timed out building connector " + device);
-                    getFailedConnectors()
-                            .put(device, FailedConnector.timedOut(device));
-                }
-            }
-            return Optional.empty();
-        }, pool);
+                .supplyAsync(() -> findOrOpen(device), pool);
     }
 
     public static synchronized CompletableFuture<Void> findOrOpenAndConsume(
             String device, ExecutorService pool, Consumer<Connector> onCompletion) {
-        return findOrOpen(device, pool)
+        return findOrOpenAsync(device, pool)
                 .thenAccept(optional -> optional
                         .ifPresent(onCompletion));
     }
