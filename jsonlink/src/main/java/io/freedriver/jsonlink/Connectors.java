@@ -58,7 +58,8 @@ public final class Connectors {
 
     private static synchronized Future<Connector> createConnector(String device) {
         LOGGER.info("Creating connector: " + device);
-        return THREADPOOL.submit(() -> {
+        Future<Connector> builder = THREADPOOL.submit(() -> {
+            LOGGER.info("Spawning");
             SerialConnector serialConnector = new SerialConnector(
                     new JSSCSerialResource(Paths.get(device), new SerialParams()));
             LOGGER.info("Getting UUID:");
@@ -66,6 +67,7 @@ public final class Connectors {
             ALL_CONNECTORS.add(serialConnector);
             return new ConcurrentConnector(serialConnector);
         });
+        return builder;
     }
 
     public static synchronized Map<String, FailedConnector> getFailedConnectors() {
