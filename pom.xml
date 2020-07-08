@@ -17,6 +17,8 @@
     <failOnMissingWebXml>false</failOnMissingWebXml>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
+    <jaxrs.api.version>2.1.1</jaxrs.api.version>
+    <jpa.api.version>2.2</jpa.api.version>
     <junit.version>5.5.2</junit.version>
   </properties>
 
@@ -89,6 +91,18 @@
         <groupId>io.freedriver</groupId>
         <artifactId>ee</artifactId>
         <version>${project.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>javax.ws.rs</groupId>
+        <artifactId>javax.ws.rs-api</artifactId>
+        <version>${jaxrs.api.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>javax.persistence</groupId>
+        <artifactId>javax.persistence-api</artifactId>
+        <version>${jpa.api.version}</version>
       </dependency>
 
       <dependency>
