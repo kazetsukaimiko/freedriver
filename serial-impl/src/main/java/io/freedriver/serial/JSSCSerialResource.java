@@ -18,23 +18,15 @@ public class JSSCSerialResource implements SerialResource {
 
     public JSSCSerialResource(SerialPort serialPort, SerialParams serialParams) {
         this.serialPort = serialPort;
-
         this.serialParams = serialParams;
-        if (!serialPort.isOpened()) {
-            try {
-                serialPort.openPort();
-            } catch (SerialPortException e) {
-                throw new SerialResourceException("Couldn't open serial port", e);
-            }
-        }
+        ensurePortOpen();
     }
 
     public JSSCSerialResource(Path path, SerialParams serialParams) {
         this(new SerialPort(path.toAbsolutePath().toString()), serialParams);
     }
 
-    @Override
-    public Iterator<String> iterator() {
+    public void ensurePortOpen() {
         if (!serialPort.isOpened()) {
             try {
                 serialPort.openPort();
@@ -48,6 +40,11 @@ public class JSSCSerialResource implements SerialResource {
                 throw new SerialResourceException("Could not configure port " + serialPort.getPortName(), e);
             }
         }
+    }
+
+    @Override
+    public Iterator<String> iterator() {
+        ensurePortOpen();
         return this;
     }
 
