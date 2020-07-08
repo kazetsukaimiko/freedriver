@@ -11,7 +11,7 @@ import java.math.BigDecimal;
 @Converter(autoApply = true)
 public class CurrentConverter extends MeasurementConverter<Current> implements AttributeConverter<Current, BigDecimal> {
     @Override
-    public Current construct(BigDecimal value, UnitPrefix unitPrefix) {
+    protected Current construct(BigDecimal value, UnitPrefix unitPrefix) {
         return new Current(ScaledNumber.of(value, unitPrefix));
     }
 }

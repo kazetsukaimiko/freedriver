@@ -12,7 +12,7 @@ import java.math.BigDecimal;
 @Converter(autoApply = true)
 public class TemperatureConverter extends MeasurementConverter<Temperature> implements AttributeConverter<Temperature, BigDecimal> {
     @Override
-    public Temperature construct(BigDecimal value, UnitPrefix unitPrefix) {
+    protected Temperature construct(BigDecimal value, UnitPrefix unitPrefix) {
         return new Temperature(ScaledNumber.of(value, unitPrefix), TemperatureScale.CELSUIS);
     }
 }

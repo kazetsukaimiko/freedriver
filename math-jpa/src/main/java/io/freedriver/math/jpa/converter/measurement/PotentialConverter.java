@@ -10,7 +10,7 @@ import java.math.BigDecimal;
 @Converter(autoApply = true)
 public class PotentialConverter extends MeasurementConverter<Potential> {
     @Override
-    public Potential construct(BigDecimal value, UnitPrefix unitPrefix) {
+    protected Potential construct(BigDecimal value, UnitPrefix unitPrefix) {
         return new Potential(ScaledNumber.of(value, unitPrefix));
     }
 }
