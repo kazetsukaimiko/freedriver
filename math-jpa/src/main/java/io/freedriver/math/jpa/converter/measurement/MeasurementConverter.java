@@ -18,7 +18,9 @@ public abstract class MeasurementConverter<M extends Measurement<M>> implements 
 
     @Override
     public M convertToEntityAttribute(BigDecimal value) {
-        return construct(value, UnitPrefix.ONE)
-                .normalize();
+        return value != null
+                ? construct(value, UnitPrefix.ONE)
+                    .normalize()
+                : null;
     }
 }
