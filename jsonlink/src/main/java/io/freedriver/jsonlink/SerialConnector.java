@@ -45,8 +45,19 @@ public class SerialConnector implements Connector, AutoCloseable {
         this.uuid = Optional.of(new Request())
                 .map(this::send)
                 .map(Response::getUuid)
-                .orElseGet(() -> send(new Request().newUuid()).getUuid());
+                .orElseGet(() -> failToGetUUID(serialResource));
         LOGGER.info("Added Connector Device: " + device + "; UUID: " + uuid);
+    }
+
+    private static UUID failToGetUUID(SerialResource serialResource) {
+        try {
+            serialResource.close();
+            return null;
+        } catch (RuntimeException rte) {
+            throw rte;
+        } catch (Exception e) {
+            throw new SerialResourceException("Failed to close; getting UUID", e);
+        }
     }
 
     private Map<UUID, Response> getResponseMap() {

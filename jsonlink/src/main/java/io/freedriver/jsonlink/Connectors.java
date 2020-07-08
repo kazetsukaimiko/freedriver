@@ -94,7 +94,7 @@ public final class Connectors {
             }
             if (!getFailedConnectors().containsKey(device)) {
                 try {
-                    return Optional.of(createConnector(device).get(10000, TimeUnit.MILLISECONDS));
+                    return Optional.of(createConnector(device).get(100000, TimeUnit.MILLISECONDS));
                 } catch (InterruptedException | ExecutionException e) {
                     //throw new ConnectorException("Couldn't create connector " + device, e);
                     LOGGER.log(Level.SEVERE, "Failed building connector " + device, e);
