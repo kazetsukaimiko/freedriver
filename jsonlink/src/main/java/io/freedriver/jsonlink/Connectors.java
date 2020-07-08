@@ -32,7 +32,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public final class Connectors {
-    private static final ExecutorService THREADPOOL = Executors.newSingleThreadExecutor();
+    private static final ExecutorService THREADPOOL = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors()*8);
     private static final Set<Connector> ALL_CONNECTORS = Collections.newSetFromMap(new ConcurrentHashMap<>());
     private static final Map<String, FailedConnector> FAILED_CONNECTORS = new ConcurrentHashMap<>();
     private static final Logger LOGGER = Logger.getLogger(Connectors.class.getName());
@@ -92,7 +92,7 @@ public final class Connectors {
             }
             if (!getFailedConnectors().containsKey(device)) {
                 try {
-                    return Optional.of(createConnector(device).get(2000, TimeUnit.MILLISECONDS));
+                    return Optional.of(createConnector(device).get(10000, TimeUnit.MILLISECONDS));
                 } catch (InterruptedException | ExecutionException e) {
                     //throw new ConnectorException("Couldn't create connector " + device, e);
                     LOGGER.log(Level.SEVERE, "Failed building connector " + device, e);
