@@ -18,7 +18,15 @@ public class JSSCSerialResource implements SerialResource {
 
     public JSSCSerialResource(SerialPort serialPort, SerialParams serialParams) {
         this.serialPort = serialPort;
+
         this.serialParams = serialParams;
+        if (!serialPort.isOpened()) {
+            try {
+                serialPort.openPort();
+            } catch (SerialPortException e) {
+                throw new SerialResourceException("Couldn't open serial port", e);
+            }
+        }
     }
 
     public JSSCSerialResource(Path path, SerialParams serialParams) {
