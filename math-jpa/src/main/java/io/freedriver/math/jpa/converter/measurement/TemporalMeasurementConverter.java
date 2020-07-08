@@ -14,9 +14,11 @@ public abstract class TemporalMeasurementConverter<TM extends TemporalMeasuremen
 
     @Override
     public TM convertToEntityAttribute(BigDecimal value) {
-        return construct(value, UnitPrefix.ONE)
-                .normalize();
+        return value != null
+                ? construct(value, UnitPrefix.ONE).normalize()
+                : null;
+
     }
 
-    public abstract TM construct(BigDecimal value, UnitPrefix unitPrefix);
+    protected abstract TM construct(BigDecimal value, UnitPrefix unitPrefix);
 }

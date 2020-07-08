@@ -7,7 +7,7 @@ import javax.persistence.AttributeConverter;
 import java.math.BigDecimal;
 
 public abstract class MeasurementConverter<M extends Measurement<M>> implements AttributeConverter<M, BigDecimal> {
-    public abstract M construct(BigDecimal value, UnitPrefix unitPrefix);
+    protected abstract M construct(BigDecimal value, UnitPrefix unitPrefix);
 
     @Override
     public BigDecimal convertToDatabaseColumn(M m) {

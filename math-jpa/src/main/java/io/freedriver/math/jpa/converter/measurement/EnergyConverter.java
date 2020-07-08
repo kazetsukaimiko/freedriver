@@ -11,7 +11,7 @@ import java.math.BigDecimal;
 public class EnergyConverter extends TemporalMeasurementConverter<Energy> {
 
     @Override
-    public Energy construct(BigDecimal value, UnitPrefix unitPrefix) {
+    protected Energy construct(BigDecimal value, UnitPrefix unitPrefix) {
         return new Energy(ScaledNumber.of(value, unitPrefix));
     }
 }
