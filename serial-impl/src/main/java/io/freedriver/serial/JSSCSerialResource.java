@@ -36,7 +36,8 @@ public class JSSCSerialResource implements SerialResource {
                         serialParams.getStopBits(),
                         serialParams.getParity()
                 );
-            } catch (SerialPortException e) {
+                Thread.sleep(1000);
+            } catch (SerialPortException | InterruptedException e) {
                 throw new SerialResourceException("Could not configure port " + serialPort.getPortName(), e);
             }
         }

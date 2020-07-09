@@ -2,6 +2,7 @@ package io.freedriver.jsonlink;
 
 import io.freedriver.jsonlink.config.ConnectorConfig;
 import io.freedriver.serial.JSSCSerialResource;
+import io.freedriver.serial.SerialResource;
 import io.freedriver.serial.params.SerialParams;
 
 import java.io.IOException;
@@ -18,12 +19,9 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.logging.Level;
@@ -56,16 +54,18 @@ public final class Connectors {
                 .map(ConcurrentConnector::new);
     }
 
-    private static synchronized Future<Connector> createConnectorFuture(String device) {
-        LOGGER.info("Creating connector: " + device);
+    private static synchronized Future<Connector> createConnXectorFuture(String device) {
+        LOGGER.info("Creating connector thread: " + device);
         Future<Connector> builder = THREADPOOL.submit(() -> createConnector(device));
         return builder;
     }
 
     private static synchronized Connector createConnector(String device) {
-        LOGGER.info("Spawning");
-        SerialConnector serialConnector = new SerialConnector(
-                new JSSCSerialResource(Paths.get(device), new SerialParams()));
+        LOGGER.info("Creating connector: " + device);
+        SerialParams serialParams = new SerialParams();
+        //serialParams.setBaudRate(() -> SerialPort.BAUDRATE_115200);
+        SerialResource serialResource = new JSSCSerialResource(Paths.get(device), serialParams);
+        SerialConnector serialConnector = new SerialConnector(serialResource);
         LOGGER.info("Getting UUID:");
         serialConnector.getUUID();
         ALL_CONNECTORS.add(serialConnector);
@@ -93,7 +93,9 @@ public final class Connectors {
         }
         if (!getFailedConnectors().containsKey(device)) {
             try {
-                return Optional.of(createConnectorFuture(device).get(100000, TimeUnit.MILLISECONDS));
+                //return Optional.of(createConnectorFuture(device).get(100000, TimeUnit.MILLISECONDS));
+                return Optional.of(createConnector(device));
+                /*
             } catch (InterruptedException | ExecutionException e) {
                 //throw new ConnectorException("Couldn't create connector " + device, e);
                 LOGGER.log(Level.SEVERE, "Failed building connector " + device, e);
@@ -103,6 +105,9 @@ public final class Connectors {
                 LOGGER.log(Level.WARNING, "Timed out building connector " + device);
 //                    getFailedConnectors()
 //                            .put(device, FailedConnector.timedOut(device));
+                */
+            } catch (RuntimeException e) {
+                throw e;
             }
         }
         return Optional.empty();

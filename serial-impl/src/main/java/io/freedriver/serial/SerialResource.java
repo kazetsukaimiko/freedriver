@@ -29,6 +29,7 @@ public interface SerialResource extends Iterable<String>, Iterator<String>, Auto
             String character = next();
             System.out.println("CHARACTER: " + character);
             buffer.append(character);
+            System.out.println("Buffer: " + buffer.toString());
             String result = buffer.toString();
             if (result.endsWith(delimiter)) {
                 return result;
