@@ -37,11 +37,14 @@ public class JSSCSerialResource implements SerialResource {
                         serialParams.getParity()
                 );
                 Thread.sleep(1000);
+                //clear();
             } catch (SerialPortException | InterruptedException e) {
                 throw new SerialResourceException("Could not configure port " + serialPort.getPortName(), e);
             }
         }
     }
+
+
 
     @Override
     public Iterator<String> iterator() {

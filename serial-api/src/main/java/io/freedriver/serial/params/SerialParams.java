@@ -2,9 +2,18 @@ package io.freedriver.serial.params;
 
 public class SerialParams implements BaudRate, DataBit, StopBit, Parity {
     private BaudRate baudRate = BaudRates.BAUDRATE_115200;
-    private DataBit dataBits = DataBits.DATABITS_7;
+    private DataBit dataBits = DataBits.DATABITS_8;
     private StopBit stopBits = StopBits.STOPBITS_1;
     private Parity parity = Parities.PARITY_NONE;
+
+
+    /*
+    SerialPort.BAUDRATE_115200,
+    SerialPort.DATABITS_8,
+    SerialPort.STOPBITS_1,
+    SerialPort.PARITY_NONE
+
+     */
 
     public SerialParams() {
     }

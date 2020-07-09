@@ -45,7 +45,8 @@ public class SerialConnector implements Connector, AutoCloseable {
         this.uuid = Optional.of(new Request())
                 .map(this::send)
                 .map(Response::getUuid)
-                .orElseGet(() -> failToGetUUID(serialResource));
+                .orElseGet(() -> send(new Request().newUuid()).getUuid());
+        //.orElseGet(() -> failToGetUUID(serialResource));
         LOGGER.info("Added Connector Device: " + device + "; UUID: " + uuid);
     }
 
@@ -160,7 +161,7 @@ public class SerialConnector implements Connector, AutoCloseable {
         Instant start = Instant.now();
         boolean invalidBuffer = buffer.length() > 0 && !buffer.toString().startsWith("{");
         while (start.plus(maxwait).isAfter(Instant.now())) {
-            Optional<String> response = poll(Duration.ofMillis(10));
+            Optional<String> response = poll(Duration.ofMillis(100));
             if (response.isPresent()) {
                 if (validate(response.get())) {
                     return response;
