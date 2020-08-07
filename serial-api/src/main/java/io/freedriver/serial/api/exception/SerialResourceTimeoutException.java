@@ -1,4 +1,4 @@
-package io.freedriver.serial.exception;
+package io.freedriver.serial.api.exception;
 
 public class SerialResourceTimeoutException extends SerialResourceException {
     public SerialResourceTimeoutException(String message, Throwable cause) {

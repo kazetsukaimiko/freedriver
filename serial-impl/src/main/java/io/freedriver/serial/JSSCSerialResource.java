@@ -1,7 +1,7 @@
 package io.freedriver.serial;
 
-import io.freedriver.serial.exception.SerialResourceException;
-import io.freedriver.serial.params.SerialParams;
+import io.freedriver.serial.api.exception.SerialResourceException;
+import io.freedriver.serial.api.params.SerialParams;
 import jssc.SerialPort;
 import jssc.SerialPortException;
 

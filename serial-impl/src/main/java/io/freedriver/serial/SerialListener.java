@@ -2,7 +2,7 @@ package io.freedriver.serial;
 
 import io.freedriver.base.util.ByteArrayBuilder;
 import io.freedriver.base.util.UncheckedCloseable;
-import io.freedriver.serial.exception.SerialResourceException;
+import io.freedriver.serial.api.exception.SerialResourceException;
 
 import java.util.Iterator;
 import java.util.Objects;

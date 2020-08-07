@@ -1,4 +1,4 @@
-package io.freedriver.serial;
+package io.freedriver.serial.api;
 
 import java.util.List;
 

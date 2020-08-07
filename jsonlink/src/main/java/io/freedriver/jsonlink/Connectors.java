@@ -3,7 +3,7 @@ package io.freedriver.jsonlink;
 import io.freedriver.jsonlink.config.ConnectorConfig;
 import io.freedriver.serial.JSSCSerialResource;
 import io.freedriver.serial.SerialResource;
-import io.freedriver.serial.params.SerialParams;
+import io.freedriver.serial.api.params.SerialParams;
 
 import java.io.IOException;
 import java.nio.file.Files;

@@ -1,7 +1,7 @@
 package io.freedriver.victron.emulation;
 
 import io.freedriver.serial.SerialListener;
-import io.freedriver.serial.exception.SerialResourceException;
+import io.freedriver.serial.api.exception.SerialResourceException;
 import io.freedriver.victron.ColumnGenerator;
 import io.freedriver.victron.VEDirectColumn;
 import io.freedriver.victron.VEDirectColumnValue;

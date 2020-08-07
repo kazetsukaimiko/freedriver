@@ -24,11 +24,11 @@
  */
 package jssc;
 
-import io.freedriver.serial.params.BaudRate;
-import io.freedriver.serial.params.DataBit;
-import io.freedriver.serial.params.Parity;
-import io.freedriver.serial.params.SerialParams;
-import io.freedriver.serial.params.StopBit;
+import io.freedriver.serial.api.params.BaudRate;
+import io.freedriver.serial.api.params.DataBit;
+import io.freedriver.serial.api.params.Parity;
+import io.freedriver.serial.api.params.SerialParams;
+import io.freedriver.serial.api.params.StopBit;
 
 import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Method;
@@ -1132,15 +1132,6 @@ public class SerialPort {
                 for(int i = 0; i < eventArray.length; i++){
                     if(eventArray[i][0] > 0 && !threadTerminated){
                         eventListener.serialEvent(new SerialPortEvent(portName, eventArray[i][0], eventArray[i][1]));
-                        //FIXME
-                        /*if(methodErrorOccurred != null){
-                            try {
-                                methodErrorOccurred.invoke(eventListener, new Object[]{new SerialPortException("port", "method", "exception")});
-                            }
-                            catch (Exception ex) {
-                                System.out.println(ex);
-                            }
-                        }*/
                     }
                 }
             }

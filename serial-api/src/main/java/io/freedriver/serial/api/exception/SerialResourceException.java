@@ -1,4 +1,4 @@
-package io.freedriver.serial.exception;
+package io.freedriver.serial.api.exception;
 
 /**
  * Unchecked Exception to make SerialListenerExceptions a little easier to deal with.

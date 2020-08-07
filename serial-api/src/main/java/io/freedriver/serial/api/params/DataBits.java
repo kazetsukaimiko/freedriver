@@ -1,4 +1,4 @@
-package io.freedriver.serial.params;
+package io.freedriver.serial.api.params;
 
 public enum DataBits implements DataBit {
     DATABITS_5(5),

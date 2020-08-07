@@ -1,4 +1,4 @@
-package io.freedriver.serial.params;
+package io.freedriver.serial.api.params;
 
 public enum BaudRates implements BaudRate {
     BAUDRATE_110(110),

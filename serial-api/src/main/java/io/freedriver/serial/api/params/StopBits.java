@@ -1,4 +1,4 @@
-package io.freedriver.serial.params;
+package io.freedriver.serial.api.params;
 
 public enum StopBits implements StopBit {
     STOPBITS_1(1),

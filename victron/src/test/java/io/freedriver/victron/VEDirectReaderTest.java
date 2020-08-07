@@ -8,8 +8,8 @@ import java.lang.reflect.Method;
 import java.util.Optional;
 import java.util.logging.Logger;
 
-public class VEDirectDeviceTest {
-    private static final Logger LOGGER = Logger.getLogger(VEDirectDeviceTest.class.getName());
+public class VEDirectReaderTest {
+    private static final Logger LOGGER = Logger.getLogger(VEDirectReaderTest.class.getName());
 
     @BeforeEach
     void initEach(TestInfo testInfo) {
@@ -22,14 +22,27 @@ public class VEDirectDeviceTest {
      * This test will open and read from any connected VE.Direct devices it finds.
      * @throws IOException
      */
+
+
     /*
+
     @Test
     public void testReadLines() throws IOException {
-        VEDirectDevice.allVEDirectDevices()
-                .peek(VEDirectDeviceTest::log)
-                .flatMap(VEDirectDevice::readRawEntries)
+        VEDirectReader.allVEDirectDevices()
+                .peek(VEDirectReaderTest::log)
+                .flatMap(SerialReader::lineStream)
                 .takeWhile(string -> !string.startsWith(VEDirectColumn.CHECKSUM.getColumnName()))
-                .forEach(VEDirectDeviceTest::log);
+                .forEach(VEDirectReaderTest::log);
+    }
+
+
+    @Test
+    public void testReadMessages() throws IOException {
+        VEDirectReader.allVEDirectDevices()
+                .peek(VEDirectReaderTest::log)
+                .flatMap(VEDirectReader::readAsMessages)
+                .takeWhile(string -> !string.startsWith(VEDirectColumn.CHECKSUM.getColumnName()))
+                .forEach(VEDirectReaderTest::log);
     }
 
      */

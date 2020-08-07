@@ -1,4 +1,4 @@
-module io.freedriver.serial {
+module io.freedriver.serial.impl {
     requires jssc;
     requires java.logging;
     //requires usb.api;
@@ -7,7 +7,7 @@ module io.freedriver.serial {
     //requires io.freedriver.serial.natives;
 
     //exports io.freedriver.serial;
-    //exports io.freedriver.serial.params;
+    //exports io.freedriver.serial.api.params;
     exports io.freedriver.serial.discovery;
     exports io.freedriver.serial;
 }

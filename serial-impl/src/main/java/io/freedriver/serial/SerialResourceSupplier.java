@@ -1,6 +1,6 @@
 package io.freedriver.serial;
 
-import io.freedriver.serial.params.SerialParams;
+import io.freedriver.serial.api.params.SerialParams;
 
 import java.util.function.BiFunction;
 import java.util.function.Supplier;

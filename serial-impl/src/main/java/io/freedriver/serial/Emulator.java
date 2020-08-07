@@ -1,6 +1,6 @@
 package io.freedriver.serial;
 
-import io.freedriver.serial.exception.SerialResourceException;
+import io.freedriver.serial.api.exception.SerialResourceException;
 
 import java.util.ArrayList;
 import java.util.Collections;

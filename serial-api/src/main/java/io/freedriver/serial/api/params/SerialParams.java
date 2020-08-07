@@ -1,4 +1,4 @@
-package io.freedriver.serial.params;
+package io.freedriver.serial.api.params;
 
 public class SerialParams implements BaudRate, DataBit, StopBit, Parity {
     private BaudRate baudRate = BaudRates.BAUDRATE_115200;

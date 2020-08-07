@@ -4,8 +4,8 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import io.freedriver.jsonlink.jackson.schema.v1.Request;
 import io.freedriver.jsonlink.jackson.schema.v1.Response;
 import io.freedriver.serial.SerialResource;
-import io.freedriver.serial.exception.SerialResourceException;
-import io.freedriver.serial.exception.SerialResourceTimeoutException;
+import io.freedriver.serial.api.exception.SerialResourceException;
+import io.freedriver.serial.api.exception.SerialResourceTimeoutException;
 
 import java.time.Duration;
 import java.time.Instant;

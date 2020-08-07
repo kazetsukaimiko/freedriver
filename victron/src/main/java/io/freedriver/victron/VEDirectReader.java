@@ -4,6 +4,8 @@ import io.freedriver.serial.SerialListener;
 import io.freedriver.serial.SerialPortResourceSupplier;
 import io.freedriver.serial.SerialReader;
 import io.freedriver.serial.SerialResource;
+import io.freedriver.serial.api.params.BaudRates;
+import io.freedriver.serial.api.params.SerialParams;
 import io.freedriver.serial.discovery.SerialDiscovery;
 
 import java.io.IOException;
@@ -62,6 +64,7 @@ public class VEDirectReader extends SerialReader {
     public Stream<VEDirectColumnValue> readAsColumns() {
         return openStream(VEDirectColumnValue.accumulator());
     }
+
     /**
      * Reads multiple VEDirectColumns, accumulating them into a VEDirectMessage. The Checksum Column is the delimiter.
      * @return A Stream of VEDirectMessages.
@@ -69,6 +72,8 @@ public class VEDirectReader extends SerialReader {
     public Stream<VEDirectMessage> readAsMessages() {
         return openStream(VEDirectMessage.accumulator());
     }
+
+
 
     /**
      * Opens a VEDirectMessage stream and gets the first message.
@@ -93,7 +98,7 @@ public class VEDirectReader extends SerialReader {
 
     @Override
     public String toString() {
-        return "VEDirectDevice{" +
+        return "VEDirectReader{" +
                 "type=" + type +
                 '}';
     }
@@ -138,7 +143,8 @@ public class VEDirectReader extends SerialReader {
         return Optional.of(deviceId)
                 .flatMap(VEDirectDeviceType::typeOfDevice)
                 .filter(type -> serialPorts.contains(readSymbolicLink(deviceId)))
-                .map(type -> new VEDirectReader(type, new SerialPortResourceSupplier(deviceId)));
+                .map(type -> new VEDirectReader(type, new SerialPortResourceSupplier(deviceId,
+                        new SerialParams().setBaudRate(BaudRates.BAUDRATE_19200))));
     }
 
     /**

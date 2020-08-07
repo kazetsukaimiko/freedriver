@@ -2,9 +2,9 @@ package io.freedriver.electrodacus.sbms;
 
 import io.freedriver.serial.SerialPortResourceSupplier;
 import io.freedriver.serial.SerialReader;
-import io.freedriver.serial.params.BaudRate;
-import io.freedriver.serial.params.BaudRates;
-import io.freedriver.serial.params.SerialParams;
+import io.freedriver.serial.api.params.BaudRate;
+import io.freedriver.serial.api.params.BaudRates;
+import io.freedriver.serial.api.params.SerialParams;
 
 import java.io.IOException;
 import java.nio.file.Files;

@@ -1,7 +1,7 @@
 package io.freedriver.serial;
 
-import io.freedriver.serial.exception.SerialResourceTimeoutException;
-import io.freedriver.serial.params.SerialParams;
+import io.freedriver.serial.api.exception.SerialResourceTimeoutException;
+import io.freedriver.serial.api.params.SerialParams;
 
 import java.nio.file.Path;
 import java.time.Duration;
