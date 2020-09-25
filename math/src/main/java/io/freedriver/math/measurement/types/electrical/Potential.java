@@ -19,4 +19,8 @@ public class Potential extends FixedMeasurement<Potential> {
     protected Potential construct(ScaledNumber value) {
         return new Potential(value);
     }
+
+    public Power toPower(Current c) {
+        return new Power(multiply(c).getValue());
+    }
 }

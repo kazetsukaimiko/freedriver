@@ -20,4 +20,7 @@ public class Current extends InstantaneousMeasurement<Current> {
         return new Current(value);
     }
 
+    public Power toPower(Potential v) {
+        return new Power(multiply(v).getValue());
+    }
 }

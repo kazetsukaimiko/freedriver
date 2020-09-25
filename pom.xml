@@ -33,6 +33,12 @@
 
       <dependency>
         <groupId>io.freedriver</groupId>
+        <artifactId>showingtime</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>io.freedriver</groupId>
         <artifactId>math</artifactId>
         <version>${project.version}</version>
       </dependency>
@@ -123,6 +129,8 @@
 
   <modules>
     <module>base</module>
+
+    <module>showingtime</module>
 
     <module>math</module>
     <module>math-jpa</module>
