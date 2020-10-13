@@ -39,7 +39,7 @@
     <os.detected.bitness>${sun.arch.data.model}</os.detected.bitness>
 
     <!-- dependency versions a-z -->
-    <dependency.junit.version>4.12</dependency.junit.version>
+    <dependency.junit.version>4.13.1</dependency.junit.version>
     <dependency.logback.version>1.2.3</dependency.logback.version>
     <dependency.nativelibloader.version>2.3.3</dependency.nativelibloader.version>
 
