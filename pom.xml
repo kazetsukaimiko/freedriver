@@ -1,8 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
-
-
   <modelVersion>4.0.0</modelVersion>
   <groupId>io.freedriver</groupId>
   <artifactId>freedriver-parent</artifactId>
@@ -33,6 +31,12 @@
 
       <dependency>
         <groupId>io.freedriver</groupId>
+        <artifactId>schedule</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>io.freedriver</groupId>
         <artifactId>showingtime</artifactId>
         <version>${project.version}</version>
       </dependency>
@@ -54,9 +58,10 @@
         <artifactId>serial-api</artifactId>
         <version>${project.version}</version>
       </dependency>
+
       
       <!--
-      Our version...
+      Our version... trying to properly implement JDK9 modules here
       <dependency>
         <groupId>io.freedriver</groupId>
         <artifactId>serial-natives</artifactId>
@@ -104,6 +109,12 @@
       </dependency>
 
       <dependency>
+        <groupId>io.freedriver</groupId>
+        <artifactId>microservice</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+
+      <dependency>
         <groupId>javax.ws.rs</groupId>
         <artifactId>javax.ws.rs-api</artifactId>
         <version>${jaxrs.api.version}</version>
@@ -133,6 +144,7 @@
 
   <modules>
     <module>base</module>
+    <module>schedule</module>
 
     <module>showingtime</module>
 
@@ -151,6 +163,7 @@
     <module>jsonlink</module>
     <module>electrodacus</module>
     <module>ee</module>
+    <module>microservice</module>
   </modules>
 
   <build>
