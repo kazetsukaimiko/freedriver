@@ -69,4 +69,4 @@ Temperatures, voltages and current values are handled using my kaze.math library
 
 ## Notes on working with the SBMS0
 I found decoding SBMS data was not very straightforward. It is "compression"- numeric values are smaller represented over serial or in memory/storage this way. But it isn't the same "base-91" encoding as the sourceforge project basE91. See the SBMSField enum for how this works:
-https://github.com/kazetsukaimiko/electrodacus-java/blob/master/src/main/java/com/electrodacus/bms/SBMSField.java
+https://github.com/kazetsukaimiko/freedriver/blob/master/electrodacus/src/main/java/io/freedriver/electrodacus/sbms/SBMSField.java
