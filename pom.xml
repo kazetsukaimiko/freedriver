@@ -144,9 +144,6 @@
 
   <modules>
     <module>base</module>
-    <module>schedule</module>
-
-    <module>showingtime</module>
 
     <module>math</module>
     <module>math-jpa</module>
@@ -163,7 +160,6 @@
     <module>jsonlink</module>
     <module>electrodacus</module>
     <module>ee</module>
-    <module>microservice</module>
   </modules>
 
   <build>
