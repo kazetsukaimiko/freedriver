@@ -161,7 +161,7 @@ public class SerialConnector implements Connector, AutoCloseable {
         Instant start = Instant.now();
         boolean invalidBuffer = buffer.length() > 0 && !buffer.toString().startsWith("{");
         while (start.plus(maxwait).isAfter(Instant.now())) {
-            Optional<String> response = poll(Duration.ofMillis(100));
+            Optional<String> response = poll(Duration.ofMillis(1000));
             if (response.isPresent()) {
                 if (validate(response.get())) {
                     return response;
