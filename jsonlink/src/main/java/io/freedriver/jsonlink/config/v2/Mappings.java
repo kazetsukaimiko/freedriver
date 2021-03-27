@@ -21,6 +21,13 @@ public class Mappings extends ConfigFile {
     }
 
     @Override
+    public String toString() {
+        return "Mappings{" +
+                "mappings=" + mappings +
+                '}';
+    }
+
+    @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
@@ -31,13 +38,6 @@ public class Mappings extends ConfigFile {
     @Override
     public int hashCode() {
         return Objects.hash(mappings);
-    }
-
-    @Override
-    public String toString() {
-        return "Mappings{" +
-                "mappings=" + mappings +
-                '}';
     }
 
     @Override
