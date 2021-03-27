@@ -18,6 +18,16 @@ public interface SerialResource extends Iterable<String>, Iterator<String>, Auto
     boolean isOpened();
     byte nextByte();
 
+    default int clearToNewline() {
+        int read = 0;
+        String rest = "";
+        while (!rest.endsWith("\n")) {
+            rest = nextLine(Duration.ofMillis(5));
+            read = read + rest.length();
+        }
+        return read;
+    }
+
     default String nextLine(Duration duration) throws SerialResourceTimeoutException {
         return next("\n", duration);
     }
