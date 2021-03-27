@@ -40,6 +40,9 @@ public interface SerialResource extends Iterable<String>, Iterator<String>, Auto
             buffer.append(character);
             String result = buffer.toString();
             if (result.endsWith(delimiter)) {
+                if (System.currentTimeMillis() - start > 100) {
+
+                }
                 return result;
             }
         }
