@@ -43,7 +43,7 @@ public interface SerialResource extends Iterable<String>, Iterator<String>, Auto
                 return result;
             }
         }
-        throw new SerialResourceTimeoutException("Timed out retrieving packet");
+        throw new SerialResourceTimeoutException("Timed out retrieving packet, got '"+buffer.toString()+"'");
     }
 
     static SerialResource of(final Path path, SerialParams params) {

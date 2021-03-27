@@ -169,7 +169,7 @@ public class SerialConnector implements Connector, AutoCloseable {
                     LOGGER.warning("Invalid response: " + response);
                     if (!response.get().endsWith("\n")) {
                         int cleared = serialResource.clearToNewline();
-                        LOGGER.warning("Cleared rest of buffer");
+                        LOGGER.warning("Cleared rest of buffer: " + cleared);
                     }
                 }
             } else if (invalidBuffer && buffer.length() == 0) { // If we reset polling...
