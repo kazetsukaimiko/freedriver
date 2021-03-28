@@ -11,6 +11,7 @@ public class AnalogSensor {
     private Identifier pin;
     private float voltage;
     private float resistance;
+    private boolean inverted = false;
 
     public AnalogSensor() {
     }
@@ -53,6 +54,14 @@ public class AnalogSensor {
 
     public AnalogRead asAnalogRead() {
         return new AnalogRead(pin, voltage, resistance);
+    }
+
+    public boolean isInverted() {
+        return inverted;
+    }
+
+    public void setInverted(boolean inverted) {
+        this.inverted = inverted;
     }
 
     @Override
