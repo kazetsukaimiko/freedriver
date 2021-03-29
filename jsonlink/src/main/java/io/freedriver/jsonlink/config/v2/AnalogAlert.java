@@ -61,4 +61,14 @@ public class AnalogAlert {
     public void setContent(String content) {
         this.content = content;
     }
+
+    @Override
+    public String toString() {
+        return "AnalogAlert{" +
+                "sensors=" + sensors +
+                ", matching=" + matching +
+                ", condition=" + condition +
+                ", value=" + value +
+                '}';
+    }
 }
