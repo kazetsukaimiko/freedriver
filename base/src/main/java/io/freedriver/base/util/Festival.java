@@ -12,7 +12,6 @@ public class Festival extends ProcessSpawner {
     public static void speak(String phrase) {
         try (AutoClosingProcess client = tts()){
             client.writeToPipe(phrase);
-            client.close();
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

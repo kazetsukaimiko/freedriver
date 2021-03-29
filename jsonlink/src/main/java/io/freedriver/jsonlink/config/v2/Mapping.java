@@ -15,6 +15,7 @@ public class Mapping {
     private List<Appliance> appliances = new ArrayList<>();
     private Map<String, List<String>> controlMap = new HashMap<>();
     private Set<AnalogSensor> analogSensors = new HashSet<>();
+    private List<AnalogAlert> analogAlerts = new ArrayList<>();
 
     public Mapping() {
     }
@@ -57,6 +58,14 @@ public class Mapping {
 
     public void setAnalogSensors(Set<AnalogSensor> analogSensors) {
         this.analogSensors = analogSensors;
+    }
+
+    public List<AnalogAlert> getAnalogAlerts() {
+        return analogAlerts;
+    }
+
+    public void setAnalogAlerts(List<AnalogAlert> analogAlerts) {
+        this.analogAlerts = analogAlerts;
     }
 
     @Override
