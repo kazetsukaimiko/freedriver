@@ -14,6 +14,7 @@ public class AnalogSensor {
     private float voltage;
     private float resistance;
     private boolean inverted = false;
+    private long averageOver = -1L;
 
     public AnalogSensor() {
     }
@@ -66,18 +67,25 @@ public class AnalogSensor {
         this.inverted = inverted;
     }
 
+    public long getAverageOver() {
+        return averageOver;
+    }
+
+    public void setAverageOver(long averageOver) {
+        this.averageOver = averageOver;
+    }
 
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         AnalogSensor that = (AnalogSensor) o;
-        return Float.compare(that.voltage, voltage) == 0 && Float.compare(that.resistance, resistance) == 0 && Objects.equals(name, that.name) && Objects.equals(pin, that.pin);
+        return Objects.equals(name, that.name) && Objects.equals(pin, that.pin);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(name, pin, voltage, resistance);
+        return Objects.hash(name, pin);
     }
 
     @Override
