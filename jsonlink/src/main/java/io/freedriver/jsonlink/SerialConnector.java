@@ -239,7 +239,7 @@ public class SerialConnector implements Connector, AutoCloseable {
     public void close() throws Exception {
         if (!isClosed()) {
             LOGGER.log(Level.WARNING, "Closing serialPort.");
-            poll(Duration.ofMillis(100));
+            poll(Duration.ofMillis(1000));
             serialResource.close();
         } else {
             LOGGER.log(Level.WARNING, "Tried to close serialPort, but was already closed.");

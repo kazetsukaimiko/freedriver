@@ -4,8 +4,6 @@ import io.freedriver.jsonlink.jackson.schema.v1.AnalogRead;
 import io.freedriver.jsonlink.jackson.schema.v1.Identifier;
 import io.freedriver.jsonlink.jackson.schema.v1.Request;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Objects;
 
 public class AnalogSensor {
@@ -14,6 +12,8 @@ public class AnalogSensor {
     private float voltage;
     private float resistance;
     private boolean inverted = false;
+    private SensorModes mode;
+    private Double factor;
     private long averageOver = -1L;
 
     public AnalogSensor() {
@@ -65,6 +65,22 @@ public class AnalogSensor {
 
     public void setInverted(boolean inverted) {
         this.inverted = inverted;
+    }
+
+    public SensorModes getMode() {
+        return mode;
+    }
+
+    public void setMode(SensorModes mode) {
+        this.mode = mode;
+    }
+
+    public Double getFactor() {
+        return factor;
+    }
+
+    public void setFactor(Double factor) {
+        this.factor = factor;
     }
 
     public long getAverageOver() {
