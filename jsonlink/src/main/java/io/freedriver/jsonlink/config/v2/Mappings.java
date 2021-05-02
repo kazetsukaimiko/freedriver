@@ -2,6 +2,7 @@ package io.freedriver.jsonlink.config.v2;
 
 import io.freedriver.jsonlink.config.ConfigFile;
 
+import java.time.temporal.ChronoUnit;
 import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
@@ -9,20 +10,29 @@ import java.util.Set;
 public class Mappings extends ConfigFile {
     private static final int DEFAULT_TTL_DAYS = 7;
 
-    private Integer daysToKeep = DEFAULT_TTL_DAYS;
+    private Integer eventTTL = DEFAULT_TTL_DAYS;
+    private ChronoUnit eventTTLUnit = ChronoUnit.DAYS;
     private Set<Mapping> mappings = new HashSet<>();
 
     public Mappings() {
     }
 
-    public Integer getDaysToKeep() {
-        return daysToKeep != null
-                ? daysToKeep
+    public Integer getEventTTL() {
+        return eventTTL != null
+                ? eventTTL
                 : DEFAULT_TTL_DAYS;
     }
 
-    public void setDaysToKeep(Integer daysToKeep) {
-        this.daysToKeep = daysToKeep;
+    public void setEventTTL(Integer eventTTL) {
+        this.eventTTL = eventTTL;
+    }
+
+    public ChronoUnit getEventTTLUnit() {
+        return eventTTLUnit;
+    }
+
+    public void setEventTTLUnit(ChronoUnit eventTTLUnit) {
+        this.eventTTLUnit = eventTTLUnit;
     }
 
     public Set<Mapping> getMappings() {
