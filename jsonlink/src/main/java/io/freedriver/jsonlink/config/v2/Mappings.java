@@ -7,9 +7,22 @@ import java.util.Objects;
 import java.util.Set;
 
 public class Mappings extends ConfigFile {
+    private static final int DEFAULT_TTL_DAYS = 7;
+
+    private Integer daysToKeep = DEFAULT_TTL_DAYS;
     private Set<Mapping> mappings = new HashSet<>();
 
     public Mappings() {
+    }
+
+    public Integer getDaysToKeep() {
+        return daysToKeep != null
+                ? daysToKeep
+                : DEFAULT_TTL_DAYS;
+    }
+
+    public void setDaysToKeep(Integer daysToKeep) {
+        this.daysToKeep = daysToKeep;
     }
 
     public Set<Mapping> getMappings() {
