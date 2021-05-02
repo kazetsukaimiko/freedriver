@@ -8,9 +8,10 @@ import java.util.Objects;
 import java.util.Set;
 
 public class Mappings extends ConfigFile {
-    private static final int DEFAULT_TTL_DAYS = 7;
+    private static final int DEFAULT_TTL = 7;
+    private static final ChronoUnit DEFAULT_TTL_UNIT = ChronoUnit.DAYS;
 
-    private Integer eventTTL = DEFAULT_TTL_DAYS;
+    private Integer eventTTL = DEFAULT_TTL;
     private ChronoUnit eventTTLUnit = ChronoUnit.DAYS;
     private Set<Mapping> mappings = new HashSet<>();
 
@@ -20,7 +21,7 @@ public class Mappings extends ConfigFile {
     public Integer getEventTTL() {
         return eventTTL != null
                 ? eventTTL
-                : DEFAULT_TTL_DAYS;
+                : DEFAULT_TTL;
     }
 
     public void setEventTTL(Integer eventTTL) {
@@ -28,7 +29,9 @@ public class Mappings extends ConfigFile {
     }
 
     public ChronoUnit getEventTTLUnit() {
-        return eventTTLUnit;
+        return eventTTLUnit != null
+                ? eventTTLUnit
+                : DEFAULT_TTL_UNIT;
     }
 
     public void setEventTTLUnit(ChronoUnit eventTTLUnit) {
