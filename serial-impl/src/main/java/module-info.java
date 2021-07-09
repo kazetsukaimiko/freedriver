@@ -10,4 +10,5 @@ module io.freedriver.serial.impl {
     //exports io.freedriver.serial.api.params;
     exports io.freedriver.serial.discovery;
     exports io.freedriver.serial;
+    exports io.freedriver.serial.stream;
 }

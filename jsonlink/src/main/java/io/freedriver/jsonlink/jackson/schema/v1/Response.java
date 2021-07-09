@@ -1,6 +1,9 @@
 package io.freedriver.jsonlink.jackson.schema.v1;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import io.freedriver.jsonlink.jackson.JsonLinkModule;
 import io.freedriver.jsonlink.jackson.schema.base.BaseResponse;
 
 import java.time.Instant;
@@ -11,14 +14,20 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.function.Consumer;
 
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class Response extends BaseResponse {
     private UUID uuid;
     private UUID requestId;
     private BoardInfo boardInfo;
+    @JsonInclude(JsonInclude.Include.NON_EMPTY)
     private List<String> info = new ArrayList<>();
+    @JsonInclude(JsonInclude.Include.NON_EMPTY)
     private List<String> error = new ArrayList<>();
+    @JsonInclude(JsonInclude.Include.NON_EMPTY)
     private List<String> debug = new ArrayList<>();
     private Map<Identifier, Boolean> digital;
+
+    @JsonInclude(JsonInclude.Include.NON_EMPTY)
     private List<AnalogResponse> analog;
 
     @JsonIgnore
@@ -105,16 +114,10 @@ public class Response extends BaseResponse {
 
     @Override
     public String toString() {
-        return "Response{" +
-                "uuid=" + uuid +
-                ", requestId=" + requestId +
-                ", boardInfo=" + boardInfo +
-                ", info=" + info +
-                ", error=" + error +
-                ", debug=" + debug +
-                ", digital=" + digital +
-                ", analog=" + analog +
-                ", created=" + created +
-                '}';
+        try {
+            return JsonLinkModule.getMapper().writeValueAsString(this);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
     }
 }

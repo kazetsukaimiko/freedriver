@@ -1,8 +1,13 @@
 package io.freedriver.jsonlink.jackson.schema.v1;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import io.freedriver.jsonlink.Connector;
+import io.freedriver.jsonlink.jackson.JsonLinkModule;
 
+import java.beans.Transient;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -10,14 +15,24 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Stream;
 
+
 public class Request {
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     private UUID uuid;
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     private UUID requestId;
+    @JsonInclude(JsonInclude.Include.NON_EMPTY)
     private Map<Identifier, Mode> mode = new HashMap<>();
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     private ReadRequest read;
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     private WriteRequest write;
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     private Boolean boardInfo;
+
+    @JsonInclude(JsonInclude.Include.NON_EMPTY)
     private List<Identifier> turn_off = new ArrayList<>();
+    @JsonInclude(JsonInclude.Include.NON_EMPTY)
     private List<Identifier> turn_on = new ArrayList<>();
 
     public Request analogRead(AnalogRead... analogReads) {
@@ -30,6 +45,15 @@ public class Request {
         }
         analogReads.forEach(read::readAnalog);
         return this;
+    }
+
+    public Request requestId(UUID uuid) {
+        setRequestId(uuid);
+        return this;
+    }
+
+    public Request autoRequestId() {
+        return requestId(UUID.randomUUID());
     }
 
     public Request modeSet(ModeSet... modes) {
@@ -149,19 +173,18 @@ public class Request {
     }
 
     @JsonIgnore
-    public boolean isEmpty() {
+    public Boolean isEmpty() {
         return (read == null || read.isEmpty()) && (write == null || write.isEmpty()) &&
                (mode.isEmpty()) && turn_on.isEmpty() && turn_off.isEmpty();
     }
 
     @Override
     public String toString() {
-        return "Request{" +
-                "uuid=" + uuid +
-                ", mode=" + mode +
-                ", read=" + read +
-                ", write=" + write +
-                '}';
+        try {
+            return JsonLinkModule.getMapper().writeValueAsString(this);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public Response invoke(Connector connector) {

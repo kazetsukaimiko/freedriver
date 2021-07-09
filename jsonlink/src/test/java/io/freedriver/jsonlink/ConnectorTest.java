@@ -31,7 +31,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 public class ConnectorTest {
     private static final Logger LOGGER = Logger.getLogger(ConnectorTest.class.getName());
     private static final ExecutorService pool = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors()*4);
-    static Identifier LED_PIN = Identifier.of(40); // Hallway
+    static Identifier LED_PIN = Identifier.of(50); // Hallway
 
     List<UUID> allUUIDs;
 
@@ -121,11 +121,11 @@ public class ConnectorTest {
     public void eachConnectorBlinks() {
         allUUIDs.forEach(uuid -> Connectors.getConnector(uuid)
                 .ifPresent(connector -> {
-                    Response modeResponse = connector.send(new Request().modeSet(new ModeSet(LED_PIN, Mode.OUTPUT)));
+                    Response modeResponse = connector.send(new Request().modeSet(new ModeSet(LED_PIN, Mode.OUTPUT)).autoRequestId());
                     assertFalse(modeResponse.getError().stream()
                         .anyMatch(errorString -> errorString.toLowerCase()
                                 .contains("invalid digital pin")));
-                    IntStream.range(0, 10)
+                    IntStream.range(0, 5)
                             .forEach(i -> setStatus(connector, DigitalState.fromBoolean(i % 2 == 0)));
                 }));
     }
@@ -142,11 +142,14 @@ public class ConnectorTest {
     }
 
     public static Response setStatus(Connector connector, DigitalState pinState) {
-        LOGGER.info("Setting status : " + pinState);
-        Response r = connector.send(new Request()
-                .digitalWrite(new DigitalWrite(LED_PIN, pinState)));
+        Request request = new Request()
+                .digitalWrite(new DigitalWrite(LED_PIN, pinState))
+                .autoRequestId();
+        System.out.println("Sending: " + request);
+        Response response = connector.send(request);
+        System.out.println("Received: " + response);
         delay(Duration.of(250, MILLIS));
-        return r;
+        return response;
     }
 
     private static void delay(Duration duration) {

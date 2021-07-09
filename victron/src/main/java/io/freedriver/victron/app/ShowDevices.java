@@ -3,7 +3,7 @@ package io.freedriver.victron.app;
 import io.freedriver.base.cli.ConsoleTable;
 import io.freedriver.victron.VEDirectColumn;
 import io.freedriver.victron.VEDirectMessage;
-import io.freedriver.victron.VEDirectReader;
+import io.freedriver.victron.VEDirectStreamer;
 
 import java.io.IOException;
 import java.util.*;
@@ -28,12 +28,12 @@ public class ShowDevices {
                             table.addObjectColumn(veDirectColumn.name(), veDirectColumn.getDefinition().getter()));
         }
 
-        final Map<VEDirectReader, VEDirectMessage> cache =Collections.synchronizedMap(new LinkedHashMap<>());
-        List<VEDirectReader> deviceList = VEDirectReader.allVEDirectDevices()
+        final Map<VEDirectStreamer, VEDirectMessage> cache =Collections.synchronizedMap(new LinkedHashMap<>());
+        List<VEDirectStreamer> deviceList = VEDirectStreamer.allMessageStreamers()
                 .collect(Collectors.toList());
         List<Future<?>> workers = new ArrayList<>();
         ExecutorService devicepool = Executors.newFixedThreadPool(deviceList.size());
-        deviceList.forEach(device -> workers.add(devicepool.submit(() -> device.readAsMessages().forEach(message -> cache.put(device, message)))));
+        deviceList.forEach(device -> workers.add(devicepool.submit(() -> device.stream().forEach(message -> cache.put(device, message)))));
 
         while (true) {
             table.renderKeyValue(

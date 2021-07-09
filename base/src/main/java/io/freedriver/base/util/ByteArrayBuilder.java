@@ -13,6 +13,14 @@ public class ByteArrayBuilder {
         this.position = 0;
     }
 
+    public byte[] getUnderlying() {
+        return underlying;
+    }
+
+    public int getPosition() {
+        return position;
+    }
+
     public ByteArrayBuilder append(byte... input) {
         for (byte b : input) {
             if (position == underlying.length) {

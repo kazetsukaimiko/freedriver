@@ -1,4 +1,4 @@
-package io.freedriver.victron;
+package io.freedriver.victron.hwtest;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.TestInfo;

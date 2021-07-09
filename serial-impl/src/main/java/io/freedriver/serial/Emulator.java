@@ -1,7 +1,11 @@
 package io.freedriver.serial;
 
+import io.freedriver.serial.api.SerialResource;
 import io.freedriver.serial.api.exception.SerialResourceException;
 
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
@@ -10,13 +14,13 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-public class Emulator<T> implements SerialResource, Iterator<String>, Iterable<String> {
+public class Emulator<T> implements SerialResource<T>, Iterator<T>, Iterable<T> {
     private boolean opened = true;
     private final Function<T, String> stringFunction;
     private final List<T> values;
     private Iterator<T> valueIterator;
-    private Iterator<String> lineIterator;
-    private String nextCharacter = null;
+    private Iterator<T> lineIterator;
+    private Character nextCharacter = null;
 
     public Emulator(Function<T, String> stringFunction, List<T> values) {
         this.stringFunction = stringFunction;
@@ -31,6 +35,11 @@ public class Emulator<T> implements SerialResource, Iterator<String>, Iterable<S
     public Emulator(Function<T, String> stringFunction, T single) {
         this(stringFunction,
                 Collections.singletonList(single));
+    }
+
+    @Override
+    public boolean isClosed() {
+        return !opened;
     }
 
     @Override
@@ -59,7 +68,7 @@ public class Emulator<T> implements SerialResource, Iterator<String>, Iterable<S
     }
 
     @Override
-    public Iterator<String> iterator() {
+    public Iterator<T> iterator() {
         return new Emulator<>(stringFunction, new ArrayList<>(values));
     }
 
@@ -69,28 +78,23 @@ public class Emulator<T> implements SerialResource, Iterator<String>, Iterable<S
     }
 
     @Override
-    public String next() {
-        if (!hasNext()) {
-            throw new SerialResourceException("Emulator closed.", new RuntimeException("Emulator closed"));
-        }
-        if (lineIterator != null && lineIterator.hasNext()) {
-            nextCharacter = lineIterator.next();
-        } else {
-            if (valueIterator.hasNext()) {
-                lineIterator = new StringIterator(stringFunction.apply(valueIterator.next()));
-                nextCharacter = "\n";
-            } else {
-                nextCharacter = "\n";
-                opened = false;
-            }
-        }
-        return nextCharacter;
+    public T next() {
+        return lineIterator.next();
     }
 
     public byte nextByte() {
         return 0;
     }
 
+    @Override
+    public Charset getCharset() {
+        return StandardCharsets.UTF_8;
+    }
+
+    @Override
+    public Duration getPoll() {
+        return Duration.ofMillis(5);
+    }
 
 
 }

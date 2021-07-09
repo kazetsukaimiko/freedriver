@@ -2,8 +2,12 @@ package io.freedriver.jsonlink;
 
 import io.freedriver.jsonlink.config.ConnectorConfig;
 import io.freedriver.serial.JSSCSerialResource;
-import io.freedriver.serial.SerialResource;
+import io.freedriver.serial.stream.JSSCPort;
+import io.freedriver.serial.stream.JSSCSerialStream;
+import io.freedriver.serial.stream.api.PortReference;
+import io.freedriver.serial.api.SerialResource;
 import io.freedriver.serial.api.params.SerialParams;
+import io.freedriver.serial.stream.api.SerialStream;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -63,9 +67,9 @@ public final class Connectors {
     private static synchronized Connector createConnector(String device) {
         LOGGER.info("Creating connector: " + device);
         SerialParams serialParams = new SerialParams();
-        //serialParams.setBaudRate(() -> SerialPort.BAUDRATE_115200);
-        SerialResource serialResource = new JSSCSerialResource(Paths.get(device), serialParams);
-        SerialConnector serialConnector = new SerialConnector(serialResource);
+        JSSCPort jsscPort = JSSCPort.get(PortReference.auto(Paths.get(device)), serialParams);
+        SerialStream serialStream = new JSSCSerialStream(jsscPort);
+        SerialConnector serialConnector = new SerialConnector(serialStream);
         LOGGER.info("Getting UUID:");
         serialConnector.getUUID();
         ALL_CONNECTORS.add(serialConnector);

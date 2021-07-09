@@ -1,29 +1,42 @@
 package io.freedriver.serial;
 
+import io.freedriver.serial.stream.api.PortReference;
+import io.freedriver.serial.api.SerialResource;
 import io.freedriver.serial.api.exception.SerialResourceException;
 import io.freedriver.serial.api.params.SerialParams;
 import jssc.SerialPort;
 import jssc.SerialPortException;
 
-import java.nio.file.Path;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
+import java.time.Duration;
 import java.util.Iterator;
+import java.util.function.Supplier;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+@Deprecated
 public class JSSCSerialResource implements SerialResource {
     private static final Logger LOGGER = Logger.getLogger(JSSCSerialResource.class.getName());
 
+    private final Supplier<Boolean> validWhile;
     private final SerialPort serialPort;
     private final SerialParams serialParams;
 
-    public JSSCSerialResource(SerialPort serialPort, SerialParams serialParams) {
+    private JSSCSerialResource(Supplier<Boolean> validWhile, SerialPort serialPort, SerialParams serialParams) {
+        this.validWhile = validWhile;
         this.serialPort = serialPort;
         this.serialParams = serialParams;
         ensurePortOpen();
     }
 
-    public JSSCSerialResource(Path path, SerialParams serialParams) {
+    /*
+    private JSSCSerialResource(Path path, SerialParams serialParams) {
         this(new SerialPort(path.toAbsolutePath().toString()), serialParams);
+    }*/
+
+    public JSSCSerialResource(PortReference portReference, SerialParams serialParams) {
+        this(() -> !portReference.isInvalid(), new SerialPort(portReference.getCanonical().toString()), serialParams);
     }
 
     public void ensurePortOpen() {
@@ -47,20 +60,20 @@ public class JSSCSerialResource implements SerialResource {
 
 
     @Override
-    public Iterator<String> iterator() {
+    public Iterator<Character> iterator() {
         ensurePortOpen();
         return this;
     }
 
     @Override
     public boolean hasNext() {
-        return isOpened();
+        return isOpened() && validWhile.get();
     }
 
     @Override
-    public String next() {
+    public Character next() {
         try {
-            return serialPort.readString(1);
+            return (char) serialPort.readBytes(1)[0];
         } catch (SerialPortException e) {
             throw new SerialResourceException("Exception reading from SerialResource", e);
         }
@@ -75,10 +88,25 @@ public class JSSCSerialResource implements SerialResource {
         }
     }
 
+    @Override
+    public Charset getCharset() {
+        return StandardCharsets.UTF_8;
+    }
+
+    @Override
+    public Duration getPoll() {
+        return null;
+    }
+
+
+    @Override
+    public boolean isClosed() {
+        return !isOpened();
+    }
 
     @Override
     public boolean isOpened() {
-        return serialPort.isOpened();
+        return serialPort.isOpened() && validWhile.get();
     }
 
     @Override

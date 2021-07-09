@@ -3,10 +3,11 @@ package io.freedriver.jsonlink;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import io.freedriver.jsonlink.jackson.schema.v1.Request;
 import io.freedriver.jsonlink.jackson.schema.v1.Response;
-import io.freedriver.serial.SerialResource;
-import io.freedriver.serial.api.exception.SerialResourceException;
 import io.freedriver.serial.api.exception.SerialResourceTimeoutException;
+import io.freedriver.serial.api.exception.SerialStreamException;
+import io.freedriver.serial.stream.api.SerialStream;
 
+import java.io.IOException;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.HashMap;
@@ -22,16 +23,13 @@ import java.util.stream.Collectors;
 
 import static java.time.temporal.ChronoUnit.MINUTES;
 
-//import jssc.SerialPort;
-//import jssc.SerialPortException;
-//import jssc.SerialPortTimeoutException;
 
 public class SerialConnector implements Connector, AutoCloseable {
     private static final Logger LOGGER = Logger.getLogger(SerialConnector.class.getName());
     public static final Duration RESPONSE_EXPIRY = Duration.of(1, MINUTES);
 
     private final String device;
-    private final SerialResource serialResource;
+    private final SerialStream serialStream;
     private final UUID uuid;
 
     private StringBuilder buffer = new StringBuilder();
@@ -39,26 +37,26 @@ public class SerialConnector implements Connector, AutoCloseable {
     // Buffer to fetch responses
     private final Map<UUID, Response> responseMap = new ConcurrentHashMap<>();
 
-    public SerialConnector(SerialResource serialResource) {
-        this.device = serialResource.getName();
-        this.serialResource = serialResource;
+    public SerialConnector(SerialStream serialStream) {
+        this.device = serialStream.getName();
+        this.serialStream = serialStream;
         this.uuid = Optional.of(new Request())
                 .map(this::send)
                 .map(Response::getUuid)
                 .orElseGet(() -> send(new Request().newUuid()).getUuid());
-        //.orElseGet(() -> failToGetUUID(serialResource));
+        //.orElseGet(() -> failToGetUUID(SerialStream));
         LOGGER.info("Added Connector Device: " + device + "; UUID: " + uuid);
     }
 
-    private static UUID failToGetUUID(SerialResource serialResource) {
+    private static UUID failToGetUUID(SerialStream SerialStream) {
         try {
-            LOGGER.warning("Failed to open SerialConnector for " + serialResource.getName());
-            serialResource.close();
+            LOGGER.warning("Failed to open SerialConnector for " + SerialStream.getName());
+            SerialStream.close();
             return null;
         } catch (RuntimeException rte) {
             throw rte;
         } catch (Exception e) {
-            throw new SerialResourceException("Failed to close; getting UUID", e);
+            throw new SerialStreamException("Failed to close; getting UUID", e);
         }
     }
 
@@ -88,7 +86,7 @@ public class SerialConnector implements Connector, AutoCloseable {
             return pollUntil(request.getRequestId(), maxwait)
                     .map(r -> r.logAnyErrors(err -> LOGGER.warning("Error from board: " + err)))
                     .orElseThrow(() -> new ConnectorException("Couldn't get response."));
-        } catch (JsonProcessingException | SerialResourceException e) {
+        } catch (JsonProcessingException | SerialStreamException e) {
             throw new ConnectorException("Couldn't marshall JSON", e);
         }
     }
@@ -101,19 +99,19 @@ public class SerialConnector implements Connector, AutoCloseable {
     private void sendJSONRequest(String requestJSON) throws ConnectorException {
         try {
             LOGGER.log(Level.FINEST, requestJSON);
-            serialResource.write(requestJSON.getBytes());
-        } catch (SerialResourceException e) {
+            serialStream.getOutputStream().write(requestJSON.getBytes());
+        } catch (SerialStreamException | IOException e) {
             throw new ConnectorException("Couldn't consume JSON", e);
         }
     }
 
     @Override
     public boolean isClosed() {
-        return !serialResource.isOpened();
+        return serialStream.isClosed();
     }
 
 
-    private Optional<Response> pollUntil(UUID requestId, Duration maxwait) throws SerialResourceException {
+    private Optional<Response> pollUntil(UUID requestId, Duration maxwait) throws SerialStreamException {
         Instant start = Instant.now();
         while (true) {
             if (getResponseMap().containsKey(requestId)) {
@@ -157,7 +155,7 @@ public class SerialConnector implements Connector, AutoCloseable {
         return Optional.empty();
     }
 
-    private Optional<String> pollUntilFinish(Duration maxwait) throws SerialResourceException {
+    private Optional<String> pollUntilFinish(Duration maxwait) throws SerialStreamException {
         Instant start = Instant.now();
         boolean invalidBuffer = buffer.length() > 0 && !buffer.toString().startsWith("{");
         while (start.plus(maxwait).isAfter(Instant.now())) {
@@ -168,7 +166,7 @@ public class SerialConnector implements Connector, AutoCloseable {
                 } else {
                     LOGGER.warning("Invalid response: " + response);
                     if (!response.get().endsWith("\n")) {
-                        int cleared = serialResource.clearToNewline();
+                        int cleared = serialStream.clearTo('\n');
                         LOGGER.warning("Cleared rest of buffer: " + cleared);
                     }
                 }
@@ -181,12 +179,14 @@ public class SerialConnector implements Connector, AutoCloseable {
 
     private Optional<String> poll(Duration ofMillis) {
         try {
-            return Optional.of(serialResource.nextLine(ofMillis));
+            return Optional.of(serialStream.nextLine(ofMillis));
         } catch (SerialResourceTimeoutException srte) {
             LOGGER.log(Level.WARNING, "Timed out polling for next line", srte);
         }
         return Optional.empty();
     }
+
+
 
     private static boolean validate(String input) {
         Map<Character, Integer> occurrenceMap = occurrenceMap(input);
@@ -240,7 +240,7 @@ public class SerialConnector implements Connector, AutoCloseable {
         if (!isClosed()) {
             LOGGER.log(Level.WARNING, "Closing serialPort.");
             poll(Duration.ofMillis(1000));
-            serialResource.close();
+            serialStream.close();
         } else {
             LOGGER.log(Level.WARNING, "Tried to close serialPort, but was already closed.");
         }

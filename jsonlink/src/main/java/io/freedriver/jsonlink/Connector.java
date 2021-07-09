@@ -33,23 +33,6 @@ public interface Connector extends AutoCloseable {
      */
     Response send(Request request, Duration maxwait) throws ConnectorException;
 
-    /*
-    default Response send(Request request) throws ConnectorException {
-        try {
-            UUID requestId = UUID.randomUUID();
-            request.setRequestId(requestId);
-            String json = MAPPER.writeValueAsString(request);
-            LOGGER.finest("Sending Request: ");
-            LOGGER.finest(json);
-            return sendJSONRequest(json)
-                    .map(r -> r.logAnyErrors(err -> LOGGER.warning("Error from board: " + err)))
-                    .get();
-        } catch (JsonProcessingException e) {
-            throw new ConnectorException("Couldn't marshall JSON", e);
-        }
-    }
-
-     */
 
     /**
      * Setup the board's UUID.
