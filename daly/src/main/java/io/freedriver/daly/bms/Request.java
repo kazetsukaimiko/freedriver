@@ -1,8 +1,65 @@
 package io.freedriver.daly.bms;
 
-import io.freedriver.daly.bms.checksum.CRC8;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Stream;
 
-public class Request extends Signal {
+public class Request extends Signal  {
+    private final DalyCommand command;
+    private final byte[] data;
+    private final int dataLength;
+
+    public Request(DalyCommand command, byte[] data) {
+        this.command = command;
+        this.data = data;
+        this.dataLength = data.length;
+    }
+
+    public DalyCommand getCommand() {
+        return command;
+    }
+
+    @Override
+    public int getDataLength() {
+        return dataLength;
+    }
+
+    @Override
+    public byte[] getData() {
+        return data;
+    }
+
+    @Override
+    public byte[] asByteArray() {
+
+        byte[] checksumTarget = toBytesFromByteable(Arrays.asList(
+                command,
+                getAddress(),
+                getQueryId(),
+                () -> new byte[] { (byte) dataLength },
+                () -> data
+        ));
+
+        return toBytesFromByteable(Arrays.asList(
+                Flag.START,
+                () -> checksumTarget,
+                () -> new byte[] { (byte) dalyChecksum(checksumTarget) },
+                Flag.END
+        ));
+    }
+
+    @Override
+    public String toString() {
+        List<String> parts = new ArrayList<>();
+        for (byte aByte : asByteArray()) {
+            //parts.add(String.format("%02x", aByte));
+            // upper case
+            parts.add(String.format("%02X", aByte));
+        }
+        return String.join(" ", parts);
+    }
+
     // Example
     public static final byte[] EXAMPLE = new byte[] {
             // Flag
@@ -28,30 +85,4 @@ public class Request extends Signal {
             (byte) 0xa
     };
 
-    private final int dataLength = 8;
-    private final byte[] data = new byte[8];
-
-    public Request() {
-    }
-
-    public Request(CommandId commandId) {
-        setCommandId(commandId);
-    }
-
-    @Override
-    public int getDataLength() {
-        return dataLength;
-    }
-
-    @Override
-    public byte[] getData() {
-        return data;
-    }
-
-    @Override
-    public byte[] toFullMessage() {
-        byte[] withoutCrc = super.toFullMessage();
-        withoutCrc[withoutCrc.length-1] = CRC8.calc(withoutCrc, withoutCrc.length-1);
-        return withoutCrc;
-    }
 }

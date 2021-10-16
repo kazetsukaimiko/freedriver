@@ -1,6 +1,5 @@
 package io.freedriver.electrodacus.sbms;
 
-import io.freedriver.serial.SerialPortResourceSupplier;
 import io.freedriver.serial.api.params.BaudRate;
 import io.freedriver.serial.api.params.BaudRates;
 import io.freedriver.serial.api.params.SerialParams;
@@ -14,7 +13,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
-import java.util.Optional;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
@@ -56,7 +54,7 @@ public class SBMS0Finder {
     }
 
     public static Stream<SBMSMessage> open(Path path, SerialParams serialParams) {
-        JSSCPort jsscPort = new JSSCPort(PortReference.auto(path), serialParams);
+        JSSCPort jsscPort = JSSCPort.get(PortReference.auto(path), serialParams);
         SerialStream serialStream = new JSSCSerialStream(jsscPort);
         SBMSMessageStreamer sbmsMessages = new SBMSMessageStreamer(serialStream, new SBMSAccumulator(path));
         return sbmsMessages.stream();

@@ -1,9 +1,12 @@
 package io.freedriver.daly.bms;
 
+import io.freedriver.serial.stream.api.Byteable;
+
 import java.util.Objects;
 
-public enum Flag {
-    START(0xA5),
+public enum Flag implements Byteable {
+    START(0xDD),
+    END(0x77)
     ;
 
     private final byte value;
@@ -22,5 +25,10 @@ public enum Flag {
 
     public boolean matches(Byte aByte) {
         return Objects.equals(value, aByte);
+    }
+
+    @Override
+    public byte[] asByteArray() {
+        return new byte[] { getValue() };
     }
 }

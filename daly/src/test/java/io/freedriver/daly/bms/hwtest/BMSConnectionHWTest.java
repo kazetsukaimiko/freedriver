@@ -1,8 +1,10 @@
 package io.freedriver.daly.bms.hwtest;
 
 import io.freedriver.daly.bms.Address;
-import io.freedriver.daly.bms.CommandId;
+import io.freedriver.daly.bms.DalyCommand;
+import io.freedriver.daly.bms.QueryId;
 import io.freedriver.daly.bms.Flag;
+import io.freedriver.daly.bms.ReadRequest;
 import io.freedriver.daly.bms.Request;
 import io.freedriver.daly.bms.Response;
 import io.freedriver.daly.bms.stream.ResponseAccumlator;
@@ -26,25 +28,21 @@ public class BMSConnectionHWTest {
 
     @Test
     public void testGetCellVoltages() throws IOException {
-        Request request = new Request();
-        request.setStartFlag(Flag.START);
-        request.setAddress(Address.UPPER);
-        request.setCommandId(CommandId.CELL_VOLTAGE);
-
+        Request request = new ReadRequest(QueryId.CELL_VOLTAGE);
         testRequestRepliesAccordingly(request);
     }
 
     public void testRequestRepliesAccordingly(Request request) throws IOException {
         SerialStream stream = new JSSCSerialStream(port);
         stream.getOutputStream()
-                .write(request.toFullMessage());
+                .write(request.asByteArray());
         stream.getOutputStream().flush();
 
         ResponseAccumlator responseAccumlator = new ResponseAccumlator();
         Response response = responseAccumlator.apply(stream);
 
-        assertEquals(request.getCommandId(), response.getCommandId());
-
+        assertEquals(request.getQueryId(), response.getQueryId());
+        
         System.out.println("Finish");
     }
 

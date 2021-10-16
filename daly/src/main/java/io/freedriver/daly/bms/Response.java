@@ -1,11 +1,9 @@
 package io.freedriver.daly.bms;
 
-import io.freedriver.daly.bms.checksum.CRC8;
-
 public class Response extends Signal {
 
-    private int dataLength = 8;
-    private byte[] data = new byte[8];
+    private int dataLength = 0;
+    private byte[] data = new byte[0];
 
     public Response() {
     }
@@ -28,4 +26,8 @@ public class Response extends Signal {
         this.data = data;
     }
 
+    @Override
+    public byte[] asByteArray() {
+        return new byte[0];
+    }
 }

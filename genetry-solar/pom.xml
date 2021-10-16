@@ -10,13 +10,23 @@
   </parent>
 
   <modelVersion>4.0.0</modelVersion>
-  <artifactId>base</artifactId>
+  <artifactId>genetry-solar</artifactId>
 
-  <name>Freedriver Base Library</name>
+  <name>Freedriver Genetry Solar Library</name>
 
   <url>https://github.com/kazetsukaimiko/freedriver/base</url>
 
   <dependencies>
+    <dependency>
+      <groupId>io.freedriver</groupId>
+      <artifactId>base</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>io.freedriver</groupId>
+      <artifactId>ee</artifactId>
+    </dependency>
+
     <dependency>
       <groupId>org.junit.jupiter</groupId>
       <artifactId>junit-jupiter-api</artifactId>
@@ -28,14 +38,10 @@
       <artifactId>junit-jupiter-engine</artifactId>
       <scope>test</scope>
     </dependency>
-
-    <!-- TODO: move to its own -->
     <dependency>
-      <groupId>org.jmdns</groupId>
-      <artifactId>jmdns</artifactId>
-      <version>3.5.6</version>
+      <groupId>com.fasterxml.jackson.core</groupId>
+      <artifactId>jackson-annotations</artifactId>
     </dependency>
-
   </dependencies>
 
 </project>

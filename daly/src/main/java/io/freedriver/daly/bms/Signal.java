@@ -1,13 +1,16 @@
 package io.freedriver.daly.bms;
 
 import io.freedriver.daly.bms.checksum.CRC8;
+import io.freedriver.serial.stream.api.Byteable;
 
+import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
-public abstract class Signal {
-    private Flag startFlag = Flag.START;
+public abstract class Signal implements Byteable {
     private Address address;
-    private CommandId commandId;
+    private QueryId queryId;
     private byte checksum;
 
     public Signal() {
@@ -15,14 +18,6 @@ public abstract class Signal {
 
     public abstract int getDataLength();
     public abstract byte[] getData();
-
-    public Flag getStartFlag() {
-        return startFlag;
-    }
-
-    public void setStartFlag(Flag startFlag) {
-        this.startFlag = startFlag;
-    }
 
     public Address getAddress() {
         return address;
@@ -32,12 +27,12 @@ public abstract class Signal {
         this.address = address;
     }
 
-    public CommandId getCommandId() {
-        return commandId;
+    public QueryId getQueryId() {
+        return queryId;
     }
 
-    public void setCommandId(CommandId commandId) {
-        this.commandId = commandId;
+    public void setQueryId(QueryId queryId) {
+        this.queryId = queryId;
     }
 
     public byte getChecksum() {
@@ -48,10 +43,14 @@ public abstract class Signal {
         this.checksum = checksum;
     }
 
+    public static int dalyChecksum(byte[] command) {
+        return CRC8.calc(command, command.length);
+    }
 
+
+/*
     public byte[] toFullMessage() {
         byte[] fullMessage = new byte[4 + getDataLength() + 1];
-        fullMessage[0] = getStartFlag().getValue();
         fullMessage[1] = getAddress().getValue();
         fullMessage[2] = getCommandId().getValue();
         fullMessage[3] = (byte) (getDataLength() & 0xF);
@@ -63,8 +62,33 @@ public abstract class Signal {
     }
 
 
+
+ */
+
+
+
+    public static byte[] toBytesFromByteable(List<Byteable> byteableList) {
+        return toBytes(byteableList.stream().map(Byteable::asByteArray).collect(Collectors.toList()));
+    }
+
+    public static byte[] toBytes(List<byte[]> byteableList) {
+        return toBytes(byteableList.toArray(new byte[][] {}));
+    }
+
+    public static byte[] toBytes(byte[]... parts) {
+        byte[] result = new byte[Stream.of(parts).mapToInt(a -> a.length).sum()];
+        int idx = 0;
+        for (byte[] part : parts) {
+            for (byte b : part) {
+                result[idx++] = b;
+            }
+        }
+        return result;
+    }
+
+
     public boolean validates() {
-        byte[] fullMessage = toFullMessage();
+        byte[] fullMessage = toBytes();
         return getChecksum() == CRC8.calc(fullMessage, fullMessage.length-1);
     }
 
@@ -73,11 +97,11 @@ public abstract class Signal {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Signal signal = (Signal) o;
-        return startFlag == signal.startFlag && address == signal.address && commandId == signal.commandId;
+        return address == signal.address && queryId == signal.queryId;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(startFlag, address, commandId);
+        return Objects.hash(address, queryId);
     }
 }

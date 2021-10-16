@@ -18,6 +18,7 @@
     <jaxrs.api.version>2.1.1</jaxrs.api.version>
     <jpa.api.version>2.2</jpa.api.version>
     <junit.version>5.5.2</junit.version>
+    <jackson.version>2.11.1</jackson.version>
   </properties>
 
   <dependencyManagement>
@@ -55,10 +56,21 @@
 
       <dependency>
         <groupId>io.freedriver</groupId>
+        <artifactId>math-json</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>io.freedriver</groupId>
         <artifactId>serial-api</artifactId>
         <version>${project.version}</version>
       </dependency>
 
+      <dependency>
+        <groupId>io.freedriver</groupId>
+        <artifactId>genetry-solar</artifactId>
+        <version>${project.version}</version>
+      </dependency>
       
       <!--
       Our version... trying to properly implement JDK9 modules here
@@ -145,6 +157,25 @@
         <version>${junit.version}</version>
         <scope>test</scope>
       </dependency>
+
+      <dependency>
+        <groupId>com.fasterxml.jackson.core</groupId>
+        <artifactId>jackson-annotations</artifactId>
+        <version>${jackson.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>com.fasterxml.jackson.core</groupId>
+        <artifactId>jackson-databind</artifactId>
+        <version>${jackson.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>com.fasterxml.jackson.datatype</groupId>
+        <artifactId>jackson-datatype-jsr310</artifactId>
+        <version>${jackson.version}</version>
+      </dependency>
+
     </dependencies>
   </dependencyManagement>
 
@@ -153,12 +184,14 @@
 
     <module>math</module>
     <module>math-jpa</module>
+    <module>math-json</module>
 
     <module>serial-api</module>
     <!--
     <module>serial-natives</module>
     -->
     <module>serial-impl</module>
+    <module>genetry-solar</module>
 
     <module>daly</module>
     <module>victron</module>

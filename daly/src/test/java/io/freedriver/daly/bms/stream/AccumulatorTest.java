@@ -1,5 +1,6 @@
 package io.freedriver.daly.bms.stream;
 
+import io.freedriver.daly.bms.DalyCommand;
 import io.freedriver.daly.bms.ExampleResponses;
 import io.freedriver.daly.bms.Flag;
 import io.freedriver.daly.bms.Response;
@@ -39,14 +40,14 @@ public class AccumulatorTest {
     }
 
     public void testPacket(byte[] fullMessage, Response r) {
-        assertEquals(Flag.START.getValue(), fullMessage[0]);
+        assertEquals(DalyCommand.READ.getValue(), fullMessage[0]);
 
-        byte[] inReverse = r.toFullMessage();
+        byte[] inReverse = r.asByteArray();
         assertArrayEquals(fullMessage, inReverse);
 
-        assertEquals(fullMessage[0], r.getStartFlag().getValue());
+        assertEquals(fullMessage[0], Flag.START.getValue());
         assertEquals(fullMessage[1], r.getAddress().getValue());
-        assertEquals(fullMessage[2], r.getCommandId().getValue());
+        assertEquals(fullMessage[2], r.getQueryId().getValue());
         assertEquals(fullMessage[3], r.getDataLength());
         assertEquals(fullMessage.length, 4 + r.getDataLength() + 1);
         assertTrue(r.validates());

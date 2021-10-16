@@ -1,9 +1,11 @@
 package io.freedriver.daly.bms;
 
+import io.freedriver.serial.stream.api.Byteable;
+
 import java.util.Objects;
 import java.util.stream.Stream;
 
-public enum Address {
+public enum Address implements Byteable {
     BMS_MASTER(0x01),
     BLUETOOTH_APP(0x20),
     GPRS(0x40),
@@ -34,5 +36,10 @@ public enum Address {
 
     public byte getValue() {
         return value;
+    }
+
+    @Override
+    public byte[] asByteArray() {
+        return new byte[] { getValue() };
     }
 }

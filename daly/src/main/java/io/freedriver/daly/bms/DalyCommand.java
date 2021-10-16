@@ -1,16 +1,34 @@
 package io.freedriver.daly.bms;
 
-import io.freedriver.daly.bms.checksum.CRC8;
+import io.freedriver.serial.stream.api.Byteable;
 
-public class DalyCommand {
+import java.util.Objects;
 
-    private Flag startFlag = Flag.START;
-    private Address address = Address.UPPER;
-    private CommandId commandId;
-    private int dataLength;
-    private byte[] data;
+public enum DalyCommand implements Byteable {
+    READ(0xA5),
+    WRITE(0x5A)
+    ;
 
-    public static int dalyChecksum(byte[] command) {
-        return CRC8.calc(command, command.length);
+    private final byte value;
+
+    DalyCommand(int value) {
+        this((byte) (value & 0xFF));
+    }
+
+    DalyCommand(byte value) {
+        this.value = value;
+    }
+
+    public byte getValue() {
+        return value;
+    }
+
+    public boolean matches(Byte aByte) {
+        return Objects.equals(value, aByte);
+    }
+
+    @Override
+    public byte[] asByteArray() {
+        return new byte[] { getValue() };
     }
 }

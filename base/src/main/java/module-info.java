@@ -1,6 +1,8 @@
 module io.freedriver.base {
     requires java.desktop;
     requires java.logging;
+    requires jmdns;
     exports io.freedriver.base.cli;
     exports io.freedriver.base.util;
+    exports io.freedriver.base.discovery;
 }
