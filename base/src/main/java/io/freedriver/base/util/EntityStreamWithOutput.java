@@ -10,7 +10,7 @@ import java.io.OutputStream;
 public class EntityStreamWithOutput<R> extends EntityStream<R> {
     private final OutputStream outputStream;
 
-    protected EntityStreamWithOutput(InputStream inputStream, OutputStream outputStream, Accumulator<ByteArrayOutputStream, R> accumulator) {
+    public EntityStreamWithOutput(InputStream inputStream, OutputStream outputStream, Accumulator<ByteArrayOutputStream, R> accumulator) {
         super(inputStream, accumulator);
         this.outputStream = outputStream;
     }

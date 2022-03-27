@@ -18,7 +18,7 @@ public class EntityStream<R> implements Iterator<R>, AutoCloseable {
 
     private boolean closed = false;
 
-    protected EntityStream(InputStream inputStream, Accumulator<ByteArrayOutputStream, R> accumulator) {
+    public EntityStream(InputStream inputStream, Accumulator<ByteArrayOutputStream, R> accumulator) {
         this.inputStream = inputStream;
         this.accumulator = accumulator;
     }

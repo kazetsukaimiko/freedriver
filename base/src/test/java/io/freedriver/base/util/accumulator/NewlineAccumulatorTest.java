@@ -13,7 +13,7 @@ public class NewlineAccumulatorTest extends ByteArrayAccumulatorsTest<String, Ne
 
     @Override
     protected void write(String item) throws IOException {
-        serialEntityStream.write((item + '\n').getBytes(StandardCharsets.UTF_8));
+        outputStream.write((item + '\n').getBytes(StandardCharsets.UTF_8));
     }
 
     @Override

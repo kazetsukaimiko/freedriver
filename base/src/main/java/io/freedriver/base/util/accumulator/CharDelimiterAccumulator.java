@@ -3,6 +3,7 @@ package io.freedriver.base.util.accumulator;
 
 import java.io.ByteArrayOutputStream;
 import java.nio.ByteBuffer;
+import java.nio.CharBuffer;
 import java.nio.charset.Charset;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -21,7 +22,10 @@ public class CharDelimiterAccumulator implements Accumulator<ByteArrayOutputStre
     public boolean isComplete(ByteArrayOutputStream input) {
         try {
             char[] array = charset.decode(ByteBuffer.wrap(input.toByteArray())).array();
-            return array[array.length - 1] == delimiter;
+            if (array.length > 0) {
+                return array[array.length - 1] == delimiter;
+            }
+            return false;
         } catch (Error error) {
             // Probably not a real problem, like the byte array not being long enough.
             LOGGER.log(Level.WARNING, String.format("Warning: Cannot decode byte array with charset %s: ", charset), error);
@@ -31,6 +35,7 @@ public class CharDelimiterAccumulator implements Accumulator<ByteArrayOutputStre
 
     @Override
     public String convert(ByteArrayOutputStream input) {
-        return charset.decode(ByteBuffer.wrap(input.toByteArray())).toString();
+        CharBuffer charBuffer = charset.decode(ByteBuffer.wrap(input.toByteArray()));
+        return charBuffer.limit(charBuffer.length()-1).toString();
     }
 }

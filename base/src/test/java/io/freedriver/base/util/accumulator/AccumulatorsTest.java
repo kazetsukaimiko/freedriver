@@ -1,6 +1,5 @@
 package io.freedriver.base.util.accumulator;
 
-import io.freedriver.serial.api.FakeSerialResource;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
@@ -16,7 +15,6 @@ public abstract class AccumulatorsTest<R, I, A extends Accumulator<I, R>> {
     protected abstract R random();
     protected abstract R read();
 
-    FakeSerialResource resource = new FakeSerialResource();
     Accumulator<I, R> accumulator = accumulator();
 
     @Test

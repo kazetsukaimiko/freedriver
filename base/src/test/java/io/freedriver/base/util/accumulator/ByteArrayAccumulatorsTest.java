@@ -1,10 +1,13 @@
 package io.freedriver.base.util.accumulator;
 
-import io.freedriver.serial.stream.api.SerialEntityStream;
+import io.freedriver.base.util.EntityStream;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.PipedInputStream;
+import java.io.PipedOutputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
@@ -16,36 +19,29 @@ public abstract class ByteArrayAccumulatorsTest<R, A extends Accumulator<ByteArr
 
     private static final ExecutorService executor = Executors.newSingleThreadExecutor();
 
-    protected SerialEntityStream<R> serialEntityStream;
+    protected PipedOutputStream outputStream;
+    protected PipedInputStream inputStream;
+    protected EntityStream<R> entityStream;
     protected Stream<R> javaStream;
     protected Future<Boolean> worker;
     protected final List<R> readItems = new ArrayList<>();
 
     @BeforeEach
-    public void init() {
-        serialEntityStream = new SerialEntityStream<>(resource, accumulator);
-        javaStream = serialEntityStream.stream();
-        worker = executor.submit(() -> {
-            javaStream.forEach(readItems::add);
-            return true;
-        });
+    public void init() throws IOException {
+        outputStream = new PipedOutputStream();
+        inputStream = new PipedInputStream(outputStream);
+        entityStream = new EntityStream<>(inputStream, accumulator);
+        javaStream = entityStream.stream();
     }
 
     @AfterEach
-    public void destroy() {
-        if (worker != null && !worker.isCancelled() && !worker.isDone()) {
-            worker.cancel(true);
-        }
+    public void destroy() throws IOException {
+        inputStream.close();
+        outputStream.close();
     }
 
     @Override
     protected R read() {
-        while (readItems.isEmpty()) {
-            waitABit();
-            if (worker.isDone() || worker.isCancelled()) {
-                return null;
-            }
-        }
-        return readItems.remove(0);
+        return entityStream.next();
     }
 }
