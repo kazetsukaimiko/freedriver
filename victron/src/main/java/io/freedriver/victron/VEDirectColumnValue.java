@@ -1,7 +1,5 @@
 package io.freedriver.victron;
 
-import io.freedriver.serial.SerialListener;
-
 import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Function;
@@ -40,19 +38,6 @@ public class VEDirectColumnValue {
         } else {
             return Optional.empty();
         }
-    }
-
-    public static Function<SerialListener<VEDirectColumnValue>, VEDirectColumnValue> accumulator() {
-        return s -> {
-            Optional<VEDirectColumnValue> value = Optional.empty();
-            while (s.hasNext()) {
-                value = VEDirectColumnValue.fromSerial(s.nextLine());
-                if (value.isPresent()) {
-                    break;
-                }
-            }
-            return value.orElse(null);
-        };
     }
 
     public String toSerialLine() {

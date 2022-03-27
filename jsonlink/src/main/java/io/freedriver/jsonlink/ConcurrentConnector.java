@@ -6,49 +6,36 @@ import io.freedriver.jsonlink.jackson.schema.v1.Response;
 import java.time.Duration;
 import java.util.UUID;
 
-public class ConcurrentConnector implements Connector {
-    private final Connector delegate;
-    private UUID uuidCache;
-
+/**
+ * Connector delegator that forces synchronization across all methods.
+ */
+public class ConcurrentConnector extends ConcurrentConnectorBase {
     public ConcurrentConnector(Connector delegate) {
-        this.delegate = delegate;
+        super(delegate);
     }
 
     @Override
-    public synchronized Response send(Request request, Duration maxwait) throws ConnectorException {
-        return delegate.send(request, maxwait);
+    public UUID makeRequest(Request request, Duration maxWait) throws ConnectorException {
+        return map(c -> c.makeRequest(request, maxWait));
     }
 
     @Override
-    public synchronized UUID getUUID() throws ConnectorException {
-        if (uuidCache == null) {
-            uuidCache = delegate.getUUID();
-        }
-        return uuidCache;
+    public Response getResponse(UUID requestId, Duration maxWait) throws ConnectorException {
+        return map(c -> c.getResponse(requestId, maxWait));
     }
 
     @Override
-    public synchronized void processBoardOutput(String line) {
-        delegate.processBoardOutput(line);
+    public String device() {
+        return map(Connector::device);
     }
 
     @Override
-    public synchronized String getStatus() {
-        return delegate.getStatus();
+    public boolean isClosed() {
+        return map(Connector::isClosed);
     }
 
     @Override
-    public synchronized String device() {
-        return delegate.device();
-    }
-
-    @Override
-    public synchronized boolean isClosed() {
-        return delegate.isClosed();
-    }
-
-    @Override
-    public synchronized void close() throws Exception {
-        delegate.close();
+    public void close() throws Exception {
+        apply(Connector::close);
     }
 }

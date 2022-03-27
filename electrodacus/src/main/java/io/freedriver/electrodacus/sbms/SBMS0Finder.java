@@ -1,10 +1,12 @@
 package io.freedriver.electrodacus.sbms;
 
-import io.freedriver.serial.SerialPortResourceSupplier;
-import io.freedriver.serial.SerialReader;
+import io.freedriver.serial.JSSCSerialResource;
+import io.freedriver.serial.api.SerialPortResourceSupplier;
+import io.freedriver.serial.api.SerialResource;
 import io.freedriver.serial.api.params.BaudRate;
 import io.freedriver.serial.api.params.BaudRates;
 import io.freedriver.serial.api.params.SerialParams;
+import io.freedriver.serial.stream.api.SerialEntityStream;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -53,10 +55,10 @@ public class SBMS0Finder {
     }
 
     public static Stream<SBMSMessage> open(Path path, SerialParams serialParams) {
-        return new SerialReader(new SerialPortResourceSupplier(path, serialParams))
-                .byteStream()
-                .map(data -> SBMSMessage.of(path, data))
-                .flatMap(Optional::stream);
+        return new SerialEntityStream<>(
+                new JSSCSerialResource(path, serialParams),
+                new SBMSMessageAccumulator(path))
+                .stream();
     }
 
     public static boolean match(Path path) {

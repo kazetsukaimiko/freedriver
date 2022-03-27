@@ -4,7 +4,7 @@ import io.freedriver.math.UnitPrefix;
 import io.freedriver.math.measurement.types.Measurement;
 import io.freedriver.math.measurement.units.SIElectricalUnit;
 
-import javax.persistence.AttributeConverter;
+import jakarta.persistence.AttributeConverter;
 import java.math.BigDecimal;
 import java.util.Optional;
 import java.util.function.BiFunction;

@@ -1,5 +1,6 @@
 package io.freedriver.serial;
 
+import io.freedriver.serial.api.SerialResource;
 import io.freedriver.serial.api.exception.SerialResourceException;
 import io.freedriver.serial.api.params.SerialParams;
 import jssc.SerialPort;
@@ -44,37 +45,14 @@ public class JSSCSerialResource implements SerialResource {
         }
     }
 
-
-
     @Override
-    public Iterator<String> iterator() {
-        ensurePortOpen();
-        return this;
-    }
-
-    @Override
-    public boolean hasNext() {
-        return isOpened();
-    }
-
-    @Override
-    public String next() {
+    public byte[] read(int size) {
         try {
-            return serialPort.readString(1);
+            return serialPort.readBytes(size);
         } catch (SerialPortException e) {
             throw new SerialResourceException("Exception reading from SerialResource", e);
         }
     }
-
-    @Override
-    public byte nextByte() {
-        try {
-            return (byte) serialPort.readBytes(1)[0];
-        } catch (SerialPortException e) {
-            throw new SerialResourceException("Exception reading from SerialResource", e);
-        }
-    }
-
 
     @Override
     public boolean isOpened() {

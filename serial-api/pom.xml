@@ -14,7 +14,7 @@
 
   <name>Freedriver Serial API</name>
 
-  <url>https://github.com/kazetsukaimiko/freedriver/serial</url>
+  <url>https://github.com/kazetsukaimiko/freedriver/serial-api</url>
 
   <dependencies>
     <dependency>

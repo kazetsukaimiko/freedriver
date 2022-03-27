@@ -5,8 +5,8 @@ import io.freedriver.math.measurement.types.thermo.Temperature;
 import io.freedriver.math.measurement.units.TemperatureScale;
 import io.freedriver.math.number.ScaledNumber;
 
-import javax.persistence.AttributeConverter;
-import javax.persistence.Converter;
+import jakarta.persistence.AttributeConverter;
+import jakarta.persistence.Converter;
 import java.math.BigDecimal;
 
 @Converter(autoApply = true)

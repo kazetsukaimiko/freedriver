@@ -1,11 +1,16 @@
 package io.freedriver.victron.app;
 
 import io.freedriver.base.cli.ConsoleTable;
+import io.freedriver.serial.JSSCSerialResource;
+import io.freedriver.serial.api.SerialResource;
+import io.freedriver.serial.api.params.*;
 import io.freedriver.victron.VEDirectColumn;
+import io.freedriver.victron.VEDirectColumnStream;
 import io.freedriver.victron.VEDirectMessage;
-import io.freedriver.victron.VEDirectReader;
+import io.freedriver.victron.VEDirectMessageStream;
 
 import java.io.IOException;
+import java.nio.file.Paths;
 import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -22,26 +27,21 @@ public class ShowDevices {
                             table.addObjectColumn(veDirectColumn.name(), veDirectColumn.getDefinition().getter()));
         } else {
             Stream.of(args)
-                    .map(VEDirectColumn::byName)
+                    .map(ShowDevices::openSerialResource)
+                    .map(VEDirectMessageStream::new)
+                    .map(messageStream -> messageStream.stream().findFirst())
                     .flatMap(Optional::stream)
-                    .forEach(veDirectColumn ->
-                            table.addObjectColumn(veDirectColumn.name(), veDirectColumn.getDefinition().getter()));
+                    .forEach(System.out::println);
         }
 
-        final Map<VEDirectReader, VEDirectMessage> cache =Collections.synchronizedMap(new LinkedHashMap<>());
-        List<VEDirectReader> deviceList = VEDirectReader.allVEDirectDevices()
-                .collect(Collectors.toList());
-        List<Future<?>> workers = new ArrayList<>();
-        ExecutorService devicepool = Executors.newFixedThreadPool(deviceList.size());
-        deviceList.forEach(device -> workers.add(devicepool.submit(() -> device.readAsMessages().forEach(message -> cache.put(device, message)))));
+    }
 
-        while (true) {
-            table.renderKeyValue(
-                     new ArrayList<>(cache.values()),
-                    VEDirectColumn.SERIAL_NUMBER.name()
-            );
-            Thread.sleep(1000);
-        }
+    private static SerialResource openSerialResource(String s) {
+        SerialParams params = new SerialParams()
+                .setBaudRate(BaudRates.BAUDRATE_19200)
+                .setDataBits(DataBits.DATABITS_8)
+                .setStopBits(StopBits.STOPBITS_1);
 
+        return new JSSCSerialResource(Paths.get(s), params);
     }
 }

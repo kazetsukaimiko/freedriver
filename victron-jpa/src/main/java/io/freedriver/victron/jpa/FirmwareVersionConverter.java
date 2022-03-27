@@ -2,8 +2,8 @@ package io.freedriver.victron.jpa;
 
 import io.freedriver.victron.FirmwareVersion;
 
-import javax.persistence.AttributeConverter;
-import javax.persistence.Converter;
+import jakarta.persistence.AttributeConverter;
+import jakarta.persistence.Converter;
 import java.util.Optional;
 import java.util.logging.Logger;
 

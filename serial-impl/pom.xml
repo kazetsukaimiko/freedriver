@@ -59,6 +59,15 @@
       <artifactId>junit-jupiter-engine</artifactId>
       <scope>test</scope>
     </dependency>
+
+    <!--
+    <dependency>
+      <groupId>io.freedriver</groupId>
+      <artifactId>serial-api</artifactId>
+      <classifier>tests</classifier>
+      <scope>test</scope>
+    </dependency>
+    -->
   </dependencies>
 
 

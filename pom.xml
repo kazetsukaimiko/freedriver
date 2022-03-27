@@ -15,9 +15,10 @@
     <failOnMissingWebXml>false</failOnMissingWebXml>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
+    <jackson.version>2.12.1</jackson.version>
     <jaxrs.api.version>2.1.1</jaxrs.api.version>
     <jpa.api.version>2.2</jpa.api.version>
-    <junit.version>5.5.2</junit.version>
+    <junit.jupiter.version>5.8.2</junit.jupiter.version>
   </properties>
 
   <dependencyManagement>
@@ -59,6 +60,14 @@
         <version>${project.version}</version>
       </dependency>
 
+      <dependency>
+        <groupId>io.freedriver</groupId>
+        <artifactId>serial-api</artifactId>
+        <version>${project.version}</version>
+        <classifier>tests</classifier>
+        <scope>test</scope>
+      </dependency>
+
       
       <!--
       Our version... trying to properly implement JDK9 modules here
@@ -92,6 +101,12 @@
 
       <dependency>
         <groupId>io.freedriver</groupId>
+        <artifactId>daly</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>io.freedriver</groupId>
         <artifactId>jsonlink</artifactId>
         <version>${project.version}</version>
       </dependency>
@@ -115,28 +130,55 @@
       </dependency>
 
       <dependency>
-        <groupId>javax.ws.rs</groupId>
-        <artifactId>javax.ws.rs-api</artifactId>
-        <version>${jaxrs.api.version}</version>
+        <groupId>com.fasterxml.jackson.core</groupId>
+        <artifactId>jackson-core</artifactId>
+        <version>${jackson.version}</version>
       </dependency>
 
+      <dependency>
+        <groupId>com.fasterxml.jackson.core</groupId>
+        <artifactId>jackson-databind</artifactId>
+        <version>${jackson.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>com.fasterxml.jackson.core</groupId>
+        <artifactId>jackson-annotations</artifactId>
+        <version>${jackson.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>jakarta.ws.rs</groupId>
+        <artifactId>jakarta.ws.rs-api</artifactId>
+        <version>3.0.0</version>
+      </dependency>
+
+      <!-- DEPRECATED TODO: REMOVE
       <dependency>
         <groupId>javax.persistence</groupId>
         <artifactId>javax.persistence-api</artifactId>
         <version>${jpa.api.version}</version>
       </dependency>
+      -->
+
+      <!-- https://mvnrepository.com/artifact/jakarta.persistence/jakarta.persistence-api -->
+      <dependency>
+        <groupId>jakarta.persistence</groupId>
+        <artifactId>jakarta.persistence-api</artifactId>
+        <version>3.0.0</version>
+      </dependency>
 
       <dependency>
         <groupId>org.junit.jupiter</groupId>
         <artifactId>junit-jupiter-api</artifactId>
-        <version>${junit.version}</version>
+        <version>${junit.jupiter.version}</version>
         <scope>test</scope>
       </dependency>
 
       <dependency>
         <groupId>org.junit.jupiter</groupId>
         <artifactId>junit-jupiter-engine</artifactId>
-        <version>${junit.version}</version>
+        <version>${junit.jupiter.version}</version>
         <scope>test</scope>
       </dependency>
     </dependencies>
@@ -156,6 +198,8 @@
 
     <module>victron</module>
     <module>victron-jpa</module>
+
+    <module>daly</module>
 
     <module>jsonlink</module>
     <module>electrodacus</module>

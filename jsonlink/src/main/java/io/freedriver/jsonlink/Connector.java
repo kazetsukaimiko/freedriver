@@ -6,6 +6,8 @@ import io.freedriver.jsonlink.jackson.JsonLinkModule;
 import io.freedriver.jsonlink.jackson.schema.v1.Request;
 import io.freedriver.jsonlink.jackson.schema.v1.Response;
 
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.time.Duration;
 import java.util.Optional;
 import java.util.UUID;
@@ -24,14 +26,20 @@ public interface Connector extends AutoCloseable {
      * Send a request, receiving a response.
      */
     default Response send(Request request) throws ConnectorException {
-        return send(request, Duration.of(10, SECONDS));
+        UUID requestId = makeRequest(request, Duration.of(2, SECONDS));
+        return getResponse(requestId, Duration.of(2, SECONDS));
     }
 
 
     /**
-     * Send a request, receiving a response.
+     * Send a request, returning a Request Id by which to get a response.
      */
-    Response send(Request request, Duration maxwait) throws ConnectorException;
+    UUID makeRequest(Request request, Duration maxWait) throws ConnectorException;
+
+    /**
+     * Block-waits for a response with a given request id to appear, then removes it from the response pool for return.
+     */
+    Response getResponse(UUID requestId, Duration maxWait) throws ConnectorException;
 
     /*
     default Response send(Request request) throws ConnectorException {
@@ -61,14 +69,16 @@ public interface Connector extends AutoCloseable {
                 .orElseGet(() -> send(new Request().newUuid()).getUuid());
     }
 
-    default void processBoardOutput(String line) {
-        Connectors.getCallback().accept(line);
-    }
 
     default String getStatus() {
         return isClosed() ? "Closed" : "Opened";
     }
 
     String device();
+
+    default Path devicePath() {
+        return Paths.get(device());
+    }
+
     boolean isClosed();
 }

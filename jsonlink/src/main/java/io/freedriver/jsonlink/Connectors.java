@@ -1,17 +1,12 @@
 package io.freedriver.jsonlink;
 
-import io.freedriver.jsonlink.config.ConnectorConfig;
 import io.freedriver.serial.JSSCSerialResource;
-import io.freedriver.serial.SerialResource;
+import io.freedriver.serial.api.SerialResource;
 import io.freedriver.serial.api.params.SerialParams;
 
-import java.io.IOException;
-import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
@@ -20,24 +15,16 @@ import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
 import java.util.function.Consumer;
 import java.util.function.Function;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public final class Connectors {
-    private static final ExecutorService THREADPOOL = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors()*8);
-    private static final Set<Connector> ALL_CONNECTORS = Collections.newSetFromMap(new ConcurrentHashMap<>());
-    private static final Map<String, FailedConnector> FAILED_CONNECTORS = new ConcurrentHashMap<>();
     private static final Logger LOGGER = Logger.getLogger(Connectors.class.getName());
-    private static final String LINUX_SERIAL_BY_ID_PATH = "/dev/serial/by-id/";
-    private static final Set<String> CONNECTOR_MATCHES = Stream.of("Arduino").collect(Collectors.toSet());
-
-    private static Consumer<String> callback;
+    private static final Set<Connector> ALL_CONNECTORS = Collections.newSetFromMap(new ConcurrentHashMap<>());
+    private static final Map<Path, FailedConnector> FAILED_CONNECTORS = new ConcurrentHashMap<>();
 
     private Connectors() {
         // Prevent Construction
@@ -47,33 +34,26 @@ public final class Connectors {
         return setFunction.apply(new HashSet<>(ALL_CONNECTORS).stream());
     }
 
-    private static synchronized Optional<Connector> findByDeviceId(String device) {
+    private static synchronized Optional<Connector> findByDeviceId(Path device) {
         return connectors(connectors -> connectors
-                .filter(connector -> Objects.equals(device, connector.device())))
-                .findFirst()
-                .map(ConcurrentConnector::new);
+                .filter(connector -> Objects.equals(device, connector.devicePath())))
+                .findFirst();
     }
 
-    private static synchronized Future<Connector> createConnXectorFuture(String device) {
-        LOGGER.info("Creating connector thread: " + device);
-        Future<Connector> builder = THREADPOOL.submit(() -> createConnector(device));
-        return builder;
-    }
-
-    private static synchronized Connector createConnector(String device) {
+    private static synchronized Connector createConnector(ExecutorService pool, Path device) {
         LOGGER.info("Creating connector: " + device);
         SerialParams serialParams = new SerialParams();
         //serialParams.setBaudRate(() -> SerialPort.BAUDRATE_115200);
-        SerialResource serialResource = new JSSCSerialResource(Paths.get(device), serialParams);
-        SerialConnector serialConnector = new SerialConnector(serialResource);
+        SerialResource serialResource = new JSSCSerialResource(device, serialParams);
+        SerialConnector serialConnector = new SerialConnector(pool, serialResource);
         LOGGER.info("Getting UUID:");
         serialConnector.getUUID();
         ALL_CONNECTORS.add(serialConnector);
         return new ConcurrentConnector(serialConnector);
     }
 
-    public static synchronized Map<String, FailedConnector> getFailedConnectors() {
-        Set<String> toRemove = FAILED_CONNECTORS.keySet()
+    public static synchronized Map<Path, FailedConnector> getFailedConnectors() {
+        Set<Path> toRemove = FAILED_CONNECTORS.keySet()
                 .stream()
                 .filter(device -> FAILED_CONNECTORS.get(device).failureExpired())
                 .collect(Collectors.toSet());
@@ -81,76 +61,36 @@ public final class Connectors {
         return FAILED_CONNECTORS;
     }
 
-    public static synchronized Optional<Connector> findOrOpen(String device) {
+    public static synchronized Optional<Connector> findOrOpen(ExecutorService pool, Path device) {
         Optional<Connector> found = findByDeviceId(device);
         if (found.isPresent()) {
+            LOGGER.info("Found existing Connector device: " + device);
             Connector inQuestion = found.get();
             if (inQuestion.isClosed()) {
                 ALL_CONNECTORS.remove(inQuestion);
             } else {
                 return found;
             }
+        } else {
+            LOGGER.info("No existing Connector device: " + device);
         }
         if (!getFailedConnectors().containsKey(device)) {
-            try {
-                //return Optional.of(createConnectorFuture(device).get(100000, TimeUnit.MILLISECONDS));
-                return Optional.of(createConnector(device));
-                /*
-            } catch (InterruptedException | ExecutionException e) {
-                //throw new ConnectorException("Couldn't create connector " + device, e);
-                LOGGER.log(Level.SEVERE, "Failed building connector " + device, e);
-//                    getFailedConnectors()
-//                            .put(device, FailedConnector.failed(device));
-            } catch (TimeoutException e) {
-                LOGGER.log(Level.WARNING, "Timed out building connector " + device);
-//                    getFailedConnectors()
-//                            .put(device, FailedConnector.timedOut(device));
-                */
-            } catch (RuntimeException e) {
-                throw e;
-            }
+            return Optional.of(createConnector(pool, device));
         }
+        LOGGER.info("Connector device " + device + " in failed state!");
         return Optional.empty();
     }
 
     public static synchronized CompletableFuture<Optional<Connector>> findOrOpenAsync(
-            String device, ExecutorService pool) {
+            Path device, ExecutorService pool) {
         return CompletableFuture
-                .supplyAsync(() -> findOrOpen(device), pool);
+                .supplyAsync(() -> findOrOpen(pool, device), pool);
     }
 
     public static synchronized CompletableFuture<Void> findOrOpenAndConsume(
-            String device, ExecutorService pool, Consumer<Connector> onCompletion) {
+            Path device, ExecutorService pool, Consumer<Connector> onCompletion) {
         return findOrOpenAsync(device, pool)
-                .thenAccept(optional -> optional
-                        .ifPresent(onCompletion));
-    }
-
-
-    public static Stream<String> allDevices() {
-        if (Files.isDirectory(Paths.get(LINUX_SERIAL_BY_ID_PATH))) {
-            try (Stream<Path> serialDevices = Files.list(Paths.get(LINUX_SERIAL_BY_ID_PATH))) {
-                List<Path> deviceList = serialDevices.collect(Collectors.toList());
-                return deviceList
-                        .stream()
-                        .filter(Connectors::match)
-                        .map(Path::toAbsolutePath)
-                        .map(Path::toString)
-                        .filter(getConfig()::doNotIgnore); // TODO : Filter based on symlinkage too
-            } catch (IOException e) {
-                LOGGER.log(Level.WARNING, "Couldn't scan " + LINUX_SERIAL_BY_ID_PATH, e);
-            }
-        }
-        return Stream.empty();
-    }
-
-    public static boolean match(Path path) {
-        return CONNECTOR_MATCHES.stream()
-            .anyMatch(path.toString()::contains);
-    }
-
-    public static boolean noMatch(Path path) {
-        return !match(path);
+                .thenAccept(optional -> optional.ifPresent(onCompletion));
     }
 
     public static Optional<Connector> getConnector(UUID deviceId) {
@@ -158,20 +98,4 @@ public final class Connectors {
                 .findFirst();
     }
 
-    public static Consumer<String> getCallback() {
-        return callback != null ?
-            callback
-                :
-                i -> {};
-    }
-
-    public static void setCallback(Consumer<String> callback) {
-        Connectors.callback = callback;
-    }
-
-    private static ConnectorConfig getConfig() {
-        ConnectorConfig connectorConfig = ConnectorConfig.load();
-        LOGGER.finest("Ignored devices: " + String.join(",", connectorConfig.getIgnoreDevices()));
-        return connectorConfig;
-    }
 }

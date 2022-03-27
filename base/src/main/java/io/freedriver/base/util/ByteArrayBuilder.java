@@ -1,5 +1,8 @@
 package io.freedriver.base.util;
 
+import java.nio.charset.Charset;
+import java.util.Arrays;
+
 /**
  * Boilerplate replacement for StringBuilder.
  */
@@ -23,18 +26,41 @@ public class ByteArrayBuilder {
         return this;
     }
 
+    public int size() {
+        return underlying.length;
+    }
+
+    public int position() {
+        return position;
+    }
+
     public byte[] build() {
         return copy(underlying, position);
     }
 
+    public byte[] build(int start, int end) {
+        return Arrays.copyOfRange(underlying, start, end);
+    }
+
+    public byte[] build(int newSize) {
+        return build(0, newSize);
+    }
+
+    public byte lastByte() {
+        return position == 0 ? underlying[position] : underlying[position-1];
+    }
+
+    public byte[] last(int size) {
+        int start = Math.max(position-1, 0);
+        return Arrays.copyOfRange(
+                underlying,
+                start,
+                Math.min(start + size, size()-1));
+    }
+
     private static byte[] copy(byte[] input, int newSize) {
-        byte[] newArray = new byte[newSize];
-        if (newSize>0) {
-            for (int i = 0; i < input.length && i < newSize; i++) {
-                newArray[i] =
-                        input[i];
-            }
-        }
-        return newArray;
+        return (newSize > 0)
+            ? Arrays.copyOf(input, newSize)
+            : new byte[0];
     }
 }

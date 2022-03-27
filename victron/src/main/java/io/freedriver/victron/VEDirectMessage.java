@@ -4,7 +4,6 @@ import io.freedriver.math.measurement.types.electrical.Current;
 import io.freedriver.math.measurement.types.electrical.Energy;
 import io.freedriver.math.measurement.types.electrical.Potential;
 import io.freedriver.math.measurement.types.electrical.Power;
-import io.freedriver.serial.SerialListener;
 import io.freedriver.victron.vedirect.OffReason;
 
 import java.time.Instant;
@@ -208,26 +207,6 @@ public class VEDirectMessage {
 
     public void setMaxPowerYesterday(Power maxPowerYesterday) {
         this.maxPowerYesterday = maxPowerYesterday;
-    }
-
-    /**
-     * The Algorithm to assemble VEDirectMessage instances using the SerialListener.
-     * @return Accumulator Function.
-     */
-    public static Function<SerialListener<VEDirectMessage>, VEDirectMessage> accumulator() {
-        return s -> {
-            VEDirectMessage message = new VEDirectMessage();
-            while (s.hasNext()) {
-                Optional<VEDirectColumnValue> value = VEDirectColumnValue.fromSerial(s.nextLine());
-                if (value.isPresent()) {
-                    value.get().apply(message);
-                    if (value.get().getColumn() == VEDirectColumn.CHECKSUM) {
-                        break;
-                    }
-                }
-            }
-            return message;
-        };
     }
 
     @Override

@@ -1,5 +1,5 @@
 module victron.java.jpa {
     requires java.logging;
     requires victron.java;
-    requires java.persistence;
+    requires jakarta.persistence;
 }
