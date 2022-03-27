@@ -1,4 +1,4 @@
-package io.freedriver.serial.api;
+package io.freedriver.base.util;
 
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;

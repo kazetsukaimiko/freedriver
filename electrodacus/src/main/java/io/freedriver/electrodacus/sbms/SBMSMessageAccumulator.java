@@ -1,6 +1,6 @@
 package io.freedriver.electrodacus.sbms;
 
-import io.freedriver.serial.stream.api.accumulators.ByteArrayAccumulator;
+import io.freedriver.base.util.accumulator.ByteArrayAccumulator;
 
 import java.io.ByteArrayOutputStream;
 import java.nio.file.Path;

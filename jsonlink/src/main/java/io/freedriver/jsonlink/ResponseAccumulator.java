@@ -1,7 +1,7 @@
 package io.freedriver.jsonlink;
 
+import io.freedriver.base.util.accumulator.Accumulator;
 import io.freedriver.jsonlink.jackson.schema.v1.Response;
-import io.freedriver.serial.stream.api.Accumulator;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;

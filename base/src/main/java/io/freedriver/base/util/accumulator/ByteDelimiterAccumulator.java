@@ -1,10 +1,9 @@
-package io.freedriver.serial.stream.api.accumulators;
+package io.freedriver.base.util.accumulator;
 
 import io.freedriver.base.util.ByteArrayBuilder;
-import io.freedriver.serial.api.ByteConverter;
-import io.freedriver.serial.stream.api.Accumulator;
+import io.freedriver.base.util.ByteConverter;
 
-public class ByteDelimiterAccumulator implements Accumulator<ByteArrayBuilder, String>{
+public class ByteDelimiterAccumulator implements Accumulator<ByteArrayBuilder, String> {
     private final byte delimiter;
 
     public ByteDelimiterAccumulator(byte delimiter) {

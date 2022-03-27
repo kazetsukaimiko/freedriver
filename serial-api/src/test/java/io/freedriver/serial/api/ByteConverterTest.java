@@ -1,5 +1,6 @@
 package io.freedriver.serial.api;
 
+import io.freedriver.base.util.ByteConverter;
 import org.junit.jupiter.api.RepeatedTest;
 
 import java.util.Random;

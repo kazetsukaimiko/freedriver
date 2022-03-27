@@ -1,4 +1,4 @@
-package io.freedriver.serial.stream.api.accumulators;
+package io.freedriver.base.util.accumulator;
 
 import java.nio.charset.StandardCharsets;
 

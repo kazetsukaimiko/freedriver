@@ -3,4 +3,5 @@ module io.freedriver.base {
     requires java.logging;
     exports io.freedriver.base.cli;
     exports io.freedriver.base.util;
+    exports io.freedriver.base.util.accumulator;
 }

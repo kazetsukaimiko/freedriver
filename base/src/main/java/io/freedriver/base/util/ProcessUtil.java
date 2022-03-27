@@ -1,8 +1,8 @@
 package io.freedriver.base.util;
 
-import java.io.BufferedReader;
+import io.freedriver.base.util.accumulator.NewlineAccumulator;
+
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.util.stream.Stream;
 
 public class ProcessUtil {
@@ -11,7 +11,7 @@ public class ProcessUtil {
     }
 
     public static Stream<String> linesInputStream(InputStream inputStream) {
-        return new BufferedReader(new InputStreamReader(inputStream)).lines();
+        return new EntityStream<>(inputStream, NewlineAccumulator.INSTANCE).stream();
     }
 
     /*

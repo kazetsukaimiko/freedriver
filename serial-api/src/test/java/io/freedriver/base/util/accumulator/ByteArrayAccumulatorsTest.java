@@ -1,6 +1,5 @@
-package io.freedriver.serial.stream.api.accumulators;
+package io.freedriver.base.util.accumulator;
 
-import io.freedriver.serial.stream.api.Accumulator;
 import io.freedriver.serial.stream.api.SerialEntityStream;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;

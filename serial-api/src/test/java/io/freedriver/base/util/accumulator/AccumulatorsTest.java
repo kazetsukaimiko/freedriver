@@ -1,7 +1,6 @@
-package io.freedriver.serial.stream.api.accumulators;
+package io.freedriver.base.util.accumulator;
 
 import io.freedriver.serial.api.FakeSerialResource;
-import io.freedriver.serial.stream.api.Accumulator;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;

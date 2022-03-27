@@ -1,6 +1,4 @@
-package io.freedriver.serial.stream.api;
-
-import io.freedriver.serial.stream.api.accumulators.MappingAccumulator;
+package io.freedriver.base.util.accumulator;
 
 import java.util.function.Function;
 

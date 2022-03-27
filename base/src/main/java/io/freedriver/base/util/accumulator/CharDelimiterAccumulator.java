@@ -1,6 +1,5 @@
-package io.freedriver.serial.stream.api.accumulators;
+package io.freedriver.base.util.accumulator;
 
-import io.freedriver.serial.stream.api.Accumulator;
 
 import java.io.ByteArrayOutputStream;
 import java.nio.ByteBuffer;

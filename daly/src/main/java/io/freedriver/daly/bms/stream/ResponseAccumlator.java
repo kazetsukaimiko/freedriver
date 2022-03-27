@@ -1,9 +1,9 @@
 package io.freedriver.daly.bms.stream;
 
+import io.freedriver.base.util.accumulator.Accumulator;
 import io.freedriver.daly.bms.Address;
 import io.freedriver.daly.bms.QueryId;
 import io.freedriver.daly.bms.Response;
-import io.freedriver.serial.stream.api.Accumulator;
 
 import java.io.ByteArrayOutputStream;
 import java.util.Arrays;

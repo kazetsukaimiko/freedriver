@@ -1,6 +1,6 @@
 package io.freedriver.serial.stream.api;
 
-import io.freedriver.serial.api.ByteConverter;
+import io.freedriver.base.util.ByteConverter;
 import io.freedriver.serial.api.SerialResource;
 
 import java.io.IOException;

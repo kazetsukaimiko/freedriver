@@ -1,11 +1,8 @@
 package io.freedriver.victron;
 
 import io.freedriver.serial.api.SerialResource;
-import io.freedriver.serial.stream.api.SerialEntityStream;
-import io.freedriver.serial.stream.api.accumulators.NewlineAccumulator;
 
 import java.util.Iterator;
-import java.util.Optional;
 import java.util.logging.Logger;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;

@@ -5,31 +5,23 @@ import io.freedriver.jsonlink.jackson.schema.v1.Request;
 import io.freedriver.jsonlink.jackson.schema.v1.Response;
 import io.freedriver.serial.api.SerialResource;
 import io.freedriver.serial.api.exception.SerialResourceException;
-import io.freedriver.serial.api.exception.SerialResourceTimeoutException;
 import io.freedriver.serial.stream.api.SerialEntityStream;
-import io.freedriver.serial.stream.api.accumulators.NewlineAccumulator;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.sql.Time;
 import java.time.Duration;
-import java.time.Instant;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.stream.Collectors;
 
 import static java.time.temporal.ChronoUnit.MINUTES;
 
