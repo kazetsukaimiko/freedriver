@@ -7,6 +7,7 @@ import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
 
+@Deprecated
 public class Mappings extends ConfigFile {
     private static final int DEFAULT_TTL_DAYS = 7;
 

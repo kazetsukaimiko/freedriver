@@ -1,5 +1,5 @@
 package io.freedriver.jsonlink.config;
 
-public interface Migration<VN extends ConfigFile> {
+public interface Migration<VN> {
     VN migrate();
 }

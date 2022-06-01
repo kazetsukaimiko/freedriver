@@ -1,4 +1,4 @@
-package io.freedriver.ee.discovery;
+package io.freedriver.discovery;
 
 import java.util.Optional;
 
@@ -19,7 +19,7 @@ public enum TransportProtocol implements Protocol {
 
     @Override
     public String getName() {
-        return Optional.ofNullable(name)
+        return "_" + Optional.ofNullable(name)
                 .orElse(name().toLowerCase());
     }
 }

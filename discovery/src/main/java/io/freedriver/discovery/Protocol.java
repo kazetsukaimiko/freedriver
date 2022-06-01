@@ -1,4 +1,4 @@
-package io.freedriver.ee.discovery;
+package io.freedriver.discovery;
 
 public interface Protocol extends NamedAspect {
 }

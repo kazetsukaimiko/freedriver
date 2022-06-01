@@ -8,6 +8,7 @@ import java.util.Comparator;
 import java.util.Objects;
 import java.util.function.BiFunction;
 
+
 public class ScaledNumber extends Number implements NumberOperations<ScaledNumber>, Scaleable<ScaledNumber> {
     public static final ScaledNumber ZERO = new ScaledNumber(BigDecimal.ZERO, UnitPrefix.ONE, 2);
     public static final ScaledNumber ONE = new ScaledNumber(BigDecimal.ONE, UnitPrefix.ONE, 2);

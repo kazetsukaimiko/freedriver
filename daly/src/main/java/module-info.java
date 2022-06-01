@@ -1,4 +1,4 @@
-module victron.java {
+module freedriver.daly {
     requires java.logging;
     requires io.freedriver.math;
     requires io.freedriver.serial.impl;

@@ -9,30 +9,23 @@
     </parent>
 
     <modelVersion>4.0.0</modelVersion>
-    <artifactId>ee</artifactId>
+    <artifactId>genetry-kibaana</artifactId>
 
-    <name>Freedriver EE Common</name>
-    <url>https://github.com/kazetsukaimiko/freedriver/ee</url>
+    <name>Genetry Solar Kibana App</name>
     <packaging>jar</packaging>
-
+    <properties>
+        <elasticsearch.version>7.15.2</elasticsearch.version>
+    </properties>
     <dependencies>
         <dependency>
-            <groupId>javax</groupId>
-            <artifactId>javaee-api</artifactId>
-            <version>8.0</version>
-            <scope>provided</scope>
+            <groupId>io.freedriver</groupId>
+            <artifactId>genetry</artifactId>
         </dependency>
 
         <dependency>
-            <groupId>org.dizitart</groupId>
-            <artifactId>nitrite</artifactId>
-            <version>3.4.1</version>
-        </dependency>
-
-        <dependency>
-            <groupId>com.fasterxml.jackson.datatype</groupId>
-            <artifactId>jackson-datatype-jsr310</artifactId>
-            <version>2.11.1</version>
+            <groupId>org.elasticsearch.client</groupId>
+            <artifactId>elasticsearch-rest-high-level-client</artifactId>
+            <version>${elasticsearch.version}</version>
         </dependency>
 
         <dependency>
@@ -47,5 +40,4 @@
             <scope>test</scope>
         </dependency>
     </dependencies>
-
 </project>

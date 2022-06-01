@@ -1,24 +1,17 @@
-package io.freedriver.ee.discovery;
+package io.freedriver.discovery;
 
 import java.util.Optional;
 
-/**
- * Common Application protocols
- */
-public enum ApplicationProtocols implements ApplicationProtocol {
-    HTTP,
-    FTP,
-    SSH,
-
-    ;
+public enum CommonScopes implements NamedAspect {
+    LOCAL;
 
     private final String name;
 
-    ApplicationProtocols(String name) {
+    CommonScopes(String name) {
         this.name = name;
     }
 
-    ApplicationProtocols() {
+    CommonScopes() {
         this(null);
     }
 

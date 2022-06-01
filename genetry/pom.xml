@@ -9,30 +9,31 @@
     </parent>
 
     <modelVersion>4.0.0</modelVersion>
-    <artifactId>ee</artifactId>
+    <artifactId>genetry</artifactId>
 
-    <name>Freedriver EE Common</name>
-    <url>https://github.com/kazetsukaimiko/freedriver/ee</url>
+    <name>Genetry Solar Java Library</name>
     <packaging>jar</packaging>
 
     <dependencies>
+
         <dependency>
-            <groupId>javax</groupId>
-            <artifactId>javaee-api</artifactId>
-            <version>8.0</version>
-            <scope>provided</scope>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
         </dependency>
 
         <dependency>
-            <groupId>org.dizitart</groupId>
-            <artifactId>nitrite</artifactId>
-            <version>3.4.1</version>
+            <groupId>io.freedriver</groupId>
+            <artifactId>base</artifactId>
         </dependency>
 
         <dependency>
-            <groupId>com.fasterxml.jackson.datatype</groupId>
-            <artifactId>jackson-datatype-jsr310</artifactId>
-            <version>2.11.1</version>
+            <groupId>io.freedriver</groupId>
+            <artifactId>discovery</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>io.freedriver</groupId>
+            <artifactId>math</artifactId>
         </dependency>
 
         <dependency>
@@ -46,6 +47,9 @@
             <artifactId>junit-jupiter-engine</artifactId>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>io.freedriver</groupId>
+            <artifactId>serial-impl</artifactId>
+        </dependency>
     </dependencies>
-
 </project>

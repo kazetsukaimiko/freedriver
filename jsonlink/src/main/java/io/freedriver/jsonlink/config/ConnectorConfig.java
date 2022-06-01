@@ -13,11 +13,12 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import static io.freedriver.jsonlink.config.ConfigMapper.MAPPER;
+
 public class ConnectorConfig {
     private static final Path CONFIG_PATH = Paths.get(System.getProperty("user.home"), ".config/jsonlink");
     private static final Path CONFIG_FILE_PATH = Paths.get(CONFIG_PATH.toAbsolutePath().toString(), "connectors.json");
     private static final Logger LOGGER = Logger.getLogger(ConnectorConfig.class.getName());
-    private static final ObjectMapper MAPPER = new ObjectMapper().registerModule(new JsonLinkModule()).enable(SerializationFeature.INDENT_OUTPUT);
     private List<String> ignoreDevices = new ArrayList<>();
 
     public ConnectorConfig() {

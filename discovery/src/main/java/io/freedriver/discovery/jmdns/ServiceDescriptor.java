@@ -1,8 +1,8 @@
-package io.freedriver.ee.discovery.jmdns;
+package io.freedriver.discovery.jmdns;
 
-import io.freedriver.ee.discovery.ApplicationProtocol;
-import io.freedriver.ee.discovery.Scope;
-import io.freedriver.ee.discovery.TransportProtocol;
+import io.freedriver.discovery.ApplicationProtocol;
+import io.freedriver.discovery.Scope;
+import io.freedriver.discovery.TransportProtocol;
 
 import javax.jmdns.ServiceInfo;
 

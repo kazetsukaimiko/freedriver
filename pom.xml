@@ -107,6 +107,18 @@
 
       <dependency>
         <groupId>io.freedriver</groupId>
+        <artifactId>genetry</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>io.freedriver</groupId>
+        <artifactId>genetry-kibana</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>io.freedriver</groupId>
         <artifactId>jsonlink</artifactId>
         <version>${project.version}</version>
       </dependency>
@@ -114,6 +126,12 @@
       <dependency>
         <groupId>io.freedriver</groupId>
         <artifactId>electrodacus</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>io.freedriver</groupId>
+        <artifactId>discovery</artifactId>
         <version>${project.version}</version>
       </dependency>
 
@@ -196,10 +214,15 @@
     -->
     <module>serial-impl</module>
 
+    <module>discovery</module>
+
     <module>victron</module>
     <module>victron-jpa</module>
 
     <module>daly</module>
+
+    <module>genetry</module>
+    <module>genetry-kibana</module>
 
     <module>jsonlink</module>
     <module>electrodacus</module>
