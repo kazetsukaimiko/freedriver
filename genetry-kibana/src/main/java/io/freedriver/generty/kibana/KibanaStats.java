@@ -7,6 +7,9 @@ import io.freedriver.generty.model.TempsSection;
 
 import java.math.BigDecimal;
 
+/**
+ * A Flattened version of stats.json to make it easier for kibana to visualize.
+ */
 public class KibanaStats {
     private String inverterId;
     private BigDecimal outV;

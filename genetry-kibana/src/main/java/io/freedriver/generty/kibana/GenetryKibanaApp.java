@@ -42,7 +42,9 @@ public class GenetryKibanaApp {
     private static final Logger LOGGER = Logger.getLogger(GenetryKibanaApp.class.getName());
     private static final ExecutorService POOL = Executors.newCachedThreadPool();
     private static final Map<DiscoveredService, Future<Boolean>> WORKERS = new HashMap<>();
-    private static final Duration POLL_INTERVAL = Duration.ofSeconds(2);
+
+    private static final Duration INVERTER_SCAN_INTERVAL = Duration.ofSeconds(6);
+    private static final Duration POLL_INTERVAL = Duration.ofSeconds(1);
 
     private static final ObjectMapper MAPPER = new ObjectMapper()
             .setDefaultPropertyInclusion(JsonInclude.Include.NON_NULL);
@@ -51,27 +53,25 @@ public class GenetryKibanaApp {
     private static RestHighLevelClient client;
 
 
+    /**
+     * Where the application starts.
+     */
     public static void main(String[] args) throws IOException {
-
-        // TODO From args
-
+        // TODO set ElasticSearch host From args.
         HttpHost host = new HttpHost("localhost", 9200);
+
+        // Connect to Elastic.
         client = new RestHighLevelClient(RestClient.builder(new Node(host)));
 
-        Set<DiscoveredService> found = InverterFinder.findInverters(POLL_INTERVAL);
-        /*
-        found.forEach(discoveredService -> {
-            Statsjson statsjson = getStats(discoveredService);
-            try {
-                System.out.println(MAPPER.writeValueAsString(new KibanaStats(discoveredService.getDns(), statsjson)));
-            } catch (JsonProcessingException e) {
-                throw new RuntimeException(e);
-            }
-        });*/
+        // Look for inverters.
+        Set<DiscoveredService> found = InverterFinder.findInverters(INVERTER_SCAN_INTERVAL);
+
+        // Continuously scan for new inverters. If nothing found for one minute, exit.
         AtomicInteger foundNothing = new AtomicInteger();
         while (foundNothing.getAndIncrement() < 10) {
+            // Any inverters found, create a worker for.
             found.forEach(GenetryKibanaApp::createWorker);
-            found = InverterFinder.findInverters(POLL_INTERVAL);
+            found = InverterFinder.findInverters(INVERTER_SCAN_INTERVAL);
             if (!found.isEmpty()) {
                 foundNothing.set(0);
             }
@@ -80,17 +80,13 @@ public class GenetryKibanaApp {
         POOL.shutdown();
         POOL.shutdownNow();
         client.close();
+        System.exit(0);
     }
 
-
-    public static Statsjson getStats(DiscoveredService service) throws IOException, InterruptedException {
-        HttpClient client = HttpClient.newHttpClient();
-        String address = "http://" + service.getDns() + "/stats.json";
-        LOGGER.info("Asking " + address + " for stats.json");
-        HttpRequest request = HttpRequest.newBuilder(URI.create(address)).GET().build();
-        HttpResponse<InputStream> response = client.send(request, HttpResponse.BodyHandlers.ofInputStream());
-        return MAPPER.readValue(response.body(), Statsjson.class);
-    }
+    /**
+     * Looks to see if we currently have a worker for a given inverter. If so, ignores.
+     * If no worker for the given address present, we spawn a thread to poll the inverter.
+     */
     private synchronized static void createWorker(DiscoveredService discoveredService) {
         if (WORKERS.containsKey(discoveredService) && !(WORKERS.get(discoveredService).isDone() || WORKERS.get(discoveredService).isCancelled())) {
             LOGGER.finest("Worker for service already exists: " + discoveredService);
@@ -100,6 +96,9 @@ public class GenetryKibanaApp {
         }
     }
 
+    /**
+     * Spawns a thread to poll an inverter.
+     */
     private static Future<Boolean> spawn(DiscoveredService discoveredService) {
         return POOL.submit(() -> {
             Throwable lastException = null;
@@ -110,6 +109,7 @@ public class GenetryKibanaApp {
                     KibanaStats kibanaStats = new KibanaStats(discoveredService.getDns(), statsjson);
                     sendToKibana(kibanaStats);
                     consecutiveFailCount.set(0);
+                    waitFor(POLL_INTERVAL);
                 } catch (Exception e) {
                     lastException = e;
                     consecutiveFailCount.getAndIncrement();
@@ -123,8 +123,33 @@ public class GenetryKibanaApp {
         });
     }
 
+
+    /**
+     * Get Stats.json as a Java Object.
+     */
+    public static Statsjson getStats(DiscoveredService service) throws IOException, InterruptedException {
+        HttpClient client = HttpClient.newHttpClient();
+        String address = "http://" + service.getDns() + "/stats.json";
+        LOGGER.info("Asking " + address + " for stats.json");
+        HttpRequest request = HttpRequest.newBuilder(URI.create(address)).GET().build();
+        HttpResponse<InputStream> response = client.send(request, HttpResponse.BodyHandlers.ofInputStream());
+        return MAPPER.readValue(response.body(), Statsjson.class);
+    }
+
+
+    /**
+     * Send Kibana the good stuff.
+     */
     private static void sendToKibana(KibanaStats kibanaStats) throws IOException {
         LOGGER.info("Sending to Elastic: " + MAPPER.writeValueAsString(kibanaStats));
         client.index(new IndexRequest(kibanaStats.getInverterId()).source(MAPPER.writeValueAsString(kibanaStats), XContentType.JSON), RequestOptions.DEFAULT);
+    }
+
+
+    /**
+     * Waits for a given duration.
+     */
+    private static void waitFor(Duration pollInterval) throws InterruptedException {
+        Thread.sleep(pollInterval.toMillis());
     }
 }
