@@ -1,6 +1,7 @@
 package io.freedriver.generty.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonSetter;
 
 import java.math.BigDecimal;
 
@@ -39,7 +40,13 @@ public class InputsSection {
         return battV;
     }
 
+    @JsonSetter("battV")
     public void setBattV(BigDecimal battV) {
         this.battV = battV;
+    }
+
+    @JsonSetter("BattV")
+    public void setOldBattV(BigDecimal BattV) {
+        setBattV(BattV);
     }
 }

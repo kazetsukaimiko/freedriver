@@ -1,18 +1,17 @@
 package io.freedriver.discovery;
 
-import java.net.InetAddress;
 import java.util.Objects;
 
 public class DiscoveredService {
     private String name;
     private String dns;
     private String status;
-    private InetAddress address;
+    private String address;
 
     public DiscoveredService() {
     }
 
-    public DiscoveredService(String name, String dns, String status, InetAddress address) {
+    public DiscoveredService(String name, String dns, String status, String address) {
         this.name = name;
         this.dns = dns;
         this.status = status;
@@ -43,11 +42,11 @@ public class DiscoveredService {
         this.status = status;
     }
 
-    public InetAddress getAddress() {
+    public String getAddress() {
         return address;
     }
 
-    public void setAddress(InetAddress address) {
+    public void setAddress(String address) {
         this.address = address;
     }
 
@@ -56,12 +55,12 @@ public class DiscoveredService {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         DiscoveredService that = (DiscoveredService) o;
-        return Objects.equals(name, that.name) && Objects.equals(dns, that.dns) && Objects.equals(status, that.status);
+        return Objects.equals(name, that.name) && Objects.equals(dns, that.dns) && Objects.equals(status, that.status) && Objects.equals(address, that.address);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(name, dns, status);
+        return Objects.hash(name, dns, status, address);
     }
 
     @Override

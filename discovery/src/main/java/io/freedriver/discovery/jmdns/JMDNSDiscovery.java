@@ -79,16 +79,18 @@ public class JMDNSDiscovery implements Discovery {
         }
 
         private static DiscoveredService service(ServiceEvent event) {
-            try {
-                return new DiscoveredService(
-                        event.getName(),
-                        event.getInfo().getHostAddresses().length > 0 ? event.getInfo().getHostAddresses()[0] : null,
-                        null,
-                        event.getDNS().getInetAddress()
-                );
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
+            return new DiscoveredService(
+                event.getName(),
+                removeTrailingPeriod(event.getInfo().getServer()),
+                null,
+                event.getInfo().getURLs().length > 0 ? event.getInfo().getURLs()[0] : null
+            );
+        }
+
+        private static String removeTrailingPeriod(String input) {
+            return input != null && input.endsWith(".")
+                    ? input.substring(0, input.length() - 1)
+                    : input;
         }
 
         public Set<DiscoveredService> getServices() {
