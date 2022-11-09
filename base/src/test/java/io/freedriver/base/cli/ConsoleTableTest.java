@@ -26,9 +26,6 @@ public class ConsoleTableTest {
         assertTrue(collection.size() == limit);
         assertEquals(new HashSet<>(collection).size(), limit/2);
         assertTrue(collection.stream().noneMatch(i -> i > limit/2));
-
-        collection.forEach(System.out::println);
-
     }
 
     @Test

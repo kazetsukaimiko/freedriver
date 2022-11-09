@@ -1,12 +1,15 @@
 package io.freedriver.serial;
 
+import io.freedriver.base.Tests;
 import io.freedriver.serial.api.params.BaudRates;
 import io.freedriver.serial.api.params.SerialParams;
+import org.junit.jupiter.api.Tag;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
+@Tag(Tests.Integration)
 public class JSSCEchoTest extends EchoTestZ<JSSCSerialResource> {
     // Path to an Arduino that echoes all input.
     public static final Path DEFAULT = Paths.get("/dev/ttyACM0");

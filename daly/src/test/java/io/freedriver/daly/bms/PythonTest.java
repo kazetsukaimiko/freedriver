@@ -1,7 +1,9 @@
 package io.freedriver.daly.bms;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.freedriver.base.Tests;
 import io.freedriver.daly.bms.checksum.debug.CRC8Steps;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
@@ -12,6 +14,7 @@ import java.util.Objects;
 import java.util.Scanner;
 import java.util.stream.Collectors;
 
+@Tag(Tests.Integration)
 public class PythonTest {
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 

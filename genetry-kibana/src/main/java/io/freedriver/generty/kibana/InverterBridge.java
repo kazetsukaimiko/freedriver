@@ -15,6 +15,7 @@ import io.freedriver.generty.model.Statsjson;
 import org.apache.http.HttpHost;
 import org.elasticsearch.client.RestClient;
 
+import java.awt.*;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
@@ -22,10 +23,13 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.time.Duration;
+import java.util.Deque;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.concurrent.Callable;
+import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -34,28 +38,39 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 
-public class GenetryKibanaApp {
+public class InverterBridge {
 
-    private static final Logger LOGGER = Logger.getLogger(GenetryKibanaApp.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(InverterBridge.class.getName());
     private static final ExecutorService POOL = Executors.newCachedThreadPool();
     private static final Map<DiscoveredService, Future<Boolean>> WORKERS = new HashMap<>();
 
-    private static final Duration INVERTER_SCAN_INTERVAL = Duration.ofSeconds(6);
+    // How long to look on mdns for inverters.
+    private static final Duration INVERTER_SCAN_TIME = Duration.ofSeconds(1);
+
+    // How often to scan for inverters.
+    private static final Duration DISCOVERY_INTERVAL = Duration.ofSeconds(10);
     private static final Duration POLL_INTERVAL = Duration.ofSeconds(1);
+
+    private static final Duration INDEX_INTERVAL = Duration.ofMillis(50);
 
     private static final ObjectMapper MAPPER = new ObjectMapper()
             .registerModule(new JavaTimeModule())
             .configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
             .setDefaultPropertyInclusion(JsonInclude.Include.NON_NULL);
 
+    private static final Deque<KibanaStats> deque = new ConcurrentLinkedDeque<>();
 
     private static ElasticsearchClient client;
+    private static GenetryUI app;
+    private static boolean running = true;
 
+    public static void main(String[] args) throws AWTException {
+        block(args, new GenetryTrayIcon(InverterBridge::shutdown).show());
+    }
 
-    /**
-     * Where the application starts.
-     */
-    public static void main(String[] args) throws IOException {
+    public static void block(String[] args, GenetryUI app) {
+        InverterBridge.app = app;
+
         HttpHost host;
         if (args.length == 2) {
             host = new HttpHost(args[0], Integer.parseInt(args[1]));
@@ -63,31 +78,30 @@ public class GenetryKibanaApp {
             host = new HttpHost("localhost", 9200);
         }
 
-// Create the low-level client
+        // Create the low-level client
         RestClient restClient = RestClient.builder(host).build();
 
-// Create the transport with a Jackson mapper
+        // Create the transport with a Jackson mapper
+
         ElasticsearchTransport transport = new RestClientTransport(
                 restClient, new JacksonJsonpMapper(MAPPER));
 
-// And create the API client
+        // And create the API client
         client = new ElasticsearchClient(transport);
 
+        spawnIndexer();
+        spawnDiscoveryWorker();
+    }
 
+    public static void discoverInverters() {
         // Look for inverters.
-        Set<DiscoveredService> found = InverterFinder.findInverters(INVERTER_SCAN_INTERVAL);
+        InverterFinder.findInverters(INVERTER_SCAN_TIME)
+                .forEach(InverterBridge::createWorker);
+    }
 
-        // Continuously scan for new inverters. If nothing found for one minute, exit.
-        AtomicInteger foundNothing = new AtomicInteger();
-        while (foundNothing.getAndIncrement() < 2) {
-            // Any inverters found, create a worker for.
-            found.forEach(GenetryKibanaApp::createWorker);
-            found = InverterFinder.findInverters(INVERTER_SCAN_INTERVAL);
-            if (WORKERS.values().stream().anyMatch(GenetryKibanaApp::inProgress)) {
-                foundNothing.set(0);
-            }
-        }
-        LOGGER.info("No inverters found for a while, terminating.");
+    public static void shutdown() {
+        running = false;
+        LOGGER.info("Shutting down.");
         POOL.shutdown();
         POOL.shutdownNow();
         System.exit(0);
@@ -106,41 +120,66 @@ public class GenetryKibanaApp {
             LOGGER.finest("Worker for service already exists: " + discoveredService);
         } else {
             LOGGER.info("Adding Worker for " + discoveredService);
-            WORKERS.put(discoveredService, spawn(discoveredService));
+            WORKERS.put(discoveredService, spawnWorker(discoveredService));
         }
     }
 
     /**
      * Spawns a thread to poll an inverter.
      */
-    private static Future<Boolean> spawn(DiscoveredService discoveredService) {
+    private static Future<Boolean> spawnWorker(DiscoveredService discoveredService) {
         return POOL.submit(() -> {
-            while (true) {
+            while (running) {
                 try {
-                    Statsjson statsjson = tryToGet(() -> getStats(discoveredService));
+                    Statsjson statsjson = getStats(discoveredService);
                     KibanaStats kibanaStats = new KibanaStats(discoveredService.getDns(), statsjson);
-
-                    LOGGER.info("Sending to Elastic: " + MAPPER.writeValueAsString(kibanaStats));
-                    tryToDo(() -> sendToKibana(kibanaStats));
+                    app.add(kibanaStats);
+                    deque.offer(kibanaStats);
                 } catch (Throwable e) {
                     LOGGER.log(Level.SEVERE, "Inverter telemetry indexing failed for " + discoveredService, e);
                     return false;
                 }
                 waitFor(POLL_INTERVAL);
             }
-        });
-    }
-
-    @FunctionalInterface
-    private interface ThrowingBlackHole {
-        void apply() throws Exception;
-    }
-    private static void tryToDo(ThrowingBlackHole throwingBlackHole) throws Throwable {
-        tryToGet(() -> {
-            throwingBlackHole.apply();
             return true;
         });
     }
+
+    private static void spawnIndexer() {
+        POOL.submit(() -> {
+            while (running) {
+                try {
+                    tryToSendToKibana();
+                    waitFor(INDEX_INTERVAL);
+                } catch (Throwable e) {
+                    LOGGER.log(Level.SEVERE, "Failed to send data to ElasticSearch. ", e);
+                    app.error("Unable to reach ElasticSearch.");
+                    waitFor(Duration.ofSeconds(2));
+                }
+
+            }
+        });
+    }
+
+    private static void spawnDiscoveryWorker() {
+        POOL.submit(() -> {
+            while (running) {
+                try {
+                    discoverInverters();
+                    if (WORKERS.values().stream().noneMatch(InverterBridge::inProgress)) {
+                       LOGGER.warning("No inverters found. Waiting.");
+                    }
+                    waitFor(DISCOVERY_INTERVAL);
+                } catch (Throwable e) {
+                    LOGGER.log(Level.SEVERE, "Failed to discover inverters. ", e);
+                    app.error("Unable to discover inverters.");
+                    waitFor(Duration.ofSeconds(2));
+                }
+
+            }
+        });
+    }
+
     private static <T> T tryToGet(Callable<T> callable) throws Throwable {
         Throwable lastException = null;
         AtomicInteger consecutiveFailCount = new AtomicInteger(0);
@@ -168,21 +207,33 @@ public class GenetryKibanaApp {
         return MAPPER.readValue(response.body(), Statsjson.class);
     }
 
+    private static void tryToSendToKibana() throws IOException {
+        if (!deque.isEmpty()) {
+            KibanaStats kibanaStats = deque.getLast();
+            LOGGER.info("Sending to Elastic: " + MAPPER.writeValueAsString(kibanaStats));
+            String index = kibanaStats.getInverterId().toLowerCase();
+            IndexRequest<KibanaStats> indexRequest = IndexRequest.of(i -> i.index(index).document(kibanaStats));
+            client.index(indexRequest);
 
-    /**
-     * Send Kibana the good stuff.
-     */
-    private static void sendToKibana(KibanaStats kibanaStats) throws IOException {
-        String index = kibanaStats.getInverterId().toLowerCase();
-        IndexRequest<KibanaStats> indexRequest = IndexRequest.of(i -> i.index(index).document(kibanaStats));
-        client.index(indexRequest);
+
+            app.running(GenetryUI.TITLE);
+            try {
+                deque.removeLast();
+            } catch (NoSuchElementException nsee) {
+                // TODO: Investigate why this happens.
+            }
+        }
     }
 
 
     /**
      * Waits for a given duration.
      */
-    private static void waitFor(Duration pollInterval) throws InterruptedException {
-        Thread.sleep(pollInterval.toMillis());
+    private static void waitFor(Duration pollInterval) {
+        try {
+            Thread.sleep(pollInterval.toMillis());
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
     }
 }

@@ -1,285 +1,314 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://maven.apache.org/POM/4.0.0"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
-  <modelVersion>4.0.0</modelVersion>
-  <groupId>io.freedriver</groupId>
-  <artifactId>freedriver-parent</artifactId>
-  <version>1.0.0-SNAPSHOT</version>
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>io.freedriver</groupId>
+    <artifactId>freedriver-parent</artifactId>
+    <version>1.0.0-SNAPSHOT</version>
 
-  <name>Freedriver Library Suite</name>
-  <packaging>pom</packaging>
+    <name>Freedriver Library Suite</name>
+    <packaging>pom</packaging>
 
-  <properties>
-    <maven.compiler.source>11</maven.compiler.source>
-    <maven.compiler.target>11</maven.compiler.target>
-    <failOnMissingWebXml>false</failOnMissingWebXml>
-    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <properties>
+        <maven.compiler.source>11</maven.compiler.source>
+        <maven.compiler.target>11</maven.compiler.target>
+        <failOnMissingWebXml>false</failOnMissingWebXml>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
-    <jackson.version>2.13.2</jackson.version>
-    <jaxrs.api.version>2.1.1</jaxrs.api.version>
-    <jpa.api.version>2.2</jpa.api.version>
-    <junit.jupiter.version>5.8.2</junit.jupiter.version>
-  </properties>
+        <jackson.version>2.13.2</jackson.version>
+        <jaxrs.api.version>2.1.1</jaxrs.api.version>
+        <jpa.api.version>2.2</jpa.api.version>
+        <junit.jupiter.version>5.8.2</junit.jupiter.version>
+    </properties>
 
-  <dependencyManagement>
-    <dependencies>
+    <dependencyManagement>
+        <dependencies>
 
-      <dependency>
-        <groupId>io.freedriver</groupId>
-        <artifactId>base</artifactId>
-        <version>${project.version}</version>
-      </dependency>
+            <dependency>
+                <groupId>io.freedriver</groupId>
+                <artifactId>base</artifactId>
+                <version>${project.version}</version>
+            </dependency>
 
-      <dependency>
-        <groupId>io.freedriver</groupId>
-        <artifactId>schedule</artifactId>
-        <version>${project.version}</version>
-      </dependency>
+            <dependency>
+                <groupId>io.freedriver</groupId>
+                <artifactId>base</artifactId>
+                <classifier>tests</classifier>
+                <type>test-jar</type>
+                <version>${project.version}</version>
+                <scope>test</scope>
+            </dependency>
 
-      <dependency>
-        <groupId>io.freedriver</groupId>
-        <artifactId>showingtime</artifactId>
-        <version>${project.version}</version>
-      </dependency>
+            <dependency>
+                <groupId>io.freedriver</groupId>
+                <artifactId>schedule</artifactId>
+                <version>${project.version}</version>
+            </dependency>
 
-      <dependency>
-        <groupId>io.freedriver</groupId>
-        <artifactId>math</artifactId>
-        <version>${project.version}</version>
-      </dependency>
+            <dependency>
+                <groupId>io.freedriver</groupId>
+                <artifactId>showingtime</artifactId>
+                <version>${project.version}</version>
+            </dependency>
 
-      <dependency>
-        <groupId>io.freedriver</groupId>
-        <artifactId>math-jpa</artifactId>
-        <version>${project.version}</version>
-      </dependency>
+            <dependency>
+                <groupId>io.freedriver</groupId>
+                <artifactId>math</artifactId>
+                <version>${project.version}</version>
+            </dependency>
 
-      <dependency>
-        <groupId>io.freedriver</groupId>
-        <artifactId>serial-api</artifactId>
-        <version>${project.version}</version>
-      </dependency>
+            <dependency>
+                <groupId>io.freedriver</groupId>
+                <artifactId>math-jpa</artifactId>
+                <version>${project.version}</version>
+            </dependency>
 
-      <dependency>
-        <groupId>io.freedriver</groupId>
-        <artifactId>serial-api</artifactId>
-        <version>${project.version}</version>
-        <classifier>tests</classifier>
-        <scope>test</scope>
-      </dependency>
+            <dependency>
+                <groupId>io.freedriver</groupId>
+                <artifactId>serial-api</artifactId>
+                <version>${project.version}</version>
+            </dependency>
 
-      
-      <!--
-      Our version... trying to properly implement JDK9 modules here
-      <dependency>
-        <groupId>io.freedriver</groupId>
-        <artifactId>serial-natives</artifactId>
-        <version>${project.version}</version>
-      </dependency>
-      -->
+            <dependency>
+                <groupId>io.freedriver</groupId>
+                <artifactId>serial-api</artifactId>
+                <version>${project.version}</version>
+                <classifier>tests</classifier>
+                <scope>test</scope>
+            </dependency>
 
-      <!--
-      Depends on jssc which has JDK9 + implicit modules
-      -->
-      <dependency>
-        <groupId>io.freedriver</groupId>
-        <artifactId>serial-impl</artifactId>
-        <version>${project.version}</version>
-      </dependency>
 
-      <dependency>
-        <groupId>io.freedriver</groupId>
-        <artifactId>victron</artifactId>
-        <version>${project.version}</version>
-      </dependency>
+            <!--
+            Our version... trying to properly implement JDK9 modules here
+            <dependency>
+              <groupId>io.freedriver</groupId>
+              <artifactId>serial-natives</artifactId>
+              <version>${project.version}</version>
+            </dependency>
+            -->
 
-      <dependency>
-        <groupId>io.freedriver</groupId>
-        <artifactId>victron-jpa</artifactId>
-        <version>${project.version}</version>
-      </dependency>
+            <!--
+            Depends on jssc which has JDK9 + implicit modules
+            -->
+            <dependency>
+                <groupId>io.freedriver</groupId>
+                <artifactId>serial-impl</artifactId>
+                <version>${project.version}</version>
+            </dependency>
 
-      <dependency>
-        <groupId>io.freedriver</groupId>
-        <artifactId>daly</artifactId>
-        <version>${project.version}</version>
-      </dependency>
+            <dependency>
+                <groupId>io.freedriver</groupId>
+                <artifactId>victron</artifactId>
+                <version>${project.version}</version>
+            </dependency>
 
-      <dependency>
-        <groupId>io.freedriver</groupId>
-        <artifactId>genetry</artifactId>
-        <version>${project.version}</version>
-      </dependency>
+            <dependency>
+                <groupId>io.freedriver</groupId>
+                <artifactId>victron-jpa</artifactId>
+                <version>${project.version}</version>
+            </dependency>
 
-      <dependency>
-        <groupId>io.freedriver</groupId>
-        <artifactId>genetry-kibana</artifactId>
-        <version>${project.version}</version>
-      </dependency>
+            <dependency>
+                <groupId>io.freedriver</groupId>
+                <artifactId>daly</artifactId>
+                <version>${project.version}</version>
+            </dependency>
 
-      <dependency>
-        <groupId>io.freedriver</groupId>
-        <artifactId>jsonlink</artifactId>
-        <version>${project.version}</version>
-      </dependency>
+            <dependency>
+                <groupId>io.freedriver</groupId>
+                <artifactId>genetry</artifactId>
+                <version>${project.version}</version>
+            </dependency>
 
-      <dependency>
-        <groupId>io.freedriver</groupId>
-        <artifactId>electrodacus</artifactId>
-        <version>${project.version}</version>
-      </dependency>
+            <dependency>
+                <groupId>io.freedriver</groupId>
+                <artifactId>genetry-kibana</artifactId>
+                <version>${project.version}</version>
+            </dependency>
 
-      <dependency>
-        <groupId>io.freedriver</groupId>
-        <artifactId>discovery</artifactId>
-        <version>${project.version}</version>
-      </dependency>
+            <dependency>
+                <groupId>io.freedriver</groupId>
+                <artifactId>jsonlink</artifactId>
+                <version>${project.version}</version>
+            </dependency>
 
-      <dependency>
-        <groupId>io.freedriver</groupId>
-        <artifactId>ee</artifactId>
-        <version>${project.version}</version>
-      </dependency>
+            <dependency>
+                <groupId>io.freedriver</groupId>
+                <artifactId>electrodacus</artifactId>
+                <version>${project.version}</version>
+            </dependency>
 
-      <dependency>
-        <groupId>io.freedriver</groupId>
-        <artifactId>microservice</artifactId>
-        <version>${project.version}</version>
-      </dependency>
+            <dependency>
+                <groupId>io.freedriver</groupId>
+                <artifactId>discovery</artifactId>
+                <version>${project.version}</version>
+            </dependency>
 
-      <dependency>
-        <groupId>com.fasterxml.jackson.core</groupId>
-        <artifactId>jackson-core</artifactId>
-        <version>${jackson.version}</version>
-      </dependency>
+            <dependency>
+                <groupId>io.freedriver</groupId>
+                <artifactId>ee</artifactId>
+                <version>${project.version}</version>
+            </dependency>
 
-      <dependency>
-        <groupId>com.fasterxml.jackson.core</groupId>
-        <artifactId>jackson-databind</artifactId>
-        <version>${jackson.version}</version>
-      </dependency>
+            <dependency>
+                <groupId>io.freedriver</groupId>
+                <artifactId>microservice</artifactId>
+                <version>${project.version}</version>
+            </dependency>
 
-      <dependency>
-        <groupId>com.fasterxml.jackson.datatype</groupId>
-        <artifactId>jackson-datatype-jsr310</artifactId>
-        <version>${jackson.version}</version>
-      </dependency>
+            <dependency>
+                <groupId>com.fasterxml.jackson.core</groupId>
+                <artifactId>jackson-core</artifactId>
+                <version>${jackson.version}</version>
+            </dependency>
 
-      <dependency>
-        <groupId>com.fasterxml.jackson.core</groupId>
-        <artifactId>jackson-annotations</artifactId>
-        <version>${jackson.version}</version>
-      </dependency>
+            <dependency>
+                <groupId>com.fasterxml.jackson.core</groupId>
+                <artifactId>jackson-databind</artifactId>
+                <version>${jackson.version}</version>
+            </dependency>
 
-      <dependency>
-        <groupId>jakarta.ws.rs</groupId>
-        <artifactId>jakarta.ws.rs-api</artifactId>
-        <version>3.0.0</version>
-      </dependency>
+            <dependency>
+                <groupId>com.fasterxml.jackson.datatype</groupId>
+                <artifactId>jackson-datatype-jsr310</artifactId>
+                <version>${jackson.version}</version>
+            </dependency>
 
-      <!-- DEPRECATED TODO: REMOVE
-      <dependency>
-        <groupId>javax.persistence</groupId>
-        <artifactId>javax.persistence-api</artifactId>
-        <version>${jpa.api.version}</version>
-      </dependency>
-      -->
+            <dependency>
+                <groupId>com.fasterxml.jackson.core</groupId>
+                <artifactId>jackson-annotations</artifactId>
+                <version>${jackson.version}</version>
+            </dependency>
 
-      <!-- https://mvnrepository.com/artifact/jakarta.persistence/jakarta.persistence-api -->
-      <dependency>
-        <groupId>jakarta.persistence</groupId>
-        <artifactId>jakarta.persistence-api</artifactId>
-        <version>3.0.0</version>
-      </dependency>
+            <dependency>
+                <groupId>jakarta.ws.rs</groupId>
+                <artifactId>jakarta.ws.rs-api</artifactId>
+                <version>3.0.0</version>
+            </dependency>
 
-      <dependency>
-        <groupId>org.junit.jupiter</groupId>
-        <artifactId>junit-jupiter-api</artifactId>
-        <version>${junit.jupiter.version}</version>
-        <scope>test</scope>
-      </dependency>
+            <!-- DEPRECATED TODO: REMOVE
+            <dependency>
+              <groupId>javax.persistence</groupId>
+              <artifactId>javax.persistence-api</artifactId>
+              <version>${jpa.api.version}</version>
+            </dependency>
+            -->
 
-      <dependency>
-        <groupId>org.junit.jupiter</groupId>
-        <artifactId>junit-jupiter-engine</artifactId>
-        <version>${junit.jupiter.version}</version>
-        <scope>test</scope>
-      </dependency>
-    </dependencies>
-  </dependencyManagement>
+            <!-- https://mvnrepository.com/artifact/jakarta.persistence/jakarta.persistence-api -->
+            <dependency>
+                <groupId>jakarta.persistence</groupId>
+                <artifactId>jakarta.persistence-api</artifactId>
+                <version>3.0.0</version>
+            </dependency>
 
-  <modules>
-    <module>base</module>
+            <dependency>
+                <groupId>org.junit.jupiter</groupId>
+                <artifactId>junit-jupiter-api</artifactId>
+                <version>${junit.jupiter.version}</version>
+                <scope>test</scope>
+            </dependency>
 
-    <module>math</module>
-    <module>math-jpa</module>
 
-    <module>serial-api</module>
-    <!--
-    <module>serial-natives</module>
-    -->
-    <module>serial-impl</module>
+            <dependency>
+                <groupId>org.junit.jupiter</groupId>
+                <artifactId>junit-jupiter-params</artifactId>
+                <version>${junit.jupiter.version}</version>
+                <scope>test</scope>
+            </dependency>
 
-    <module>discovery</module>
+            <dependency>
+                <groupId>org.junit.jupiter</groupId>
+                <artifactId>junit-jupiter-engine</artifactId>
+                <version>${junit.jupiter.version}</version>
+                <scope>test</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
 
-    <module>victron</module>
-    <module>victron-jpa</module>
+    <modules>
+        <module>base</module>
 
-    <module>daly</module>
+        <module>math</module>
+        <module>math-jpa</module>
 
-    <module>genetry</module>
-    <module>genetry-kibana</module>
+        <module>serial-api</module>
+        <!--
+        <module>serial-natives</module>
+        -->
+        <module>serial-impl</module>
 
-    <module>jsonlink</module>
-    <module>electrodacus</module>
-    <module>ee</module>
-  </modules>
+        <module>discovery</module>
 
-  <build>
-    <pluginManagement>
-      <plugins>
-        <plugin>
-          <artifactId>maven-clean-plugin</artifactId>
-          <version>3.1.0</version>
-        </plugin>
-        <plugin>
-          <artifactId>maven-resources-plugin</artifactId>
-          <version>3.0.2</version>
-        </plugin>
-        <plugin>
-          <artifactId>maven-compiler-plugin</artifactId>
-          <version>3.8.1</version>
-        </plugin>
-        <plugin>
-          <artifactId>maven-surefire-plugin</artifactId>
-          <version>2.22.2</version>
-        </plugin>
-        <plugin>
-          <artifactId>maven-javadoc-plugin</artifactId>
-          <version>3.0.1</version>
-        </plugin>
-        <plugin>
-          <artifactId>maven-jar-plugin</artifactId>
-          <version>3.0.2</version>
-        </plugin>
-        <plugin>
-          <artifactId>maven-install-plugin</artifactId>
-          <version>2.5.2</version>
-        </plugin>
-        <plugin>
-          <artifactId>maven-deploy-plugin</artifactId>
-          <version>2.8.2</version>
-        </plugin>
-        <plugin>
-          <artifactId>maven-site-plugin</artifactId>
-          <version>3.7.1</version>
-        </plugin>
-        <plugin>
-          <artifactId>maven-project-info-reports-plugin</artifactId>
-          <version>3.0.0</version>
-        </plugin>
-      </plugins>
-    </pluginManagement>
-  </build>
+        <module>victron</module>
+        <module>victron-jpa</module>
+
+        <module>daly</module>
+
+        <module>genetry</module>
+        <module>genetry-kibana</module>
+
+        <module>jsonlink</module>
+        <module>electrodacus</module>
+        <module>ee</module>
+    </modules>
+
+    <build>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <artifactId>maven-clean-plugin</artifactId>
+                    <version>3.1.0</version>
+                </plugin>
+                <plugin>
+                    <artifactId>maven-resources-plugin</artifactId>
+                    <version>3.0.2</version>
+                </plugin>
+                <plugin>
+                    <artifactId>maven-compiler-plugin</artifactId>
+                    <version>3.8.1</version>
+                </plugin>
+                <plugin>
+                    <artifactId>maven-surefire-plugin</artifactId>
+                    <version>2.22.2</version>
+                </plugin>
+                <plugin>
+                    <artifactId>maven-javadoc-plugin</artifactId>
+                    <version>3.0.1</version>
+                </plugin>
+                <plugin>
+                    <artifactId>maven-jar-plugin</artifactId>
+                    <version>3.0.2</version>
+                </plugin>
+                <plugin>
+                    <artifactId>maven-install-plugin</artifactId>
+                    <version>2.5.2</version>
+                </plugin>
+                <plugin>
+                    <artifactId>maven-deploy-plugin</artifactId>
+                    <version>2.8.2</version>
+                </plugin>
+                <plugin>
+                    <artifactId>maven-site-plugin</artifactId>
+                    <version>3.7.1</version>
+                </plugin>
+                <plugin>
+                    <artifactId>maven-project-info-reports-plugin</artifactId>
+                    <version>3.0.0</version>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>3.0.0-M7</version>
+                <configuration>
+                    <excludedGroups>Integration</excludedGroups>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
 
 </project>

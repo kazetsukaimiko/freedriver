@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import io.freedriver.generty.model.FansSection;
 import io.freedriver.generty.model.InputsSection;
 import io.freedriver.generty.model.OutputsSection;
+import io.freedriver.generty.model.SetupSection;
 import io.freedriver.generty.model.StatsSection;
 import io.freedriver.generty.model.Statsjson;
 import io.freedriver.generty.model.TempsSection;
@@ -11,12 +12,18 @@ import io.freedriver.generty.model.TempsSection;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.Instant;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * A Flattened version of stats.json to make it easier for kibana to visualize.
  */
-public class KibanaStats {
+public class KibanaStats implements Comparable<KibanaStats>{
+    private static final Logger LOGGER = Logger.getLogger(KibanaStats.class.getName());
     private String inverterId;
+    private String inverterModel;
 
     private BigDecimal inV;
     private BigDecimal inA;
@@ -54,8 +61,9 @@ public class KibanaStats {
     private Instant timestamp = Instant.now();
 
 
-    public KibanaStats(String inverterId, BigDecimal inV, BigDecimal inA, BigDecimal xfA, BigDecimal battV, BigDecimal outV, BigDecimal outA, BigDecimal outW, BigDecimal outPF, BigDecimal outHZ, BigDecimal xfEFF, BigDecimal inverterWatts, BigDecimal inverterLoad, BigDecimal chargeWatts, BigDecimal lifetimekWh, String rdx, BigDecimal TTA, BigDecimal TMA, BigDecimal TTB, BigDecimal TMB, BigDecimal FA, BigDecimal FB, BigDecimal FC, BigDecimal fanAverage, Instant timestamp) {
+    public KibanaStats(String inverterId, String inverterModel, BigDecimal inV, BigDecimal inA, BigDecimal xfA, BigDecimal battV, BigDecimal outV, BigDecimal outA, BigDecimal outW, BigDecimal outPF, BigDecimal outHZ, BigDecimal xfEFF, BigDecimal inverterWatts, BigDecimal inverterLoad, BigDecimal chargeWatts, BigDecimal lifetimekWh, String rdx, BigDecimal TTA, BigDecimal TMA, BigDecimal TTB, BigDecimal TMB, BigDecimal FA, BigDecimal FB, BigDecimal FC, BigDecimal fanAverage, Instant timestamp) {
         this.inverterId = inverterId;
+        this.inverterModel = inverterModel;
         this.inV = inV;
         this.inA = inA;
         this.xfA = xfA;
@@ -85,9 +93,10 @@ public class KibanaStats {
     public KibanaStats() {
     }
 
-    public KibanaStats(String inverterId, InputsSection inputs, OutputsSection outputs, StatsSection stats, TempsSection temps, FansSection fans) {
+    public KibanaStats(String inverterId, SetupSection setup, InputsSection inputs, OutputsSection outputs, StatsSection stats, TempsSection temps, FansSection fans) {
         this(
                 inverterId,
+                setup.getModel(),
 
                 inputs.getInV(),
                 inputs.getInA(),
@@ -102,7 +111,7 @@ public class KibanaStats {
                 outputs.getXfEFF().movePointLeft(2),
 
                 calculateInverterWatts(inputs, outputs),
-                calculateInverterLoad(inputs, outputs),
+                calculateInverterLoad(setup, inputs, outputs),
                 calculateChargeWatts(inputs),
 
                 stats.getKWh().movePointRight(3),
@@ -122,7 +131,7 @@ public class KibanaStats {
     }
 
     public KibanaStats(String inverterId, Statsjson statsjson) {
-        this(inverterId, statsjson.getInputs(), statsjson.getOutputs(), statsjson.getStats(), statsjson.getTemps(), statsjson.getFans());
+        this(inverterId, statsjson.getSetup(), statsjson.getInputs(), statsjson.getOutputs(), statsjson.getStats(), statsjson.getTemps(), statsjson.getFans());
     }
 
     public String getInverterId() {
@@ -131,6 +140,14 @@ public class KibanaStats {
 
     public void setInverterId(String inverterId) {
         this.inverterId = inverterId;
+    }
+
+    public String getInverterModel() {
+        return inverterModel;
+    }
+
+    public void setInverterModel(String inverterModel) {
+        this.inverterModel = inverterModel;
     }
 
     public BigDecimal getInV() {
@@ -326,10 +343,50 @@ public class KibanaStats {
     }
 
 
-    private static BigDecimal calculateInverterLoad(InputsSection inputs, OutputsSection outputs) {
+    public String getMenuText() {
+        return inverterId + "\n / Load: " + getInverterLoad().multiply(BigDecimal.valueOf(100)).setScale(2, RoundingMode.HALF_UP) +"% / " + getInverterWatts() + "W "   +")";
+    }
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        KibanaStats that = (KibanaStats) o;
+        return Objects.equals(inverterId, that.inverterId);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(inverterId);
+    }
+
+    @Override
+    public int compareTo(KibanaStats kibanaStats) {
+        return timestamp.compareTo(kibanaStats.timestamp);
+    }
+
+    private static BigDecimal calculateInverterLoad(SetupSection setupSection, InputsSection inputs, OutputsSection outputs) {
         return calculateInverterWatts(inputs, outputs)
                 .setScale(4, RoundingMode.HALF_UP)
-                .divide(new BigDecimal(6000), RoundingMode.HALF_UP);
+                .divide(new BigDecimal(getInverterRating(setupSection)), RoundingMode.HALF_UP);
+    }
+
+    private static int getInverterRating(SetupSection setupSection) {
+        return Optional.ofNullable(setupSection)
+                .map(SetupSection::getModel)
+                .flatMap(KibanaStats::extractRating)
+                .orElse(6000);
+    }
+
+    private static Optional<Integer> extractRating(String modelString) {
+        String[] parts = modelString.split("-");
+        if (parts.length >= 2) {
+            try {
+                return Optional.of(Integer.parseInt(parts[1]));
+            } catch (NumberFormatException numberFormatException) {
+                LOGGER.log(Level.WARNING, "Cannot ascertain inverter rating as model string is malformed: " + parts[1], numberFormatException);
+            }
+        }
+        return Optional.empty();
     }
 
     private static BigDecimal calculateChargeWatts(InputsSection inputs) {

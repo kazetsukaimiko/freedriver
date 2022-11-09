@@ -1,5 +1,7 @@
 package io.freedriver.base.util;
 
+import io.freedriver.base.Tests;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
 import java.io.ByteArrayInputStream;
@@ -11,6 +13,8 @@ import java.util.stream.IntStream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+
+@Tag(Tests.Integration)
 public class ProcessUtilTest {
     private static final Random RANDOM = new Random(System.currentTimeMillis());
 
