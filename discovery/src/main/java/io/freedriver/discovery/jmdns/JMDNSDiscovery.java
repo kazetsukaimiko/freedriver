@@ -8,10 +8,8 @@ import javax.jmdns.JmDNS;
 import javax.jmdns.ServiceEvent;
 import javax.jmdns.ServiceListener;
 import java.io.IOException;
-import java.io.UncheckedIOException;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
-import java.net.UnknownHostException;
 import java.time.Duration;
 import java.util.Collections;
 import java.util.Enumeration;
@@ -39,13 +37,13 @@ public class JMDNSDiscovery implements Discovery {
     private static final ExecutorService POOL = Executors.newCachedThreadPool();
     @Override
     public Set<DiscoveredService> find(ServiceType serviceType, Predicate<DiscoveredService> filter, Duration maxWait) {
-        List<Future<Set<DiscoveredService>>> futures = allAddresses()
+        List<DiscoveryPromise> futures = allAddresses()
                 .map(inetAddress -> spawn(inetAddress, serviceType, filter, maxWait))
                 .collect(Collectors.toList());
 
         return futures
                 .stream()
-                .map(future -> getOrLog(future, maxWait))
+                .map(DiscoveryPromise::getServices)
                 .flatMap(Set::stream)
                 .collect(Collectors.toSet());
     }
@@ -66,15 +64,6 @@ public class JMDNSDiscovery implements Discovery {
                         Spliterator.ORDERED), false);
     }
 
-    private Set<DiscoveredService> getOrLog(Future<Set<DiscoveredService>> future, Duration maxWait) {
-        try {
-            return future.get(maxWait.toMillis() * 2, TimeUnit.MILLISECONDS);
-        } catch (InterruptedException | ExecutionException | TimeoutException e) {
-            LOGGER.log(Level.WARNING, "Couldn't Discover Services", e);
-            return Collections.emptySet();
-        }
-    }
-
     public static Stream<InetAddress> allAddresses()  {
         try {
             return enumerationAsStream(NetworkInterface.getNetworkInterfaces())
@@ -86,8 +75,8 @@ public class JMDNSDiscovery implements Discovery {
         }
     }
 
-    private Future<Set<DiscoveredService>> spawn(InetAddress inetAddress, ServiceType serviceType, Predicate<DiscoveredService> filter, Duration maxWait) {
-        return POOL.submit(() -> {
+    private DiscoveryPromise spawn(InetAddress inetAddress, ServiceType serviceType, Predicate<DiscoveredService> filter, Duration maxWait) {
+        return new DiscoveryPromise(inetAddress, maxWait, POOL.submit(() -> {
             try (AddressesCatcher catcher = createCatcher(inetAddress, serviceType, filter)) {
                 Thread.sleep(maxWait.toMillis());
                 return catcher.getServices();
@@ -98,7 +87,7 @@ public class JMDNSDiscovery implements Discovery {
                 LOGGER.log(Level.WARNING, "Couldn't Discover Services", e);
                 return Collections.emptySet();
             }
-        });
+        }));
     }
 
     private AddressesCatcher createCatcher(InetAddress inetAddress, ServiceType serviceType,  Predicate<DiscoveredService> filter) throws IOException {
@@ -110,11 +99,31 @@ public class JMDNSDiscovery implements Discovery {
         return catcher;
     }
 
-    private interface DiscoveredServicesProvider {
-        Set<DiscoveredService> getServices();
+    private static class DiscoveryPromise {
+        private final InetAddress inetAddress;
+        private final Duration maxWait;
+        private final Future<Set<DiscoveredService>> future;
+
+        public DiscoveryPromise(InetAddress inetAddress, Duration maxWait, Future<Set<DiscoveredService>> future) {
+            this.inetAddress = inetAddress;
+            this.maxWait = maxWait;
+            this.future = future;
+        }
+
+        private Set<DiscoveredService> getServices() {
+            try {
+                return future.get(maxWait.toMillis() * 2, TimeUnit.MILLISECONDS);
+            } catch (InterruptedException | ExecutionException | TimeoutException e) {
+                LOGGER.log(
+                        Level.WARNING,
+                        "Couldn't Discover Services on interface " + inetAddress + " within the max allotted time of " + maxWait.toMillis() * 2,
+                        e);
+                return Collections.emptySet();
+            }
+        }
     }
 
-    private static class AddressesCatcher implements ServiceListener, DiscoveredServicesProvider, AutoCloseable {
+    private static class AddressesCatcher implements ServiceListener, AutoCloseable {
         private final JmDNS jmdns;
         private final Predicate<DiscoveredService> filter;
         private final Set<DiscoveredService> services = new HashSet<>();
@@ -166,7 +175,6 @@ public class JMDNSDiscovery implements Discovery {
                     : input;
         }
 
-        @Override
         public Set<DiscoveredService> getServices() {
             return services;
         }
