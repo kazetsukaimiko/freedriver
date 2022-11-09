@@ -15,7 +15,7 @@
         <failOnMissingWebXml>false</failOnMissingWebXml>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
-        <jackson.version>2.13.2</jackson.version>
+        <jackson.version>2.13.4.1</jackson.version>
         <jaxrs.api.version>2.1.1</jaxrs.api.version>
         <jpa.api.version>2.2</jpa.api.version>
         <junit.jupiter.version>5.8.2</junit.jupiter.version>
