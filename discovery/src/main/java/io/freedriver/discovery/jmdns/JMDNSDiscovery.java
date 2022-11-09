@@ -68,7 +68,7 @@ public class JMDNSDiscovery implements Discovery {
 
     private Set<DiscoveredService> getOrLog(Future<Set<DiscoveredService>> future, Duration maxWait) {
         try {
-            return future.get(maxWait.toMillis(), TimeUnit.MILLISECONDS);
+            return future.get(maxWait.toMillis() * 2, TimeUnit.MILLISECONDS);
         } catch (InterruptedException | ExecutionException | TimeoutException e) {
             LOGGER.log(Level.WARNING, "Couldn't Discover Services", e);
             return Collections.emptySet();
