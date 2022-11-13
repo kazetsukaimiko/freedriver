@@ -23,17 +23,13 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.time.Duration;
-import java.util.Deque;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
-import java.util.NoSuchElementException;
-import java.util.Set;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -58,7 +54,7 @@ public class InverterBridge {
             .configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
             .setDefaultPropertyInclusion(JsonInclude.Include.NON_NULL);
 
-    private static final Deque<KibanaStats> deque = new ConcurrentLinkedDeque<>();
+    private static final List<KibanaStats> deque = new ArrayList<>();
 
     private static ElasticsearchClient client;
     private static GenetryUI app;
@@ -134,7 +130,7 @@ public class InverterBridge {
                     Statsjson statsjson = getStats(discoveredService);
                     KibanaStats kibanaStats = new KibanaStats(discoveredService.getDns(), statsjson);
                     app.add(kibanaStats);
-                    deque.offer(kibanaStats);
+                    deque.add(kibanaStats);
                 } catch (Throwable e) {
                     LOGGER.log(Level.SEVERE, "Inverter telemetry indexing failed for " + discoveredService, e);
                     return false;
@@ -180,21 +176,6 @@ public class InverterBridge {
         });
     }
 
-    private static <T> T tryToGet(Callable<T> callable) throws Throwable {
-        Throwable lastException = null;
-        AtomicInteger consecutiveFailCount = new AtomicInteger(0);
-        while (consecutiveFailCount.getAndIncrement() < 10) {
-            try {
-                return callable.call();
-            } catch (Exception e) {
-                lastException = e;
-                waitFor(Duration.ofMillis(50));
-            }
-        }
-        throw lastException;
-    }
-
-
     /**
      * Get Stats.json as a Java Object.
      */
@@ -207,21 +188,21 @@ public class InverterBridge {
         return MAPPER.readValue(response.body(), Statsjson.class);
     }
 
-    private static void tryToSendToKibana() throws IOException {
+    private static void tryToSendToKibana() {
         if (!deque.isEmpty()) {
-            KibanaStats kibanaStats = deque.getLast();
-            LOGGER.info("Sending to Elastic: " + MAPPER.writeValueAsString(kibanaStats));
-            String index = kibanaStats.getInverterId().toLowerCase();
-            IndexRequest<KibanaStats> indexRequest = IndexRequest.of(i -> i.index(index).document(kibanaStats));
-            client.index(indexRequest);
-
-
-            app.running(GenetryUI.TITLE);
-            try {
-                deque.removeLast();
-            } catch (NoSuchElementException nsee) {
-                // TODO: Investigate why this happens.
-            }
+            deque.removeIf(kibanaStats -> {
+                try {
+                    LOGGER.info("Sending to Elastic: " + MAPPER.writeValueAsString(kibanaStats));
+                    String index = kibanaStats.getInverterId().toLowerCase();
+                    IndexRequest<KibanaStats> indexRequest = IndexRequest.of(i -> i.index(index).document(kibanaStats));
+                    client.index(indexRequest);
+                    app.running(GenetryUI.TITLE);
+                    return true;
+                } catch (IOException ioe) {
+                    LOGGER.log(Level.WARNING, "Couldn't send to elastic:", ioe);
+                    return false;
+                }
+            });
         }
     }
 
