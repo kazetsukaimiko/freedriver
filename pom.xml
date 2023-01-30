@@ -15,7 +15,7 @@
         <failOnMissingWebXml>false</failOnMissingWebXml>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
-        <jackson.version>2.13.2</jackson.version>
+        <jackson.version>2.14.1</jackson.version>
         <jaxrs.api.version>2.1.1</jaxrs.api.version>
         <jpa.api.version>2.2</jpa.api.version>
         <junit.jupiter.version>5.8.2</junit.jupiter.version>
@@ -41,6 +41,21 @@
 
             <dependency>
                 <groupId>io.freedriver</groupId>
+                <artifactId>client</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>io.freedriver</groupId>
+                <artifactId>client</artifactId>
+                <classifier>tests</classifier>
+                <type>test-jar</type>
+                <version>${project.version}</version>
+                <scope>test</scope>
+            </dependency>
+
+            <dependency>
+                <groupId>io.freedriver</groupId>
                 <artifactId>schedule</artifactId>
                 <version>${project.version}</version>
             </dependency>
@@ -48,6 +63,18 @@
             <dependency>
                 <groupId>io.freedriver</groupId>
                 <artifactId>showingtime</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>io.freedriver</groupId>
+                <artifactId>ipb-client</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>io.freedriver</groupId>
+                <artifactId>ipb-to-wp</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
@@ -122,6 +149,12 @@
 
             <dependency>
                 <groupId>io.freedriver</groupId>
+                <artifactId>wordpress-jpa-model</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>io.freedriver</groupId>
                 <artifactId>genetry-kibana</artifactId>
                 <version>${project.version}</version>
             </dependency>
@@ -181,10 +214,17 @@
             </dependency>
 
             <dependency>
+                <groupId>com.fasterxml.jackson.jakarta.rs</groupId>
+                <artifactId>jackson-jakarta-rs-json-provider</artifactId>
+                <version>${jackson.version}</version>
+            </dependency>
+
+            <dependency>
                 <groupId>jakarta.ws.rs</groupId>
                 <artifactId>jakarta.ws.rs-api</artifactId>
-                <version>3.0.0</version>
+                <version>3.1.0</version>
             </dependency>
+
 
             <!-- DEPRECATED TODO: REMOVE
             <dependency>
@@ -227,7 +267,7 @@
 
     <modules>
         <module>base</module>
-
+        <module>client</module>
         <module>math</module>
         <module>math-jpa</module>
 
@@ -247,9 +287,14 @@
         <module>genetry</module>
         <module>genetry-kibana</module>
 
+        <module>ipb-client</module>
+        <module>ipb-to-wp</module>
+
         <module>jsonlink</module>
         <module>electrodacus</module>
         <module>ee</module>
+
+        <module>wordpress-jpa-model</module>
     </modules>
 
     <build>
