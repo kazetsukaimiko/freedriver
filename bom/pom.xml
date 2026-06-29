@@ -1,0 +1,151 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+
+    <parent>
+        <groupId>io.freedriver</groupId>
+        <artifactId>freedriver-parent</artifactId>
+        <version>1.0.0-SNAPSHOT</version>
+    </parent>
+
+    <modelVersion>4.0.0</modelVersion>
+    <artifactId>freedriver-bom</artifactId>
+    <packaging>pom</packaging>
+
+    <name>Freedriver BOM</name>
+    <description>Bill of Materials for Freedriver library suite. Import this BOM to obtain consistent versions for all Freedriver artifacts (and transitive like JUnit 5). Root parent no longer manages these reactor versions.</description>
+
+    <dependencyManagement>
+        <dependencies>
+            <!-- JUnit 5 BOM: included here so importing freedriver-bom also manages junit-jupiter-* versions (no separate junit prop or list needed in root). -->
+            <dependency>
+                <groupId>org.junit</groupId>
+                <artifactId>junit-bom</artifactId>
+                <version>5.10.2</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+
+            <!-- Freedriver own artifacts. These were previously self-referenced with ${project.version} in the root pom's dependencyManagement.
+                 Now centralized here. Children import this BOM instead. Versions use ${project.version} so a single place for release bumps (prep for GH actions + maven version increment). -->
+
+            <dependency>
+                <groupId>io.freedriver</groupId>
+                <artifactId>base</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>io.freedriver</groupId>
+                <artifactId>base</artifactId>
+                <classifier>tests</classifier>
+                <type>test-jar</type>
+                <version>${project.version}</version>
+                <scope>test</scope>
+            </dependency>
+
+            <dependency>
+                <groupId>io.freedriver</groupId>
+                <artifactId>client</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>io.freedriver</groupId>
+                <artifactId>client</artifactId>
+                <classifier>tests</classifier>
+                <type>test-jar</type>
+                <version>${project.version}</version>
+                <scope>test</scope>
+            </dependency>
+
+            <dependency>
+                <groupId>io.freedriver</groupId>
+                <artifactId>math</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>io.freedriver</groupId>
+                <artifactId>math-jpa</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>io.freedriver</groupId>
+                <artifactId>serial-api</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>io.freedriver</groupId>
+                <artifactId>serial-api</artifactId>
+                <version>${project.version}</version>
+                <classifier>tests</classifier>
+                <scope>test</scope>
+            </dependency>
+
+            <dependency>
+                <groupId>io.freedriver</groupId>
+                <artifactId>serial-impl</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>io.freedriver</groupId>
+                <artifactId>discovery</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>io.freedriver</groupId>
+                <artifactId>victron</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>io.freedriver</groupId>
+                <artifactId>victron-jpa</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>io.freedriver</groupId>
+                <artifactId>daly</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>io.freedriver</groupId>
+                <artifactId>genetry</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>io.freedriver</groupId>
+                <artifactId>genetry-kibana</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>io.freedriver</groupId>
+                <artifactId>jsonlink</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>io.freedriver</groupId>
+                <artifactId>electrodacus</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>io.freedriver</groupId>
+                <artifactId>ee</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+        </dependencies>
+    </dependencyManagement>
+
+</project>

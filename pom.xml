@@ -22,161 +22,8 @@
 
     <dependencyManagement>
         <dependencies>
-            <!-- Use JUnit BOM for consistent JUnit 5 versions (replaces manual junit.jupiter.version) -->
-            <dependency>
-                <groupId>org.junit</groupId>
-                <artifactId>junit-bom</artifactId>
-                <version>5.10.2</version>
-                <type>pom</type>
-                <scope>import</scope>
-            </dependency>
-
-            <dependency>
-                <groupId>io.freedriver</groupId>
-                <artifactId>base</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>io.freedriver</groupId>
-                <artifactId>base</artifactId>
-                <classifier>tests</classifier>
-                <type>test-jar</type>
-                <version>${project.version}</version>
-                <scope>test</scope>
-            </dependency>
-
-            <dependency>
-                <groupId>io.freedriver</groupId>
-                <artifactId>client</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>io.freedriver</groupId>
-                <artifactId>client</artifactId>
-                <classifier>tests</classifier>
-                <type>test-jar</type>
-                <version>${project.version}</version>
-                <scope>test</scope>
-            </dependency>
-
-            <dependency>
-                <groupId>io.freedriver</groupId>
-                <artifactId>schedule</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>io.freedriver</groupId>
-                <artifactId>showingtime</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>io.freedriver</groupId>
-                <artifactId>math</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>io.freedriver</groupId>
-                <artifactId>math-jpa</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>io.freedriver</groupId>
-                <artifactId>serial-api</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>io.freedriver</groupId>
-                <artifactId>serial-api</artifactId>
-                <version>${project.version}</version>
-                <classifier>tests</classifier>
-                <scope>test</scope>
-            </dependency>
-
-
-            <!--
-            Our version... trying to properly implement JDK9 modules here
-            <dependency>
-              <groupId>io.freedriver</groupId>
-              <artifactId>serial-natives</artifactId>
-              <version>${project.version}</version>
-            </dependency>
-            -->
-
-            <!--
-            Depends on jssc which has JDK9 + implicit modules
-            -->
-            <dependency>
-                <groupId>io.freedriver</groupId>
-                <artifactId>serial-impl</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>io.freedriver</groupId>
-                <artifactId>victron</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>io.freedriver</groupId>
-                <artifactId>victron-jpa</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>io.freedriver</groupId>
-                <artifactId>daly</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>io.freedriver</groupId>
-                <artifactId>genetry</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>io.freedriver</groupId>
-                <artifactId>genetry-kibana</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>io.freedriver</groupId>
-                <artifactId>jsonlink</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>io.freedriver</groupId>
-                <artifactId>electrodacus</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>io.freedriver</groupId>
-                <artifactId>discovery</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>io.freedriver</groupId>
-                <artifactId>ee</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>io.freedriver</groupId>
-                <artifactId>microservice</artifactId>
-                <version>${project.version}</version>
-            </dependency>
+            <!-- External managed versions (jackson etc). Reactor (io.freedriver) versions for artifacts are now ONLY in the freedriver-bom child module (see bom/pom.xml).
+                 Children import the bom to get them. This allows clean release process (GH actions + maven version:set etc can bump once). -->
 
             <dependency>
                 <groupId>com.fasterxml.jackson.core</groupId>
@@ -229,29 +76,13 @@
                 <artifactId>jakarta.persistence-api</artifactId>
                 <version>3.2.0</version>
             </dependency>
-
-            <dependency>
-                <groupId>org.junit.jupiter</groupId>
-                <artifactId>junit-jupiter-api</artifactId>
-                <scope>test</scope>
-            </dependency>
-
-
-            <dependency>
-                <groupId>org.junit.jupiter</groupId>
-                <artifactId>junit-jupiter-params</artifactId>
-                <scope>test</scope>
-            </dependency>
-
-            <dependency>
-                <groupId>org.junit.jupiter</groupId>
-                <artifactId>junit-jupiter-engine</artifactId>
-                <scope>test</scope>
-            </dependency>
         </dependencies>
     </dependencyManagement>
 
     <modules>
+        <!-- bom first: provides all io.freedriver artifact versions + junit via its import. Root no longer lists reactor versions. -->
+        <module>bom</module>
+
         <module>base</module>
         <module>client</module>
         <module>math</module>
