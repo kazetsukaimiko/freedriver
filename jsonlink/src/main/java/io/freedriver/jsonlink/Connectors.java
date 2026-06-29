@@ -1,6 +1,10 @@
 package io.freedriver.jsonlink;
 
+import java.io.IOException;
+import java.io.UncheckedIOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Map;
@@ -23,6 +27,7 @@ import io.freedriver.serial.api.params.SerialParams;
 
 public final class Connectors {
     private static final Logger LOGGER = Logger.getLogger(Connectors.class.getName());
+    private static final Path SERIAL_BY_ID = Paths.get("/dev/serial/by-id");
     private static final Set<Connector> ALL_CONNECTORS = Collections.newSetFromMap(new ConcurrentHashMap<>());
     private static final Map<Path, FailedConnector> FAILED_CONNECTORS = new ConcurrentHashMap<>();
 
@@ -96,6 +101,20 @@ public final class Connectors {
     public static Optional<Connector> getConnector(UUID deviceId) {
         return connectors(cs -> cs.filter(connector -> Objects.equals(connector.getUUID(), deviceId)))
                 .findFirst();
+    }
+
+    public static Stream<Path> allDevices() {
+        if (!Files.isDirectory(SERIAL_BY_ID)) {
+            return Stream.empty();
+        }
+        try (Stream<Path> links = Files.list(SERIAL_BY_ID)) {
+            return links
+                    .filter(Files::isSymbolicLink)
+                    .filter(path -> path.getFileName().toString().startsWith("usb-Arduino"))
+                    .map(Path::toAbsolutePath);
+        } catch (IOException e) {
+            throw new UncheckedIOException("Failed to scan " + SERIAL_BY_ID, e);
+        }
     }
 
 }

@@ -18,7 +18,6 @@ public interface SerialResource extends AutoCloseable {
     boolean isOpened();
 
     static SerialResource of(final Path path, SerialParams params) {
-        throw new UnsupportedOperationException("Need to find implementations");
-        //return new JSSCSerialResource(path, params);
+        return SerialResourceFactory.Holder.create(path, params);
     }
 }
