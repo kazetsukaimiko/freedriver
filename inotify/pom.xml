@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <parent>
+        <groupId>io.freedriver</groupId>
+        <artifactId>freedriver-parent</artifactId>
+        <version>1.0.0-SNAPSHOT</version>
+    </parent>
+
+    <modelVersion>4.0.0</modelVersion>
+    <artifactId>inotify</artifactId>
+    <name>Freedriver Linux Inotify</name>
+    <url>https://github.com/kazetsukaimiko/freedriver/inotify</url>
+
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>io.freedriver</groupId>
+                <artifactId>freedriver-bom</artifactId>
+                <version>${project.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
+    <dependencies>
+        <dependency>
+            <groupId>com.github.jnr</groupId>
+            <artifactId>jnr-ffi</artifactId>
+            <version>2.2.16</version>
+        </dependency>
+        <dependency>
+            <groupId>com.github.jnr</groupId>
+            <artifactId>jnr-constants</artifactId>
+            <version>0.10.4</version>
+        </dependency>
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-api</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-engine</artifactId>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+</project>

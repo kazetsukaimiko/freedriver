@@ -93,6 +93,18 @@
 
             <dependency>
                 <groupId>io.freedriver</groupId>
+                <artifactId>inotify</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>io.freedriver</groupId>
+                <artifactId>inotify-cdi</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>io.freedriver</groupId>
                 <artifactId>discovery</artifactId>
                 <version>${project.version}</version>
             </dependency>
