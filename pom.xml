@@ -94,6 +94,9 @@
         -->
         <module>serial-impl</module>
 
+        <module>inotify</module>
+        <module>inotify-cdi</module>
+
         <module>discovery</module>
 
         <module>victron</module>
