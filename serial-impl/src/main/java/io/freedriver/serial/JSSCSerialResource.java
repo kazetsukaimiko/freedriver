@@ -4,11 +4,11 @@ import java.nio.file.Path;
 import java.util.logging.Level;
 
 import io.freedriver.serial.api.SerialResource;
-import lombok.extern.java.Log;
 import io.freedriver.serial.api.exception.SerialResourceException;
 import io.freedriver.serial.api.params.SerialParams;
 import jssc.SerialPort;
 import jssc.SerialPortException;
+import lombok.extern.java.Log;
 
 @Log
 public class JSSCSerialResource implements SerialResource {

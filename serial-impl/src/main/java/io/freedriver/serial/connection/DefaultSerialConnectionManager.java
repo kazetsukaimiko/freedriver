@@ -13,13 +13,13 @@ import java.util.function.Predicate;
 import java.util.stream.Stream;
 
 import io.freedriver.serial.SerialRuntime;
-import lombok.extern.java.Log;
 import io.freedriver.serial.api.connection.SerialConnectionConfig;
 import io.freedriver.serial.api.connection.SerialConnectionHandle;
 import io.freedriver.serial.api.connection.SerialConnectionListener;
 import io.freedriver.serial.api.connection.SerialConnectionManager;
 import io.freedriver.serial.api.connection.SerialDeviceIdentity;
 import io.freedriver.serial.api.params.SerialParams;
+import lombok.extern.java.Log;
 
 @Log
 public final class DefaultSerialConnectionManager implements SerialConnectionManager {

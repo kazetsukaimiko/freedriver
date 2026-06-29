@@ -6,13 +6,13 @@ import java.util.Optional;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 import io.freedriver.serial.api.SerialResource;
-import lombok.extern.java.Log;
 import io.freedriver.serial.api.connection.SerialConnectionConfig;
 import io.freedriver.serial.api.connection.SerialConnectionHandle;
 import io.freedriver.serial.api.connection.SerialConnectionListener;
 import io.freedriver.serial.api.connection.SerialConnectionState;
 import io.freedriver.serial.api.connection.SerialDeviceIdentity;
 import io.freedriver.serial.api.params.SerialParams;
+import lombok.extern.java.Log;
 
 @Log
 final class ManagedSerialConnection implements SerialConnectionHandle {

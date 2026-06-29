@@ -8,11 +8,11 @@ import java.util.function.Supplier;
 import java.util.logging.Level;
 
 import io.freedriver.serial.api.SerialResource;
-import lombok.extern.java.Log;
 import io.freedriver.serial.api.SerialResourceFactory;
 import io.freedriver.serial.api.connection.SerialDeviceIdentity;
 import io.freedriver.serial.api.exception.SerialResourceException;
 import io.freedriver.serial.api.params.SerialParams;
+import lombok.extern.java.Log;
 
 /**
  * A {@link SerialResource} whose delegate may be swapped when the resolved tty path changes or I/O fails.

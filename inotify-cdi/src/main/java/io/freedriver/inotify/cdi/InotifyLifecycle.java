@@ -2,14 +2,15 @@ package io.freedriver.inotify.cdi;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
+
 import io.freedriver.inotify.InotifyMask;
-import lombok.extern.java.Log;
 import io.freedriver.inotify.InotifyWatch;
 import io.freedriver.inotify.InotifyWatcher;
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.PreDestroy;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
+import lombok.extern.java.Log;
 
 @Log
 @ApplicationScoped

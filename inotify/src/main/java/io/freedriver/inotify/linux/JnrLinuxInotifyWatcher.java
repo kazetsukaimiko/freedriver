@@ -14,10 +14,10 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 
 import io.freedriver.inotify.InotifyEvent;
-import lombok.extern.java.Log;
 import io.freedriver.inotify.InotifyListener;
 import io.freedriver.inotify.InotifyWatch;
 import io.freedriver.inotify.InotifyWatcher;
+import lombok.extern.java.Log;
 
 @Log
 public final class JnrLinuxInotifyWatcher implements InotifyWatcher {
