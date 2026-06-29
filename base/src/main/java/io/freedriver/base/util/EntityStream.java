@@ -49,11 +49,19 @@ public class EntityStream<R> implements Iterator<R>, AutoCloseable {
     public R next() {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         while (!accumulator.isComplete(baos)) {
+            if (closed) {
+                throw new IllegalStateException("Stream closed");
+            }
             try {
-                baos.write(inputStream.read());
+                int value = inputStream.read();
+                if (value == -1) {
+                    continue;
+                }
+                baos.write(value);
             } catch (IOException e) {
-                // TODO
-                e.printStackTrace();
+                if (closed) {
+                    throw new IllegalStateException("Stream closed", e);
+                }
             }
         }
         return accumulator.convert(baos);

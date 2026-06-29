@@ -38,7 +38,7 @@
       <groupId>io.freedriver</groupId>
       <artifactId>serial-api</artifactId>
     </dependency>
-   
+
     <!-- TODO: Replace jssc
     <dependency>
       <groupId>io.freedriver</groupId>
