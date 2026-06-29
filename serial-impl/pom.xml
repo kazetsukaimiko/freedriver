@@ -39,6 +39,12 @@
       <artifactId>serial-api</artifactId>
     </dependency>
 
+    <dependency>
+      <groupId>org.projectlombok</groupId>
+      <artifactId>lombok</artifactId>
+      <scope>provided</scope>
+    </dependency>
+
     <!-- TODO: Replace jssc
     <dependency>
       <groupId>io.freedriver</groupId>
@@ -89,6 +95,5 @@
     </dependency>
     -->
   </dependencies>
-
 
 </project>

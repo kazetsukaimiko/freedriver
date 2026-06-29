@@ -4,7 +4,6 @@ import java.nio.file.Path;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.logging.Logger;
 
 import io.freedriver.serial.api.SerialResource;
 import io.freedriver.serial.api.connection.SerialConnectionConfig;
@@ -13,10 +12,10 @@ import io.freedriver.serial.api.connection.SerialConnectionListener;
 import io.freedriver.serial.api.connection.SerialConnectionState;
 import io.freedriver.serial.api.connection.SerialDeviceIdentity;
 import io.freedriver.serial.api.params.SerialParams;
+import lombok.extern.java.Log;
 
+@Log
 final class ManagedSerialConnection implements SerialConnectionHandle {
-    private static final Logger LOGGER = Logger.getLogger(ManagedSerialConnection.class.getName());
-
     private final SerialDeviceIdentity identity;
     private final ReconnectingSerialResource resource;
     private final List<SerialConnectionListener> globalListeners;
@@ -102,7 +101,7 @@ final class ManagedSerialConnection implements SerialConnectionHandle {
     private void transition(SerialConnectionState previous, SerialConnectionState next) {
         state = next;
         Path port = resource.currentPort().orElse(null);
-        LOGGER.fine(() -> identity + " " + previous + " -> " + next + " (" + port + ")");
+        log.fine(() -> identity + " " + previous + " -> " + next + " (" + port + ")");
         emitStateChange(previous, next, port);
     }
 
@@ -119,7 +118,7 @@ final class ManagedSerialConnection implements SerialConnectionHandle {
         try {
             resource.close();
         } catch (Exception e) {
-            LOGGER.warning("Error closing " + identity + ": " + e.getMessage());
+            log.warning("Error closing " + identity + ": " + e.getMessage());
         }
         emitStateChange(previous, SerialConnectionState.DISCONNECTED, null);
     }

@@ -2,17 +2,16 @@ package io.freedriver.serial;
 
 import java.nio.file.Path;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import io.freedriver.serial.api.SerialResource;
 import io.freedriver.serial.api.exception.SerialResourceException;
 import io.freedriver.serial.api.params.SerialParams;
 import jssc.SerialPort;
 import jssc.SerialPortException;
+import lombok.extern.java.Log;
 
+@Log
 public class JSSCSerialResource implements SerialResource {
-    private static final Logger LOGGER = Logger.getLogger(JSSCSerialResource.class.getName());
-
     private final SerialPort serialPort;
     private final SerialParams serialParams;
 
@@ -63,7 +62,7 @@ public class JSSCSerialResource implements SerialResource {
         try {
             while (serialPort.getInputBufferBytesCount() > 0) {
                 String buffer = serialPort.readString(serialPort.getInputBufferBytesCount());
-                LOGGER.log(Level.WARNING, "Discarding serial input: \n" + buffer);
+                log.log(Level.WARNING, "Discarding serial input: \n" + buffer);
             }
         } catch (SerialPortException e) {
             throw new SerialResourceException("Exception clearing SerialResource", e);

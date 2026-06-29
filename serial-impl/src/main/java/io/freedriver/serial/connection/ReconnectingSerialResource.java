@@ -6,20 +6,19 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Supplier;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import io.freedriver.serial.api.SerialResource;
 import io.freedriver.serial.api.SerialResourceFactory;
 import io.freedriver.serial.api.connection.SerialDeviceIdentity;
 import io.freedriver.serial.api.exception.SerialResourceException;
 import io.freedriver.serial.api.params.SerialParams;
+import lombok.extern.java.Log;
 
 /**
  * A {@link SerialResource} whose delegate may be swapped when the resolved tty path changes or I/O fails.
  */
+@Log
 public class ReconnectingSerialResource implements SerialResource {
-    private static final Logger LOGGER = Logger.getLogger(ReconnectingSerialResource.class.getName());
-
     private final SerialDeviceIdentity identity;
     private final SerialParams serialParams;
     private final Supplier<Optional<Path>> portResolver;
@@ -103,11 +102,11 @@ public class ReconnectingSerialResource implements SerialResource {
         try {
             delegate = SerialResourceFactory.Holder.create(target, serialParams);
             onReconnect.run();
-            LOGGER.info(() -> "Connected " + identity + " on " + target);
+            log.info(() -> "Connected " + identity + " on " + target);
         } catch (RuntimeException e) {
             closeDelegate();
             currentPort = null;
-            LOGGER.log(Level.WARNING, "Failed to open " + identity + " on " + target, e);
+            log.log(Level.WARNING, "Failed to open " + identity + " on " + target, e);
         }
     }
 
@@ -118,7 +117,7 @@ public class ReconnectingSerialResource implements SerialResource {
         try {
             delegate.close();
         } catch (Exception e) {
-            LOGGER.log(Level.FINE, "Error closing delegate for " + identity, e);
+            log.log(Level.FINE, "Error closing delegate for " + identity, e);
         } finally {
             delegate = null;
         }
@@ -138,7 +137,7 @@ public class ReconnectingSerialResource implements SerialResource {
             try {
                 return operation.apply(requireDelegate());
             } catch (SerialResourceException e) {
-                LOGGER.log(Level.WARNING, "I/O failure on " + identity + ", reconnecting", e);
+                log.log(Level.WARNING, "I/O failure on " + identity + ", reconnecting", e);
                 synchronized (lock) {
                     closeDelegate();
                     currentPort = null;
@@ -189,7 +188,7 @@ public class ReconnectingSerialResource implements SerialResource {
             try {
                 return withDelegate(delegate -> delegate.read(size), 1);
             } catch (SerialResourceException e) {
-                LOGGER.log(Level.FINE, "Read waiting for reconnect on " + identity, e);
+                log.log(Level.FINE, "Read waiting for reconnect on " + identity, e);
                 backoff();
             }
         }
