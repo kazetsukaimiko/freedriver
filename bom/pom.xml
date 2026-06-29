@@ -26,6 +26,20 @@
                 <scope>import</scope>
             </dependency>
 
+            <dependency>
+                <groupId>org.awaitility</groupId>
+                <artifactId>awaitility</artifactId>
+                <version>4.2.2</version>
+            </dependency>
+
+            <dependency>
+                <groupId>io.freedriver</groupId>
+                <artifactId>freedriver-jakarta-bom</artifactId>
+                <version>${project.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+
             <!-- Freedriver own artifacts. These were previously self-referenced with ${project.version} in the root pom's dependencyManagement.
                  Now centralized here. Children import this BOM instead. Versions use ${project.version} so a single place for release bumps (prep for GH actions + maven version increment). -->
 
@@ -88,6 +102,18 @@
             <dependency>
                 <groupId>io.freedriver</groupId>
                 <artifactId>serial-impl</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>io.freedriver</groupId>
+                <artifactId>inotify</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>io.freedriver</groupId>
+                <artifactId>inotify-cdi</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
