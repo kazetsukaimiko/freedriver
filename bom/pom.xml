@@ -26,6 +26,14 @@
                 <scope>import</scope>
             </dependency>
 
+            <dependency>
+                <groupId>io.freedriver</groupId>
+                <artifactId>freedriver-jakarta-bom</artifactId>
+                <version>${project.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+
             <!-- Freedriver own artifacts. These were previously self-referenced with ${project.version} in the root pom's dependencyManagement.
                  Now centralized here. Children import this BOM instead. Versions use ${project.version} so a single place for release bumps (prep for GH actions + maven version increment). -->
 

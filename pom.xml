@@ -10,8 +10,8 @@
     <packaging>pom</packaging>
 
     <properties>
-        <maven.compiler.source>11</maven.compiler.source>
-        <maven.compiler.target>11</maven.compiler.target>
+        <maven.compiler.source>17</maven.compiler.source>
+        <maven.compiler.target>17</maven.compiler.target>
         <failOnMissingWebXml>false</failOnMissingWebXml>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
@@ -55,33 +55,13 @@
                 <version>${jackson.version}</version>
             </dependency>
 
-            <dependency>
-                <groupId>jakarta.ws.rs</groupId>
-                <artifactId>jakarta.ws.rs-api</artifactId>
-                <version>3.1.0</version>
-            </dependency>
-
-
-            <!-- DEPRECATED TODO: REMOVE
-            <dependency>
-              <groupId>javax.persistence</groupId>
-              <artifactId>javax.persistence-api</artifactId>
-              <version>${jpa.api.version}</version>
-            </dependency>
-            -->
-
-            <!-- https://mvnrepository.com/artifact/jakarta.persistence/jakarta.persistence-api -->
-            <dependency>
-                <groupId>jakarta.persistence</groupId>
-                <artifactId>jakarta.persistence-api</artifactId>
-                <version>3.2.0</version>
-            </dependency>
         </dependencies>
     </dependencyManagement>
 
     <modules>
         <!-- bom first: provides all io.freedriver artifact versions + junit via its import. Root no longer lists reactor versions. -->
         <module>bom</module>
+        <module>jakarta-bom</module>
 
         <module>base</module>
         <module>client</module>

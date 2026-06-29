@@ -4,39 +4,17 @@ import java.nio.file.Path;
 import java.time.Instant;
 import java.util.Objects;
 
-public final class InotifyEvent {
-    private final Path watchDirectory;
-    private final String entryName;
-    private final int mask;
-    private final int watchDescriptor;
-    private final Instant observedAt;
+public record InotifyEvent(
+        Path watchDirectory,
+        String entryName,
+        int mask,
+        int watchDescriptor,
+        Instant observedAt) {
 
-    public InotifyEvent(Path watchDirectory, String entryName, int mask, int watchDescriptor, Instant observedAt) {
-        this.watchDirectory = Objects.requireNonNull(watchDirectory, "watchDirectory");
-        this.entryName = entryName == null ? "" : entryName;
-        this.mask = mask;
-        this.watchDescriptor = watchDescriptor;
-        this.observedAt = observedAt == null ? Instant.now() : observedAt;
-    }
-
-    public Path watchDirectory() {
-        return watchDirectory;
-    }
-
-    public String entryName() {
-        return entryName;
-    }
-
-    public int mask() {
-        return mask;
-    }
-
-    public int watchDescriptor() {
-        return watchDescriptor;
-    }
-
-    public Instant observedAt() {
-        return observedAt;
+    public InotifyEvent {
+        Objects.requireNonNull(watchDirectory, "watchDirectory");
+        entryName = entryName == null ? "" : entryName;
+        observedAt = observedAt == null ? Instant.now() : observedAt;
     }
 
     public boolean isCreate() {
@@ -55,12 +33,11 @@ public final class InotifyEvent {
         return (mask & InotifyMask.MOVED_FROM) != 0;
     }
 
-    public Path affectedPath() {
-        return entryName.isEmpty() ? watchDirectory : watchDirectory.resolve(entryName);
+    public boolean isModify() {
+        return (mask & InotifyMask.MODIFY) != 0;
     }
 
-    @Override
-    public String toString() {
-        return "InotifyEvent{dir=" + watchDirectory + ", name='" + entryName + "', mask=" + mask + "}";
+    public Path affectedPath() {
+        return entryName.isEmpty() ? watchDirectory : watchDirectory.resolve(entryName);
     }
 }
