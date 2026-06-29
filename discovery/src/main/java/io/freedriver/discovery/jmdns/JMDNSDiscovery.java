@@ -1,12 +1,5 @@
 package io.freedriver.discovery.jmdns;
 
-import io.freedriver.discovery.DiscoveredService;
-import io.freedriver.discovery.Discovery;
-import io.freedriver.discovery.ServiceType;
-
-import javax.jmdns.JmDNS;
-import javax.jmdns.ServiceEvent;
-import javax.jmdns.ServiceListener;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
@@ -31,6 +24,13 @@ import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
+import javax.jmdns.JmDNS;
+import javax.jmdns.ServiceEvent;
+import javax.jmdns.ServiceListener;
+
+import io.freedriver.discovery.DiscoveredService;
+import io.freedriver.discovery.Discovery;
+import io.freedriver.discovery.ServiceType;
 
 public class JMDNSDiscovery implements Discovery {
     private static final Logger LOGGER = Logger.getLogger(JMDNSDiscovery.class.getName());

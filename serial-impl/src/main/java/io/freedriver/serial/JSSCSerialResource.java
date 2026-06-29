@@ -1,15 +1,14 @@
 package io.freedriver.serial;
 
+import java.nio.file.Path;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 import io.freedriver.serial.api.SerialResource;
 import io.freedriver.serial.api.exception.SerialResourceException;
 import io.freedriver.serial.api.params.SerialParams;
 import jssc.SerialPort;
 import jssc.SerialPortException;
-
-import java.nio.file.Path;
-import java.util.Iterator;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 public class JSSCSerialResource implements SerialResource {
     private static final Logger LOGGER = Logger.getLogger(JSSCSerialResource.class.getName());
@@ -94,6 +93,3 @@ public class JSSCSerialResource implements SerialResource {
         }
     }
 }
-
-
-

@@ -1,11 +1,11 @@
 package io.freedriver.jsonlink.config;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import io.freedriver.jsonlink.jackson.schema.v1.Identifier;
-
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import io.freedriver.jsonlink.jackson.schema.v1.Identifier;
 
 public class PinName {
     private Identifier pinNumber;

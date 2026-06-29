@@ -1,11 +1,11 @@
 package io.freedriver.math.jpa.converter.measurement;
 
+import java.math.BigDecimal;
+
 import io.freedriver.math.UnitPrefix;
 import io.freedriver.math.measurement.types.electrical.Power;
 import io.freedriver.math.number.ScaledNumber;
-
 import jakarta.persistence.Converter;
-import java.math.BigDecimal;
 
 @Converter(autoApply = true)
 public class PowerConverter extends MeasurementConverter<Power> {

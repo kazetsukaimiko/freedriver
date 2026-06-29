@@ -1,9 +1,9 @@
 package io.freedriver.base.util;
 
-import io.freedriver.base.util.accumulator.NewlineAccumulator;
-
 import java.io.InputStream;
 import java.util.stream.Stream;
+
+import io.freedriver.base.util.accumulator.NewlineAccumulator;
 
 public class ProcessUtil {
     private ProcessUtil() {

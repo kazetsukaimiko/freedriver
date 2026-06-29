@@ -1,11 +1,11 @@
 package io.freedriver.victron.jpa;
 
-import io.freedriver.victron.FirmwareVersion;
-
-import jakarta.persistence.AttributeConverter;
-import jakarta.persistence.Converter;
 import java.util.Optional;
 import java.util.logging.Logger;
+
+import io.freedriver.victron.FirmwareVersion;
+import jakarta.persistence.AttributeConverter;
+import jakarta.persistence.Converter;
 
 @Converter(autoApply = true)
 public class FirmwareVersionConverter implements AttributeConverter<FirmwareVersion, String> {

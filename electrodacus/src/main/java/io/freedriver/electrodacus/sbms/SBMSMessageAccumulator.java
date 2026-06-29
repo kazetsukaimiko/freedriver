@@ -1,9 +1,9 @@
 package io.freedriver.electrodacus.sbms;
 
-import io.freedriver.base.util.accumulator.ByteArrayAccumulator;
-
 import java.io.ByteArrayOutputStream;
 import java.nio.file.Path;
+
+import io.freedriver.base.util.accumulator.ByteArrayAccumulator;
 
 public class SBMSMessageAccumulator extends ByteArrayAccumulator<SBMSMessage> {
     private final Path path;

@@ -1,22 +1,17 @@
 package io.freedriver.victron.app;
 
+import java.io.IOException;
+import java.nio.file.Paths;
+import java.util.*;
+import java.util.stream.Stream;
+
 import io.freedriver.base.cli.ConsoleTable;
 import io.freedriver.serial.JSSCSerialResource;
 import io.freedriver.serial.api.SerialResource;
 import io.freedriver.serial.api.params.*;
 import io.freedriver.victron.VEDirectColumn;
-import io.freedriver.victron.VEDirectColumnStream;
 import io.freedriver.victron.VEDirectMessage;
 import io.freedriver.victron.VEDirectMessageStream;
-
-import java.io.IOException;
-import java.nio.file.Paths;
-import java.util.*;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 public class ShowDevices {
     public static void main(String[] args) throws IOException, InterruptedException {

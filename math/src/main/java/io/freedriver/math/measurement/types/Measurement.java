@@ -1,13 +1,13 @@
 package io.freedriver.math.measurement.types;
 
+import java.util.Objects;
+
 import io.freedriver.math.UnitPrefix;
 import io.freedriver.math.measurement.units.Unit;
 import io.freedriver.math.number.NumberDelegate;
 import io.freedriver.math.number.NumberOperations;
 import io.freedriver.math.number.Scaleable;
 import io.freedriver.math.number.ScaledNumber;
-
-import java.util.Objects;
 
 /**
  * Class to handle (Instantaneous) Measurements of Power and Current.

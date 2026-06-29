@@ -1,12 +1,12 @@
 package io.freedriver.daly.bms.stream;
 
+import java.io.ByteArrayOutputStream;
+import java.util.Arrays;
+
 import io.freedriver.base.util.accumulator.Accumulator;
 import io.freedriver.daly.bms.Address;
 import io.freedriver.daly.bms.QueryId;
 import io.freedriver.daly.bms.Response;
-
-import java.io.ByteArrayOutputStream;
-import java.util.Arrays;
 
 public class ResponseAccumlator implements Accumulator<ByteArrayOutputStream, Response> {
     /**

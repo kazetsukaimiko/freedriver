@@ -1,15 +1,15 @@
 package io.freedriver.math;
 
+import java.math.BigDecimal;
+import java.util.*;
+import java.util.stream.Stream;
+
 import io.freedriver.math.measurement.types.electrical.Current;
 import io.freedriver.math.measurement.types.electrical.Energy;
 import io.freedriver.math.measurement.types.electrical.Potential;
 import io.freedriver.math.measurement.types.electrical.Power;
 import io.freedriver.math.number.AutoScaling;
 import io.freedriver.math.number.ScaledNumber;
-
-import java.math.BigDecimal;
-import java.util.*;
-import java.util.stream.Stream;
 
 /**
  * Class to handle metric-style unit scaling.

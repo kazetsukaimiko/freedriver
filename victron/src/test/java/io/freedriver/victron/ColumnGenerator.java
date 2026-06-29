@@ -1,9 +1,5 @@
 package io.freedriver.victron;
 
-import io.freedriver.math.UnitPrefix;
-import io.freedriver.math.measurement.types.Measurement;
-import io.freedriver.victron.vedirect.OffReason;
-
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.Optional;
@@ -12,6 +8,10 @@ import java.util.UUID;
 import java.util.function.BiFunction;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
+
+import io.freedriver.math.UnitPrefix;
+import io.freedriver.math.measurement.types.Measurement;
+import io.freedriver.victron.vedirect.OffReason;
 
 public enum ColumnGenerator {
     PRODUCT_ID(VEDirectColumn.PRODUCT_ID, () -> randomMember(VictronProduct.values(), random()).getProductIdHex()),

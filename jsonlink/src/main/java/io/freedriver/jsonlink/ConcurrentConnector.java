@@ -1,10 +1,10 @@
 package io.freedriver.jsonlink;
 
-import io.freedriver.jsonlink.jackson.schema.v1.Request;
-import io.freedriver.jsonlink.jackson.schema.v1.Response;
-
 import java.time.Duration;
 import java.util.UUID;
+
+import io.freedriver.jsonlink.jackson.schema.v1.Request;
+import io.freedriver.jsonlink.jackson.schema.v1.Response;
 
 /**
  * Connector delegator that forces synchronization across all methods.

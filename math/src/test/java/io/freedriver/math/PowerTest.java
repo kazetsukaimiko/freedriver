@@ -1,12 +1,12 @@
 package io.freedriver.math;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import io.freedriver.math.measurement.types.electrical.Current;
 import io.freedriver.math.measurement.types.electrical.Potential;
 import io.freedriver.math.measurement.types.electrical.Power;
 import io.freedriver.math.number.ScaledNumber;
 import org.junit.jupiter.api.Test;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class PowerTest extends MeasurementTest<Power> {
 

@@ -1,11 +1,11 @@
 package io.freedriver.daly.bms;
 
-import io.freedriver.daly.bms.exception.UnknownCommandException;
-import io.freedriver.serial.stream.api.Streamable;
-
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.stream.Stream;
+
+import io.freedriver.daly.bms.exception.UnknownCommandException;
+import io.freedriver.serial.stream.api.Streamable;
 
 public enum QueryId implements Streamable {
     // TODO : Proper command lengths

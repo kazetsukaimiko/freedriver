@@ -1,13 +1,13 @@
 package io.freedriver.victron;
 
-import io.freedriver.math.number.ScaledNumber;
-import io.freedriver.victron.vedirect.OffReason;
+import static io.freedriver.math.UnitPrefix.*;
 
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Stream;
 
-import static io.freedriver.math.UnitPrefix.*;
+import io.freedriver.math.number.ScaledNumber;
+import io.freedriver.victron.vedirect.OffReason;
 
 /**
  * Known fields coming from VE.Direct serial output and how to parse them.

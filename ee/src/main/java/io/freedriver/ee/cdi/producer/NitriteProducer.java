@@ -1,15 +1,5 @@
 package io.freedriver.ee.cdi.producer;
 
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import io.freedriver.ee.cdi.qualifier.NitriteDatabase;
-import io.freedriver.ee.cdi.qualifier.NitriteDatabaseLiteral;
-import io.freedriver.ee.convention.AppData;
-import io.freedriver.ee.prop.DeploymentProperties;
-import org.dizitart.no2.Nitrite;
-
-import jakarta.enterprise.context.ApplicationScoped;
-import jakarta.enterprise.inject.Produces;
-import jakarta.enterprise.inject.spi.InjectionPoint;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -19,6 +9,16 @@ import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Supplier;
 import java.util.logging.Logger;
+
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import io.freedriver.ee.cdi.qualifier.NitriteDatabase;
+import io.freedriver.ee.cdi.qualifier.NitriteDatabaseLiteral;
+import io.freedriver.ee.convention.AppData;
+import io.freedriver.ee.prop.DeploymentProperties;
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.enterprise.inject.Produces;
+import jakarta.enterprise.inject.spi.InjectionPoint;
+import org.dizitart.no2.Nitrite;
 
 @ApplicationScoped
 public class NitriteProducer {

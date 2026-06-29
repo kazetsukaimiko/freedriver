@@ -1,10 +1,10 @@
 package io.freedriver.daly.bms;
 
-import io.freedriver.serial.stream.api.Streamable;
-
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Objects;
+
+import io.freedriver.serial.stream.api.Streamable;
 
 public enum DalyCommand implements Streamable {
     READ(0xA5),

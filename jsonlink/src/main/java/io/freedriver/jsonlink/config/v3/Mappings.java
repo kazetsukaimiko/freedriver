@@ -1,11 +1,5 @@
 package io.freedriver.jsonlink.config.v3;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import io.freedriver.base.util.file.DirectoryProviders;
-import io.freedriver.base.util.file.PathProvider;
-import io.freedriver.jsonlink.Connector;
-import io.freedriver.jsonlink.config.ConfigMapper;
-
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.LinkedHashMap;
@@ -14,6 +8,11 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.function.Function;
 import java.util.logging.Level;
+
+import com.fasterxml.jackson.core.type.TypeReference;
+import io.freedriver.base.util.file.DirectoryProviders;
+import io.freedriver.base.util.file.PathProvider;
+import io.freedriver.jsonlink.config.ConfigMapper;
 
 public class Mappings {
 

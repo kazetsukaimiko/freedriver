@@ -1,15 +1,15 @@
 package io.freedriver.math.jpa.converter.measurement;
 
-import io.freedriver.math.UnitPrefix;
-import io.freedriver.math.measurement.types.Measurement;
-import io.freedriver.math.measurement.units.SIElectricalUnit;
-
-import jakarta.persistence.AttributeConverter;
 import java.math.BigDecimal;
 import java.util.Optional;
 import java.util.function.BiFunction;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import io.freedriver.math.UnitPrefix;
+import io.freedriver.math.measurement.types.Measurement;
+import io.freedriver.math.measurement.units.SIElectricalUnit;
+import jakarta.persistence.AttributeConverter;
 
 public abstract class StringMeasurementConverter<M extends Measurement<M>> implements AttributeConverter<M, String> {
     protected static final String VALUE_GROUP = "value";

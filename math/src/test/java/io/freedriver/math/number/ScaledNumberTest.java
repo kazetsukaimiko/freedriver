@@ -1,13 +1,13 @@
 package io.freedriver.math.number;
 
-import io.freedriver.math.UnitPrefix;
-import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.stream.Stream;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import io.freedriver.math.UnitPrefix;
+import org.junit.jupiter.api.Test;
 
 public class ScaledNumberTest {
 

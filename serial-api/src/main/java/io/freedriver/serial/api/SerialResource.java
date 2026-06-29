@@ -1,8 +1,8 @@
 package io.freedriver.serial.api;
 
-import io.freedriver.serial.api.params.SerialParams;
-
 import java.nio.file.Path;
+
+import io.freedriver.serial.api.params.SerialParams;
 
 public interface SerialResource extends AutoCloseable {
 

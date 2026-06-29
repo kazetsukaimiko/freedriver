@@ -1,11 +1,11 @@
 package io.freedriver.jsonlink;
 
+import static java.time.temporal.ChronoUnit.MINUTES;
+import static java.time.temporal.ChronoUnit.SECONDS;
+
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Objects;
-
-import static java.time.temporal.ChronoUnit.MINUTES;
-import static java.time.temporal.ChronoUnit.SECONDS;
 
 public class FailedConnector {
     private static final Duration DEFAULT_DURATION = Duration.of(5, MINUTES);

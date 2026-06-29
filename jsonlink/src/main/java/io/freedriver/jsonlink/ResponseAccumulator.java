@@ -1,14 +1,14 @@
 package io.freedriver.jsonlink;
 
-import io.freedriver.base.util.accumulator.Accumulator;
-import io.freedriver.jsonlink.jackson.schema.v1.Response;
-
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+
+import io.freedriver.base.util.accumulator.Accumulator;
+import io.freedriver.jsonlink.jackson.schema.v1.Response;
 
 public class ResponseAccumulator implements Accumulator<ByteArrayOutputStream, Response> {
 

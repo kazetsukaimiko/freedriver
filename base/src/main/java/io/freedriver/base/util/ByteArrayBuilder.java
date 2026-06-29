@@ -1,6 +1,5 @@
 package io.freedriver.base.util;
 
-import java.nio.charset.Charset;
 import java.util.Arrays;
 
 /**

@@ -1,23 +1,20 @@
 package io.freedriver.electrodacus.sbms;
 
-import io.freedriver.serial.JSSCSerialResource;
-import io.freedriver.serial.api.SerialPortResourceSupplier;
-import io.freedriver.serial.api.SerialResource;
-import io.freedriver.serial.api.params.BaudRate;
-import io.freedriver.serial.api.params.BaudRates;
-import io.freedriver.serial.api.params.SerialParams;
-import io.freedriver.serial.stream.api.SerialEntityStream;
-
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
-import java.util.Optional;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import io.freedriver.serial.JSSCSerialResource;
+import io.freedriver.serial.api.params.BaudRate;
+import io.freedriver.serial.api.params.BaudRates;
+import io.freedriver.serial.api.params.SerialParams;
+import io.freedriver.serial.stream.api.SerialEntityStream;
 
 public class SBMS0Finder {
     private static final Logger LOGGER = Logger.getLogger(SBMS0Finder.class.getName());

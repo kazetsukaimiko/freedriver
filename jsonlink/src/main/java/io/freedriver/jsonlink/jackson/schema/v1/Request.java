@@ -1,14 +1,14 @@
 package io.freedriver.jsonlink.jackson.schema.v1;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import io.freedriver.jsonlink.Connector;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Stream;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import io.freedriver.jsonlink.Connector;
 
 public class Request {
     private UUID uuid;

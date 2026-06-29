@@ -1,6 +1,5 @@
 package io.freedriver.ee.config;
 
-import javax.sql.DataSource;
 import java.io.PrintWriter;
 import java.net.URI;
 import java.sql.Connection;
@@ -8,6 +7,7 @@ import java.sql.Driver;
 import java.sql.SQLException;
 import java.sql.SQLFeatureNotSupportedException;
 import java.util.logging.Logger;
+import javax.sql.DataSource;
 
 public class DataSourceConfigDataSource implements DataSource {
     private final Logger LOGGER = Logger.getLogger(DataSourceConfigDataSource.class.getName());

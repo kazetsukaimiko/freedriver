@@ -1,13 +1,12 @@
 package io.freedriver.jsonlink.config.v3;
 
-import io.freedriver.jsonlink.config.ConfigFile;
-import io.freedriver.jsonlink.jackson.schema.v1.Identifier;
-
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
+
+import io.freedriver.jsonlink.jackson.schema.v1.Identifier;
 
 public class Appliance {
     private UUID connectorId;

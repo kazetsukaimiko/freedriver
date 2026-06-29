@@ -1,9 +1,9 @@
 package io.freedriver.jsonlink.pin;
 
-import io.freedriver.jsonlink.jackson.schema.v1.Identifier;
-
 import java.util.Objects;
 import java.util.UUID;
+
+import io.freedriver.jsonlink.jackson.schema.v1.Identifier;
 
 /**
  * Represents a GPIO pin on a board with a known id.

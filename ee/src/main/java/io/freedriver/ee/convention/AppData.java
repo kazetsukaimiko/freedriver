@@ -1,9 +1,5 @@
 package io.freedriver.ee.convention;
 
-import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import io.freedriver.ee.config.DataSourceConfig;
-
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -14,6 +10,10 @@ import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
+
+import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import io.freedriver.ee.config.DataSourceConfig;
 
 public class AppData {
     private static final Logger LOGGER = Logger.getLogger(AppData.class.getName());

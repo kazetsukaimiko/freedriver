@@ -1,9 +1,5 @@
 package io.freedriver.base.util.accumulator;
 
-import io.freedriver.base.util.EntityStream;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.PipedInputStream;
@@ -14,6 +10,10 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.stream.Stream;
+
+import io.freedriver.base.util.EntityStream;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 
 public abstract class ByteArrayAccumulatorsTest<R, A extends Accumulator<ByteArrayOutputStream, R>> extends AccumulatorsTest<R, ByteArrayOutputStream, A> {
 

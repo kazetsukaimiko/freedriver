@@ -1,18 +1,17 @@
 package io.freedriver.daly.bms.stream;
 
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import java.io.IOException;
+
 import io.freedriver.daly.bms.DalyCommand;
 import io.freedriver.daly.bms.ExampleResponses;
 import io.freedriver.daly.bms.Flag;
 import io.freedriver.daly.bms.Response;
-import io.freedriver.serial.stream.api.SerialEntityStream;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
-
-import java.io.IOException;
-
-import static org.junit.jupiter.api.Assertions.assertArrayEquals;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class AccumulatorTest {
 

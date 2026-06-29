@@ -1,11 +1,11 @@
 package io.freedriver.base.util;
 
-import io.freedriver.base.util.accumulator.Accumulator;
-
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+
+import io.freedriver.base.util.accumulator.Accumulator;
 
 public class EntityStreamWithOutput<R> extends EntityStream<R> {
     private final OutputStream outputStream;

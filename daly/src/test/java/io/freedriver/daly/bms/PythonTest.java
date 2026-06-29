@@ -1,11 +1,5 @@
 package io.freedriver.daly.bms;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import io.freedriver.base.Tests;
-import io.freedriver.daly.bms.checksum.debug.CRC8Steps;
-import org.junit.jupiter.api.Tag;
-import org.junit.jupiter.api.Test;
-
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
@@ -13,6 +7,12 @@ import java.util.Arrays;
 import java.util.Objects;
 import java.util.Scanner;
 import java.util.stream.Collectors;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import io.freedriver.base.Tests;
+import io.freedriver.daly.bms.checksum.debug.CRC8Steps;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
 
 @Tag(Tests.Integration)
 public class PythonTest {
