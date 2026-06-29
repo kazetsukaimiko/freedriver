@@ -10,10 +10,10 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Predicate;
-import java.util.logging.Logger;
 import java.util.stream.Stream;
 
 import io.freedriver.serial.SerialRuntime;
+import lombok.extern.java.Log;
 import io.freedriver.serial.api.connection.SerialConnectionConfig;
 import io.freedriver.serial.api.connection.SerialConnectionHandle;
 import io.freedriver.serial.api.connection.SerialConnectionListener;
@@ -21,9 +21,8 @@ import io.freedriver.serial.api.connection.SerialConnectionManager;
 import io.freedriver.serial.api.connection.SerialDeviceIdentity;
 import io.freedriver.serial.api.params.SerialParams;
 
+@Log
 public final class DefaultSerialConnectionManager implements SerialConnectionManager {
-    private static final Logger LOGGER = Logger.getLogger(DefaultSerialConnectionManager.class.getName());
-
     private final SerialConnectionConfig config;
     private final Map<SerialDeviceIdentity, ManagedSerialConnection> connections = new ConcurrentHashMap<>();
     private final List<SerialConnectionListener> stateListeners = new CopyOnWriteArrayList<>();
@@ -60,7 +59,7 @@ public final class DefaultSerialConnectionManager implements SerialConnectionMan
                 0,
                 config.monitorInterval().toMillis(),
                 TimeUnit.MILLISECONDS);
-        LOGGER.info("Serial connection monitor started");
+        log.info("Serial connection monitor started");
     }
 
     @Override
@@ -127,6 +126,6 @@ public final class DefaultSerialConnectionManager implements SerialConnectionMan
             Thread.currentThread().interrupt();
             monitorExecutor.shutdownNow();
         }
-        LOGGER.info("Serial connection manager closed");
+        log.info("Serial connection manager closed");
     }
 }

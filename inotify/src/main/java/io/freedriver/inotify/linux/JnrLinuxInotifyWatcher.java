@@ -12,15 +12,15 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import io.freedriver.inotify.InotifyEvent;
+import lombok.extern.java.Log;
 import io.freedriver.inotify.InotifyListener;
 import io.freedriver.inotify.InotifyWatch;
 import io.freedriver.inotify.InotifyWatcher;
 
+@Log
 public final class JnrLinuxInotifyWatcher implements InotifyWatcher {
-    private static final Logger LOGGER = Logger.getLogger(JnrLinuxInotifyWatcher.class.getName());
     private static final int BUFFER_SIZE = 16 * 1024;
 
     private final LinuxCLib libc = LinuxCLib.INSTANCE;
@@ -40,7 +40,7 @@ public final class JnrLinuxInotifyWatcher implements InotifyWatcher {
                 available = true;
             }
         } catch (UnsatisfiedLinkError | Exception e) {
-            LOGGER.log(Level.FINE, "inotify unavailable on this platform", e);
+            log.log(Level.FINE, "inotify unavailable on this platform", e);
         }
         supported = available;
     }
@@ -113,7 +113,7 @@ public final class JnrLinuxInotifyWatcher implements InotifyWatcher {
             return thread;
         });
         executor.submit(this::eventLoop);
-        LOGGER.info("Linux inotify watcher started");
+        log.info("Linux inotify watcher started");
     }
 
     private void ensureStarted() {
@@ -158,7 +158,7 @@ public final class JnrLinuxInotifyWatcher implements InotifyWatcher {
                 dispatch(buffer, (int) bytesRead);
             } catch (Exception e) {
                 if (running.get()) {
-                    LOGGER.log(Level.WARNING, "inotify read loop error", e);
+                    log.log(Level.WARNING, "inotify read loop error", e);
                     sleepBriefly();
                 }
             }
@@ -182,7 +182,7 @@ public final class JnrLinuxInotifyWatcher implements InotifyWatcher {
                 try {
                     listener.onEvent(event);
                 } catch (Exception e) {
-                    LOGGER.log(Level.WARNING, "Inotify listener failed for " + event, e);
+                    log.log(Level.WARNING, "Inotify listener failed for " + event, e);
                 }
             }
         }

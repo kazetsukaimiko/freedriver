@@ -2,9 +2,8 @@ package io.freedriver.inotify.cdi;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.logging.Logger;
-
 import io.freedriver.inotify.InotifyMask;
+import lombok.extern.java.Log;
 import io.freedriver.inotify.InotifyWatch;
 import io.freedriver.inotify.InotifyWatcher;
 import jakarta.annotation.PostConstruct;
@@ -12,9 +11,9 @@ import jakarta.annotation.PreDestroy;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 
+@Log
 @ApplicationScoped
 public class InotifyLifecycle {
-    private static final Logger LOGGER = Logger.getLogger(InotifyLifecycle.class.getName());
     private static final Path SERIAL_BY_ID = Paths.get("/dev/serial/by-id");
 
     @Inject
@@ -28,12 +27,12 @@ public class InotifyLifecycle {
     @PostConstruct
     void start() {
         if (!watcher.isSupported()) {
-            LOGGER.warning("inotify is not supported; filesystem hotplug events disabled");
+            log.warning("inotify is not supported; filesystem hotplug events disabled");
             return;
         }
         watcher.start();
         serialWatch = watcher.watch(SERIAL_BY_ID, InotifyMask.SERIAL_HOTPLUG, cdiBridge);
-        LOGGER.info("Watching serial hotplug path: " + SERIAL_BY_ID);
+        log.info("Watching serial hotplug path: " + SERIAL_BY_ID);
     }
 
     @PreDestroy

@@ -8,27 +8,21 @@ import java.util.Optional;
  * Stable identity for a USB serial device, keyed on its {@code /dev/serial/by-id/} symlink.
  * The underlying {@code /dev/ttyACM*} path may change across reconnects; this identity does not.
  */
-public final class SerialDeviceIdentity {
-    private final Path byIdPath;
-    private final String linkName;
-    private final Optional<String> bus;
-    private final Optional<String> vendor;
-    private final Optional<String> product;
-    private final Optional<String> serial;
+public record SerialDeviceIdentity(
+        Path byIdPath,
+        String linkName,
+        Optional<String> bus,
+        Optional<String> vendor,
+        Optional<String> product,
+        Optional<String> serial) {
 
-    public SerialDeviceIdentity(
-            Path byIdPath,
-            String linkName,
-            Optional<String> bus,
-            Optional<String> vendor,
-            Optional<String> product,
-            Optional<String> serial) {
-        this.byIdPath = Objects.requireNonNull(byIdPath, "byIdPath");
-        this.linkName = Objects.requireNonNull(linkName, "linkName");
-        this.bus = Objects.requireNonNull(bus, "bus");
-        this.vendor = Objects.requireNonNull(vendor, "vendor");
-        this.product = Objects.requireNonNull(product, "product");
-        this.serial = Objects.requireNonNull(serial, "serial");
+    public SerialDeviceIdentity {
+        Objects.requireNonNull(byIdPath, "byIdPath");
+        Objects.requireNonNull(linkName, "linkName");
+        Objects.requireNonNull(bus, "bus");
+        Objects.requireNonNull(vendor, "vendor");
+        Objects.requireNonNull(product, "product");
+        Objects.requireNonNull(serial, "serial");
     }
 
     public static SerialDeviceIdentity of(Path byIdPath) {
@@ -90,30 +84,6 @@ public final class SerialDeviceIdentity {
         return value == null || value.isBlank() ? Optional.empty() : Optional.of(value);
     }
 
-    public Path byIdPath() {
-        return byIdPath;
-    }
-
-    public String linkName() {
-        return linkName;
-    }
-
-    public Optional<String> bus() {
-        return bus;
-    }
-
-    public Optional<String> vendor() {
-        return vendor;
-    }
-
-    public Optional<String> product() {
-        return product;
-    }
-
-    public Optional<String> serial() {
-        return serial;
-    }
-
     public boolean matchesLinkNamePrefix(String prefix) {
         return linkName.startsWith(prefix);
     }
@@ -124,14 +94,7 @@ public final class SerialDeviceIdentity {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) {
-            return true;
-        }
-        if (o == null || getClass() != o.getClass()) {
-            return false;
-        }
-        SerialDeviceIdentity that = (SerialDeviceIdentity) o;
-        return Objects.equals(byIdPath, that.byIdPath);
+        return o instanceof SerialDeviceIdentity that && Objects.equals(byIdPath, that.byIdPath);
     }
 
     @Override
