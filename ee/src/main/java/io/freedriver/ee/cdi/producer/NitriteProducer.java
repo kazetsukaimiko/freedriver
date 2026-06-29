@@ -7,9 +7,9 @@ import io.freedriver.ee.convention.AppData;
 import io.freedriver.ee.prop.DeploymentProperties;
 import org.dizitart.no2.Nitrite;
 
-import javax.enterprise.context.ApplicationScoped;
-import javax.enterprise.inject.Produces;
-import javax.enterprise.inject.spi.InjectionPoint;
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.enterprise.inject.Produces;
+import jakarta.enterprise.inject.spi.InjectionPoint;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;

@@ -1,6 +1,6 @@
 package io.freedriver.ee.cdi.qualifier;
 
-import javax.enterprise.util.AnnotationLiteral;
+import jakarta.enterprise.util.AnnotationLiteral;
 
 public class NitriteDatabaseLiteral extends AnnotationLiteral<NitriteDatabase> implements NitriteDatabase {
     private final String deployment;

@@ -15,17 +15,17 @@ import java.util.Map;
 import java.util.Properties;
 
 public class DataSourceConfig {
-    @JsonProperty("javax.persistence.jdbc.jndi")
+    @JsonProperty("jakarta.persistence.jdbc.jndi")
     private String jndi;
-    @JsonProperty("javax.persistence.jdbc.url")
+    @JsonProperty("jakarta.persistence.jdbc.url")
     private String urlString;
-    @JsonProperty("javax.persistence.jdbc.username")
+    @JsonProperty("jakarta.persistence.jdbc.username")
     private String username;
-    @JsonProperty("javax.persistence.jdbc.password")
+    @JsonProperty("jakarta.persistence.jdbc.password")
     private String password;
-    @JsonProperty("javax.persistence.jdbc.driver")
+    @JsonProperty("jakarta.persistence.jdbc.driver")
     private String driverClassName;
-    @JsonProperty("javax.persistence.jdbc.properties")
+    @JsonProperty("jakarta.persistence.jdbc.properties")
     private Map<String, String> driverProperties;
 
 
