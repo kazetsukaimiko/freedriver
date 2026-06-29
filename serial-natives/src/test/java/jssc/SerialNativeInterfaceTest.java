@@ -1,13 +1,9 @@
 package jssc;
 
 import io.freedriver.base.util.ClasspathUtil;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.not;
-import static org.hamcrest.CoreMatchers.nullValue;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class SerialNativeInterfaceTest {
 
@@ -22,7 +18,7 @@ public class SerialNativeInterfaceTest {
         long handle = -1;
         try {
             handle = serial.openPort("ttyS0",false);
-            assertThat(handle, is(not(-1L)));
+            assertNotEquals(-1L, handle);
         } finally {
             if (handle != -1) {
                 serial.closePort(handle);
@@ -34,8 +30,8 @@ public class SerialNativeInterfaceTest {
     public void testPrintVersion() {
         try {
             final String nativeLibraryVersion = SerialNativeInterface.getNativeLibraryVersion();
-            assertThat(nativeLibraryVersion, is(not(nullValue())));
-            assertThat(nativeLibraryVersion, is(not("")));
+            assertNotNull(nativeLibraryVersion);
+            assertNotEquals("", nativeLibraryVersion);
         } catch (UnsatisfiedLinkError linkError) {
 
             ClasspathUtil.getResources(".*\\.so", ".*\\.h")
