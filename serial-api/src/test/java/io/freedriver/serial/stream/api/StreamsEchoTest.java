@@ -1,15 +1,15 @@
 package io.freedriver.serial.stream.api;
 
-import io.freedriver.serial.api.SerialApiTest;
-import io.freedriver.serial.api.SerialResource;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import io.freedriver.serial.api.SerialApiTest;
+import io.freedriver.serial.api.SerialResource;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 public abstract class StreamsEchoTest<SR extends SerialResource> extends SerialApiTest<SR> {
     SerialInputStream inputStream;

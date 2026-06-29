@@ -1,9 +1,5 @@
 package io.freedriver.ee.config;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonProperty;
-
-import javax.sql.DataSource;
 import java.lang.reflect.InvocationTargetException;
 import java.net.MalformedURLException;
 import java.net.URI;
@@ -13,6 +9,10 @@ import java.sql.Driver;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Properties;
+import javax.sql.DataSource;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class DataSourceConfig {
     @JsonProperty("jakarta.persistence.jdbc.jndi")

@@ -1,14 +1,14 @@
 package io.freedriver.victron;
 
-import io.freedriver.serial.api.SerialResource;
-import io.freedriver.serial.stream.api.SerialEntityStream;
-import io.freedriver.base.util.accumulator.NewlineAccumulator;
-
 import java.util.Iterator;
 import java.util.Optional;
 import java.util.logging.Logger;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
+
+import io.freedriver.base.util.accumulator.NewlineAccumulator;
+import io.freedriver.serial.api.SerialResource;
+import io.freedriver.serial.stream.api.SerialEntityStream;
 
 /**
  * Represents a VE.Direct Device. A VE.Direct device is NOT the connected device, eg. an MPPT Charge controller.

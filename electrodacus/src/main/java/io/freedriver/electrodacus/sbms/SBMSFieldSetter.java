@@ -1,18 +1,18 @@
 package io.freedriver.electrodacus.sbms;
 
-import io.freedriver.math.UnitPrefix;
-import io.freedriver.math.measurement.types.electrical.Current;
-import io.freedriver.math.measurement.types.electrical.Potential;
-import io.freedriver.math.measurement.types.thermo.Temperature;
-import io.freedriver.math.measurement.units.TemperatureScale;
-import io.freedriver.math.number.ScaledNumber;
-
 import java.time.Instant;
 import java.util.Objects;
 import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
 import java.util.stream.Stream;
+
+import io.freedriver.math.UnitPrefix;
+import io.freedriver.math.measurement.types.electrical.Current;
+import io.freedriver.math.measurement.types.electrical.Potential;
+import io.freedriver.math.measurement.types.thermo.Temperature;
+import io.freedriver.math.measurement.units.TemperatureScale;
+import io.freedriver.math.number.ScaledNumber;
 
 /**
  * The job of this class is to hydrate SBMSMessage objects with the data from the SBMS0.

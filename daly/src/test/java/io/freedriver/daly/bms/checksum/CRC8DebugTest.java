@@ -1,19 +1,17 @@
 package io.freedriver.daly.bms.checksum;
 
-import io.freedriver.base.Tests;
-import io.freedriver.daly.bms.ExampleResponses;
-import io.freedriver.daly.bms.PythonTest;
-import io.freedriver.daly.bms.checksum.CRC8;
-import io.freedriver.daly.bms.checksum.CRCSum;
-import io.freedriver.daly.bms.checksum.debug.CRC8Steps;
-import org.junit.jupiter.api.Disabled;
-import org.junit.jupiter.api.Tag;
-import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.util.Arrays;
 import java.util.Random;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import io.freedriver.base.Tests;
+import io.freedriver.daly.bms.ExampleResponses;
+import io.freedriver.daly.bms.PythonTest;
+import io.freedriver.daly.bms.checksum.debug.CRC8Steps;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
 
 @Disabled // TODO : Fix / resolve.
 public class CRC8DebugTest {

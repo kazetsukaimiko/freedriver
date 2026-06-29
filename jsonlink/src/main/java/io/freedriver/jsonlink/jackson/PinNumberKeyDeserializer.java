@@ -1,10 +1,10 @@
 package io.freedriver.jsonlink.jackson;
 
+import java.io.IOException;
+
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.KeyDeserializer;
 import io.freedriver.jsonlink.jackson.schema.v1.Identifier;
-
-import java.io.IOException;
 
 public class PinNumberKeyDeserializer extends KeyDeserializer {
     @Override

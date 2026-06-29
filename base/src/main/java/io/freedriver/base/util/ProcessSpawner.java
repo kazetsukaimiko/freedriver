@@ -1,10 +1,10 @@
 package io.freedriver.base.util;
 
+import static java.util.logging.Level.FINE;
+
 import java.io.IOException;
 import java.util.concurrent.Callable;
 import java.util.logging.Logger;
-
-import static java.util.logging.Level.FINE;
 
 public abstract class ProcessSpawner implements AutoCloseable {
     private static final Logger LOGGER = Logger.getLogger(ProcessSpawner.class.getName());

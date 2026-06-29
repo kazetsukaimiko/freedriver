@@ -1,8 +1,8 @@
 package io.freedriver.daly.bms;
 
-import org.junit.jupiter.api.Test;
-
 import java.util.stream.Stream;
+
+import org.junit.jupiter.api.Test;
 
 public class RequestTest {
     @Test

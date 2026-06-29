@@ -1,6 +1,5 @@
 package io.freedriver.base.util.file;
 
-import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
@@ -9,6 +8,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Optional;
 import java.util.function.Supplier;
+import javax.imageio.ImageIO;
 
 public interface ImageStream extends Supplier<InputStream> {
     static BufferedImage toBufferedImage(Image img) {

@@ -1,5 +1,13 @@
 package io.freedriver.generty.kibana;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.time.Instant;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.freedriver.generty.model.FansSection;
 import io.freedriver.generty.model.InputsSection;
@@ -8,14 +16,6 @@ import io.freedriver.generty.model.SetupSection;
 import io.freedriver.generty.model.StatsSection;
 import io.freedriver.generty.model.Statsjson;
 import io.freedriver.generty.model.TempsSection;
-
-import java.math.BigDecimal;
-import java.math.RoundingMode;
-import java.time.Instant;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * A Flattened version of stats.json to make it easier for kibana to visualize.

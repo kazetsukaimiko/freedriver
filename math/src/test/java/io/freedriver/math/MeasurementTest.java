@@ -1,12 +1,12 @@
 package io.freedriver.math;
 
-import io.freedriver.math.measurement.types.Measurement;
-import io.freedriver.math.number.ScaledNumber;
-import org.junit.jupiter.api.Test;
-
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.stream.Stream;
+
+import io.freedriver.math.measurement.types.Measurement;
+import io.freedriver.math.number.ScaledNumber;
+import org.junit.jupiter.api.Test;
 
 public abstract class MeasurementTest<M extends Measurement<M>> extends RandomizedTest {
     public static final BigDecimal GO_ONE_LOWER = new BigDecimal("0.1");

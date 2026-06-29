@@ -1,11 +1,6 @@
 package io.freedriver.jsonlink;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import io.freedriver.jsonlink.jackson.schema.v1.Request;
-import io.freedriver.jsonlink.jackson.schema.v1.Response;
-import io.freedriver.serial.api.SerialResource;
-import io.freedriver.serial.api.exception.SerialResourceException;
-import io.freedriver.serial.stream.api.SerialEntityStream;
+import static java.time.temporal.ChronoUnit.MINUTES;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -23,7 +18,12 @@ import java.util.concurrent.TimeoutException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import static java.time.temporal.ChronoUnit.MINUTES;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import io.freedriver.jsonlink.jackson.schema.v1.Request;
+import io.freedriver.jsonlink.jackson.schema.v1.Response;
+import io.freedriver.serial.api.SerialResource;
+import io.freedriver.serial.api.exception.SerialResourceException;
+import io.freedriver.serial.stream.api.SerialEntityStream;
 
 public class SerialConnector implements Connector, AutoCloseable {
     private static final Logger LOGGER = Logger.getLogger(SerialConnector.class.getName());

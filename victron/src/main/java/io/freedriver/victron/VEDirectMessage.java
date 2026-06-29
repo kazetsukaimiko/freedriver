@@ -1,15 +1,13 @@
 package io.freedriver.victron;
 
+import java.time.Instant;
+import java.util.Objects;
+
 import io.freedriver.math.measurement.types.electrical.Current;
 import io.freedriver.math.measurement.types.electrical.Energy;
 import io.freedriver.math.measurement.types.electrical.Potential;
 import io.freedriver.math.measurement.types.electrical.Power;
 import io.freedriver.victron.vedirect.OffReason;
-
-import java.time.Instant;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.function.Function;
 
 public class VEDirectMessage {
     private Instant timestamp = Instant.now();

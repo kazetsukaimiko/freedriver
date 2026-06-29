@@ -1,7 +1,5 @@
 package io.freedriver.math;
 
-import io.freedriver.math.number.Scaled;
-
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.Duration;
@@ -10,6 +8,8 @@ import java.util.Comparator;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Stream;
+
+import io.freedriver.math.number.Scaled;
 
 public enum TemporalUnit implements Scaled<TemporalUnit, Duration> {
     NANOS("Ns", "Nanoseconds", ChronoUnit.NANOS),

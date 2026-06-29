@@ -1,8 +1,5 @@
 package io.freedriver.jsonlink.jackson.schema.v1;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import io.freedriver.jsonlink.jackson.schema.base.BaseResponse;
-
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -10,6 +7,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.function.Consumer;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import io.freedriver.jsonlink.jackson.schema.base.BaseResponse;
 
 public class Response extends BaseResponse {
     private UUID uuid;

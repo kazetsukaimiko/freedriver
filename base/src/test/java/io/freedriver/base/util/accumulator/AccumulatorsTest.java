@@ -1,11 +1,11 @@
 package io.freedriver.base.util.accumulator;
 
-import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.io.IOException;
 import java.time.Duration;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import org.junit.jupiter.api.Test;
 
 public abstract class AccumulatorsTest<R, I, A extends Accumulator<I, R>> {
     private static final Duration DEFAULT_DURATION = Duration.ofMillis(20);

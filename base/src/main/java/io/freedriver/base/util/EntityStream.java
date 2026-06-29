@@ -1,7 +1,5 @@
 package io.freedriver.base.util;
 
-import io.freedriver.base.util.accumulator.Accumulator;
-
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -10,6 +8,8 @@ import java.util.Spliterator;
 import java.util.Spliterators;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
+
+import io.freedriver.base.util.accumulator.Accumulator;
 
 public class EntityStream<R> implements Iterator<R>, AutoCloseable {
     private final InputStream inputStream;

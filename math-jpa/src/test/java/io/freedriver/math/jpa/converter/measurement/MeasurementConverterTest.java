@@ -1,14 +1,14 @@
 package io.freedriver.math.jpa.converter.measurement;
 
-import io.freedriver.math.UnitPrefix;
-import io.freedriver.math.measurement.types.Measurement;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.math.BigDecimal;
 import java.util.stream.Stream;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import io.freedriver.math.UnitPrefix;
+import io.freedriver.math.measurement.types.Measurement;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 public abstract class MeasurementConverterTest<M extends Measurement<M>, MC extends MeasurementConverter<M>> {
 

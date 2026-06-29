@@ -1,13 +1,13 @@
 package io.freedriver.victron;
 
-import io.freedriver.victron.vedirect.OffReason;
-import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import java.util.logging.Logger;
 import java.util.stream.Stream;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import io.freedriver.victron.vedirect.OffReason;
+import org.junit.jupiter.api.Test;
 
 public class EnumsTest {
 

@@ -1,14 +1,14 @@
 package io.freedriver.electrodacus.sbms;
 
-import io.freedriver.math.measurement.types.electrical.Current;
-import io.freedriver.math.measurement.types.electrical.Potential;
-import io.freedriver.math.measurement.types.thermo.Temperature;
-
 import java.nio.file.Path;
 import java.time.Instant;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+
+import io.freedriver.math.measurement.types.electrical.Current;
+import io.freedriver.math.measurement.types.electrical.Potential;
+import io.freedriver.math.measurement.types.thermo.Temperature;
 
 public class SBMSMessage {
     private Path path;

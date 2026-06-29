@@ -1,20 +1,5 @@
 package io.freedriver.generty.kibana;
 
-import co.elastic.clients.elasticsearch.ElasticsearchClient;
-import co.elastic.clients.elasticsearch.core.IndexRequest;
-import co.elastic.clients.json.jackson.JacksonJsonpMapper;
-import co.elastic.clients.transport.ElasticsearchTransport;
-import co.elastic.clients.transport.rest_client.RestClientTransport;
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import io.freedriver.discovery.DiscoveredService;
-import io.freedriver.generty.InverterFinder;
-import io.freedriver.generty.model.Statsjson;
-import org.apache.http.HttpHost;
-import org.elasticsearch.client.RestClient;
-
 import java.awt.*;
 import java.io.IOException;
 import java.io.InputStream;
@@ -32,6 +17,21 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import co.elastic.clients.elasticsearch.ElasticsearchClient;
+import co.elastic.clients.elasticsearch.core.IndexRequest;
+import co.elastic.clients.json.jackson.JacksonJsonpMapper;
+import co.elastic.clients.transport.ElasticsearchTransport;
+import co.elastic.clients.transport.rest_client.RestClientTransport;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import io.freedriver.discovery.DiscoveredService;
+import io.freedriver.generty.InverterFinder;
+import io.freedriver.generty.model.Statsjson;
+import org.apache.http.HttpHost;
+import org.elasticsearch.client.RestClient;
 
 
 public class InverterBridge {

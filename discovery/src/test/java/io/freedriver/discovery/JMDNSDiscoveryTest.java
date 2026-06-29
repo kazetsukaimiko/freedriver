@@ -1,9 +1,9 @@
 package io.freedriver.discovery;
 
+import java.net.Inet4Address;
+
 import io.freedriver.discovery.jmdns.JMDNSDiscovery;
 import org.junit.jupiter.api.Test;
-
-import java.net.Inet4Address;
 
 public class JMDNSDiscoveryTest {
     @Test

@@ -1,10 +1,10 @@
 package io.freedriver.serial.stream.api;
 
-import io.freedriver.base.util.ByteConverter;
-import io.freedriver.serial.api.SerialResource;
-
 import java.io.IOException;
 import java.io.OutputStream;
+
+import io.freedriver.base.util.ByteConverter;
+import io.freedriver.serial.api.SerialResource;
 
 public class SerialOutputStream extends OutputStream {
     private final SerialResource resource;

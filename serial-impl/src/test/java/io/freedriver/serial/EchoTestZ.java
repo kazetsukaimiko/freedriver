@@ -1,14 +1,11 @@
 package io.freedriver.serial;
 
-import io.freedriver.serial.api.SerialResource;
-import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Random;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import io.freedriver.serial.api.SerialResource;
+import org.junit.jupiter.api.Test;
 
 // TODO : Move up to api project
 

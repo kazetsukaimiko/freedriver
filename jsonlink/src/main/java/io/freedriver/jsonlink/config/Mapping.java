@@ -1,14 +1,14 @@
 package io.freedriver.jsonlink.config;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import io.freedriver.jsonlink.jackson.schema.v1.Identifier;
-
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import io.freedriver.jsonlink.jackson.schema.v1.Identifier;
 
 public class Mapping {
     private UUID connectorId;

@@ -1,13 +1,13 @@
 package io.freedriver.math.jpa.converter.measurement;
 
-import io.freedriver.math.TemporalUnit;
-import io.freedriver.math.UnitPrefix;
-import io.freedriver.math.measurement.types.TemporalMeasurement;
-
 import java.math.BigDecimal;
 import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import io.freedriver.math.TemporalUnit;
+import io.freedriver.math.UnitPrefix;
+import io.freedriver.math.measurement.types.TemporalMeasurement;
 
 public abstract class StringTemporalMeasurementConverter<TM extends TemporalMeasurement<TM>> extends StringMeasurementConverter<TM> {
     protected static final String TEMPORAL_GROUP = "temporal";

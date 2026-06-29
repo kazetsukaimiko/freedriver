@@ -1,11 +1,11 @@
 package io.freedriver.jsonlink.config.v2;
 
-import io.freedriver.jsonlink.config.ConfigFile;
-
 import java.time.temporal.ChronoUnit;
 import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
+
+import io.freedriver.jsonlink.config.ConfigFile;
 
 @Deprecated
 public class Mappings extends ConfigFile {

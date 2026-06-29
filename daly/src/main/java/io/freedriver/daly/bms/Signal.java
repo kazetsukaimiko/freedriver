@@ -1,10 +1,10 @@
 package io.freedriver.daly.bms;
 
-import io.freedriver.daly.bms.checksum.CRC8;
-
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Stream;
+
+import io.freedriver.daly.bms.checksum.CRC8;
 
 public abstract class Signal {
     private Address address;

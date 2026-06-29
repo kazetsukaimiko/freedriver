@@ -1,16 +1,16 @@
 package io.freedriver.victron;
 
+import java.math.BigDecimal;
+import java.util.Optional;
+import java.util.function.BiConsumer;
+import java.util.function.Function;
+
 import io.freedriver.math.measurement.types.Measurement;
 import io.freedriver.math.measurement.types.electrical.Current;
 import io.freedriver.math.measurement.types.electrical.Energy;
 import io.freedriver.math.measurement.types.electrical.Potential;
 import io.freedriver.math.measurement.types.electrical.Power;
 import io.freedriver.math.number.ScaledNumber;
-
-import java.math.BigDecimal;
-import java.util.Optional;
-import java.util.function.BiConsumer;
-import java.util.function.Function;
 
 /**
  * Interface to assist in mapping VE.Direct lines to VEDirectColumnValues.

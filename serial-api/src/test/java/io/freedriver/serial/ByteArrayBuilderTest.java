@@ -1,10 +1,10 @@
 package io.freedriver.serial;
 
-import io.freedriver.base.util.ByteArrayBuilder;
-import org.junit.jupiter.api.Test;
-
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+
+import io.freedriver.base.util.ByteArrayBuilder;
+import org.junit.jupiter.api.Test;
 
 public class ByteArrayBuilderTest {
 

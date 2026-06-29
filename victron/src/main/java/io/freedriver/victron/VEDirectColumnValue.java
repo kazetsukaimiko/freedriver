@@ -2,7 +2,6 @@ package io.freedriver.victron;
 
 import java.util.Objects;
 import java.util.Optional;
-import java.util.function.Function;
 
 public class VEDirectColumnValue {
     private final VEDirectColumn column;

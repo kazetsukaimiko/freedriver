@@ -1,12 +1,5 @@
 package io.freedriver.jsonlink.config.v2;
 
-import io.freedriver.jsonlink.config.Migration;
-import io.freedriver.jsonlink.config.v3.ApplianceDescriptor;
-import io.freedriver.jsonlink.config.v3.Mappings;
-import io.freedriver.jsonlink.config.v3.EventDescriptor;
-import io.freedriver.jsonlink.config.v3.JoystickButtonEvent;
-import io.freedriver.jsonlink.config.v3.ToggleAction;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -16,6 +9,13 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
+
+import io.freedriver.jsonlink.config.Migration;
+import io.freedriver.jsonlink.config.v3.ApplianceDescriptor;
+import io.freedriver.jsonlink.config.v3.EventDescriptor;
+import io.freedriver.jsonlink.config.v3.JoystickButtonEvent;
+import io.freedriver.jsonlink.config.v3.Mappings;
+import io.freedriver.jsonlink.config.v3.ToggleAction;
 
 @Deprecated
 public class Mapping implements Migration<Mappings> {

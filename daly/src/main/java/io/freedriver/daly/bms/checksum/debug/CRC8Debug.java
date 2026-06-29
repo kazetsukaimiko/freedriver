@@ -1,6 +1,5 @@
 package io.freedriver.daly.bms.checksum.debug;
 
-import java.util.zip.Checksum;
 
 /**
  * Calculate CRC-8 checksum

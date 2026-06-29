@@ -1,11 +1,11 @@
 package io.freedriver.daly.bms;
 
-import io.freedriver.serial.stream.api.Streamable;
-
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Objects;
 import java.util.stream.Stream;
+
+import io.freedriver.serial.stream.api.Streamable;
 
 public enum Address implements Streamable {
     BMS_MASTER(0x01),

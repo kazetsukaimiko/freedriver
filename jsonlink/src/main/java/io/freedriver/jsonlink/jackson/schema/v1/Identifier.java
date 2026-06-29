@@ -1,11 +1,11 @@
 package io.freedriver.jsonlink.jackson.schema.v1;
 
+import java.util.Objects;
+
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import io.freedriver.jsonlink.jackson.PinNumberKeyDeserializer;
 import io.freedriver.jsonlink.jackson.PinNumberSerializer;
-
-import java.util.Objects;
 
 @JsonSerialize(using = PinNumberSerializer.class)
 @JsonDeserialize(keyUsing = PinNumberKeyDeserializer.class)

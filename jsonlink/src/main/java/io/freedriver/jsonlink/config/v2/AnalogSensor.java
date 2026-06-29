@@ -1,10 +1,10 @@
 package io.freedriver.jsonlink.config.v2;
 
+import java.util.Objects;
+
 import io.freedriver.jsonlink.jackson.schema.v1.AnalogRead;
 import io.freedriver.jsonlink.jackson.schema.v1.Identifier;
 import io.freedriver.jsonlink.jackson.schema.v1.Request;
-
-import java.util.Objects;
 
 public class AnalogSensor {
     private String name;

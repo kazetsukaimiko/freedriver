@@ -1,9 +1,5 @@
 package io.freedriver.jsonlink;
 
-import io.freedriver.serial.JSSCSerialResource;
-import io.freedriver.serial.api.SerialResource;
-import io.freedriver.serial.api.params.SerialParams;
-
 import java.nio.file.Path;
 import java.util.Collections;
 import java.util.HashSet;
@@ -20,6 +16,10 @@ import java.util.function.Function;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import io.freedriver.serial.JSSCSerialResource;
+import io.freedriver.serial.api.SerialResource;
+import io.freedriver.serial.api.params.SerialParams;
 
 public final class Connectors {
     private static final Logger LOGGER = Logger.getLogger(Connectors.class.getName());

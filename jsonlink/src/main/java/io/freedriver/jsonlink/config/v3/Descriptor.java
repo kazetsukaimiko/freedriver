@@ -1,8 +1,8 @@
 package io.freedriver.jsonlink.config.v3;
 
-import com.fasterxml.jackson.annotation.JsonValue;
-
 import java.util.Objects;
+
+import com.fasterxml.jackson.annotation.JsonValue;
 
 public abstract class Descriptor {
     private final String value;

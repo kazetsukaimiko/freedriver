@@ -1,10 +1,10 @@
 package io.freedriver.discovery.jmdns;
 
+import javax.jmdns.ServiceInfo;
+
 import io.freedriver.discovery.ApplicationProtocol;
 import io.freedriver.discovery.Scope;
 import io.freedriver.discovery.TransportProtocol;
-
-import javax.jmdns.ServiceInfo;
 
 public class ServiceDescriptor implements JMDNSAspect<ServiceInfo> {
     private TransportProtocol transportProtocol;

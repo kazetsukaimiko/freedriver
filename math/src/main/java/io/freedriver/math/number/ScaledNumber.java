@@ -1,12 +1,12 @@
 package io.freedriver.math.number;
 
-import io.freedriver.math.UnitPrefix;
-
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.Comparator;
 import java.util.Objects;
 import java.util.function.BiFunction;
+
+import io.freedriver.math.UnitPrefix;
 
 
 public class ScaledNumber extends Number implements NumberOperations<ScaledNumber>, Scaleable<ScaledNumber> {

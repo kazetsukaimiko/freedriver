@@ -1,12 +1,12 @@
 package io.freedriver.serial.api;
 
-import io.freedriver.base.util.ByteConverter;
-import org.junit.jupiter.api.RepeatedTest;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.util.Random;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import io.freedriver.base.util.ByteConverter;
+import org.junit.jupiter.api.RepeatedTest;
 
 public class ByteConverterTest {
     private static final int REPETITIONS = 100;

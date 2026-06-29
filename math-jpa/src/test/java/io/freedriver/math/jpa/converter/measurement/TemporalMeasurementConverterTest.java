@@ -1,13 +1,13 @@
 package io.freedriver.math.jpa.converter.measurement;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+import java.math.BigDecimal;
+
 import io.freedriver.math.TemporalUnit;
 import io.freedriver.math.UnitPrefix;
 import io.freedriver.math.measurement.types.TemporalMeasurement;
 import org.junit.jupiter.api.Test;
-
-import java.math.BigDecimal;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public abstract class TemporalMeasurementConverterTest<TM extends TemporalMeasurement<TM>, TMC extends TemporalMeasurementConverter<TM>> extends MeasurementConverterTest<TM, TMC> {
 

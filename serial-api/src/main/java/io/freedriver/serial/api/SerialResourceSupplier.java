@@ -1,9 +1,9 @@
 package io.freedriver.serial.api;
 
-import io.freedriver.serial.api.params.SerialParams;
-
 import java.util.function.BiFunction;
 import java.util.function.Supplier;
+
+import io.freedriver.serial.api.params.SerialParams;
 
 public abstract class SerialResourceSupplier<X> implements Supplier<SerialResource> {
     protected abstract X input();

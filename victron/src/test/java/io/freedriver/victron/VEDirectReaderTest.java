@@ -1,12 +1,12 @@
 package io.freedriver.victron;
 
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.TestInfo;
-
 import java.io.IOException;
 import java.lang.reflect.Method;
 import java.util.Optional;
 import java.util.logging.Logger;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.TestInfo;
 
 public class VEDirectReaderTest {
     private static final Logger LOGGER = Logger.getLogger(VEDirectReaderTest.class.getName());

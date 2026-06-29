@@ -1,10 +1,10 @@
 package io.freedriver.discovery;
 
-import io.freedriver.discovery.jmdns.JMDNSDiscovery;
-
 import java.time.Duration;
 import java.util.Set;
 import java.util.function.Predicate;
+
+import io.freedriver.discovery.jmdns.JMDNSDiscovery;
 
 public class Discover {
     private static final Discovery DISCOVERY = new JMDNSDiscovery();

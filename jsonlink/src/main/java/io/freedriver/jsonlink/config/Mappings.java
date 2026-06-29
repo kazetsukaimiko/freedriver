@@ -1,11 +1,11 @@
 package io.freedriver.jsonlink.config;
 
-import io.freedriver.jsonlink.config.v2.Appliance;
-
 import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
+
+import io.freedriver.jsonlink.config.v2.Appliance;
 
 public class Mappings extends ConfigFile implements Migration<io.freedriver.jsonlink.config.v2.Mappings> {
     private Set<Mapping> mappings = new HashSet<>();

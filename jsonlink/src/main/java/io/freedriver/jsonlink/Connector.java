@@ -1,10 +1,6 @@
 package io.freedriver.jsonlink;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import io.freedriver.jsonlink.jackson.JsonLinkModule;
-import io.freedriver.jsonlink.jackson.schema.v1.Request;
-import io.freedriver.jsonlink.jackson.schema.v1.Response;
+import static java.time.temporal.ChronoUnit.SECONDS;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -13,7 +9,11 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.logging.Logger;
 
-import static java.time.temporal.ChronoUnit.SECONDS;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import io.freedriver.jsonlink.jackson.JsonLinkModule;
+import io.freedriver.jsonlink.jackson.schema.v1.Request;
+import io.freedriver.jsonlink.jackson.schema.v1.Response;
 
 public interface Connector extends AutoCloseable {
     Logger LOGGER = Logger.getLogger(Connector.class.getName());

@@ -1,10 +1,10 @@
 package io.freedriver.math.measurement.types;
 
+import java.util.Objects;
+
 import io.freedriver.math.TemporalUnit;
 import io.freedriver.math.measurement.units.SIElectricalUnit;
 import io.freedriver.math.number.ScaledNumber;
-
-import java.util.Objects;
 
 public abstract class TemporalMeasurement<M extends TemporalMeasurement<M>> extends Measurement<M>  {
     private TemporalUnit temporalUnit;

@@ -1,8 +1,6 @@
 package io.freedriver.base.util;
 
-import io.freedriver.base.Tests;
-import org.junit.jupiter.api.Tag;
-import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.io.ByteArrayInputStream;
 import java.util.List;
@@ -11,7 +9,9 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import io.freedriver.base.Tests;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
 
 
 @Tag(Tests.Integration)

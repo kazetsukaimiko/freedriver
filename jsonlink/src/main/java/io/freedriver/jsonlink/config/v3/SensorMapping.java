@@ -1,15 +1,12 @@
 package io.freedriver.jsonlink.config.v3;
 
-import io.freedriver.jsonlink.config.v2.AnalogAlert;
-import io.freedriver.jsonlink.config.v2.AnalogSensor;
-import io.freedriver.jsonlink.config.v2.Appliance;
-
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
-import java.util.UUID;
+
+import io.freedriver.jsonlink.config.v2.AnalogAlert;
+import io.freedriver.jsonlink.config.v2.AnalogSensor;
 
 public class SensorMapping  {
     private Set<AnalogSensor> analogSensors = new HashSet<>();

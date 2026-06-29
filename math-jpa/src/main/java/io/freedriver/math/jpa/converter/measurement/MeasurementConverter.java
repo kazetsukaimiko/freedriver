@@ -1,10 +1,10 @@
 package io.freedriver.math.jpa.converter.measurement;
 
+import java.math.BigDecimal;
+
 import io.freedriver.math.UnitPrefix;
 import io.freedriver.math.measurement.types.Measurement;
-
 import jakarta.persistence.AttributeConverter;
-import java.math.BigDecimal;
 
 public abstract class MeasurementConverter<M extends Measurement<M>> implements AttributeConverter<M, BigDecimal> {
     protected abstract M construct(BigDecimal value, UnitPrefix unitPrefix);

@@ -1,10 +1,11 @@
 package io.freedriver.ee.cdi.qualifier;
 
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+
 import jakarta.enterprise.util.AnnotationLiteral;
 import jakarta.enterprise.util.Nonbinding;
 import jakarta.inject.Qualifier;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
 
 @Qualifier
 @Retention(RetentionPolicy.RUNTIME)
