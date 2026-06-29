@@ -55,9 +55,6 @@ public class EntityStream<R> implements Iterator<R>, AutoCloseable {
             try {
                 int value = inputStream.read();
                 if (value == -1) {
-                    if (closed) {
-                        throw new IllegalStateException("Stream closed");
-                    }
                     continue;
                 }
                 baos.write(value);

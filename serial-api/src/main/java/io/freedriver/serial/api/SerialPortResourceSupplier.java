@@ -31,7 +31,7 @@ public class SerialPortResourceSupplier extends SerialResourceSupplier<Path> {
 
     @Override
     protected BiFunction<Path, SerialParams, SerialResource> resourceFunction() {
-        return SerialResource::of;
+        return SerialResourceFactory.Holder::create;
     }
 
     @Override

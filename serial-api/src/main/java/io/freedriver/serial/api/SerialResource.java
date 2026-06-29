@@ -17,7 +17,12 @@ public interface SerialResource extends AutoCloseable {
     String getName();
     boolean isOpened();
 
+    /**
+     * Not implemented in serial-api. Use {@link SerialResourceFactory.Holder#create(Path, SerialParams)}
+     * with serial-impl on the classpath, or construct a {@code SerialResource} implementation directly.
+     */
     static SerialResource of(final Path path, SerialParams params) {
-        return SerialResourceFactory.Holder.create(path, params);
+        throw new UnsupportedOperationException(
+                "Use SerialResourceFactory.Holder.create(path, params); requires serial-impl on the classpath");
     }
 }

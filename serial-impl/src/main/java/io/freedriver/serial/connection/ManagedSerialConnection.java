@@ -19,6 +19,7 @@ final class ManagedSerialConnection implements SerialConnectionHandle {
 
     private final SerialDeviceIdentity identity;
     private final ReconnectingSerialResource resource;
+    private final List<SerialConnectionListener> globalListeners;
     private final List<SerialConnectionListener> listeners = new CopyOnWriteArrayList<>();
     private volatile SerialConnectionState state = SerialConnectionState.DISCONNECTED;
     private volatile boolean closed;
@@ -26,8 +27,10 @@ final class ManagedSerialConnection implements SerialConnectionHandle {
     ManagedSerialConnection(
             SerialDeviceIdentity identity,
             SerialParams serialParams,
-            SerialConnectionConfig config) {
+            SerialConnectionConfig config,
+            List<SerialConnectionListener> globalListeners) {
         this.identity = identity;
+        this.globalListeners = globalListeners;
         this.resource = new ReconnectingSerialResource(
                 identity,
                 serialParams,
@@ -93,18 +96,19 @@ final class ManagedSerialConnection implements SerialConnectionHandle {
     }
 
     private void notifyReconnect() {
-        listeners.forEach(listener -> listener.onStateChanged(
-                identity,
-                SerialConnectionState.RECONNECTING,
-                SerialConnectionState.CONNECTED,
-                resource.currentPort().orElse(null)));
+        transition(SerialConnectionState.RECONNECTING, SerialConnectionState.CONNECTED);
     }
 
     private void transition(SerialConnectionState previous, SerialConnectionState next) {
         state = next;
         Path port = resource.currentPort().orElse(null);
         LOGGER.fine(() -> identity + " " + previous + " -> " + next + " (" + port + ")");
+        emitStateChange(previous, next, port);
+    }
+
+    private void emitStateChange(SerialConnectionState previous, SerialConnectionState next, Path port) {
         listeners.forEach(listener -> listener.onStateChanged(identity, previous, next, port));
+        globalListeners.forEach(listener -> listener.onStateChanged(identity, previous, next, port));
     }
 
     @Override
@@ -117,7 +121,6 @@ final class ManagedSerialConnection implements SerialConnectionHandle {
         } catch (Exception e) {
             LOGGER.warning("Error closing " + identity + ": " + e.getMessage());
         }
-        listeners.forEach(listener -> listener.onStateChanged(
-                identity, previous, SerialConnectionState.DISCONNECTED, null));
+        emitStateChange(previous, SerialConnectionState.DISCONNECTED, null);
     }
 }

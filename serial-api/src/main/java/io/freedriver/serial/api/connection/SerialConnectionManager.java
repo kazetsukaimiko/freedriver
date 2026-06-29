@@ -22,6 +22,13 @@ public interface SerialConnectionManager extends AutoCloseable {
 
     Stream<SerialConnectionHandle> activeConnections();
 
+    /**
+     * Register a listener for state transitions on any managed connection.
+     */
+    void addStateListener(SerialConnectionListener listener);
+
+    void removeStateListener(SerialConnectionListener listener);
+
     @Override
     void close();
 }

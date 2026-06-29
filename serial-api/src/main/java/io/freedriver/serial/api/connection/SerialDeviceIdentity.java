@@ -59,6 +59,16 @@ public final class SerialDeviceIdentity {
                 Optional.empty());
     }
 
+    /**
+     * Parses a Linux udev {@code /dev/serial/by-id/} symlink name.
+     *
+     * <p>Expected format: {@code usb-<vendor>_<product>_<serial>-if<iface>-port<port>}
+     * <br>Example: {@code usb-VictronEnergy_BV_VE_Direct_cable_VE6HQ20-if00-port0}
+     * <br>Example: {@code usb-1a86_7523_USB_Serial-if00-port0}
+     *
+     * <p>The portion before {@code -if} is split on {@code _} into vendor, product, and
+     * serial (product/serial may themselves contain underscores).
+     */
     private static SerialDeviceIdentity parseUsb(Path byIdPath, String linkName) {
         String body = linkName.substring("usb-".length());
         int ifaceIndex = body.indexOf("-if");

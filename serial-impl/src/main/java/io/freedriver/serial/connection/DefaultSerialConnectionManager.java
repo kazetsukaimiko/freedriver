@@ -1,8 +1,10 @@
 package io.freedriver.serial.connection;
 
 import java.nio.file.Path;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
@@ -14,6 +16,7 @@ import java.util.stream.Stream;
 import io.freedriver.serial.SerialRuntime;
 import io.freedriver.serial.api.connection.SerialConnectionConfig;
 import io.freedriver.serial.api.connection.SerialConnectionHandle;
+import io.freedriver.serial.api.connection.SerialConnectionListener;
 import io.freedriver.serial.api.connection.SerialConnectionManager;
 import io.freedriver.serial.api.connection.SerialDeviceIdentity;
 import io.freedriver.serial.api.params.SerialParams;
@@ -23,6 +26,7 @@ public final class DefaultSerialConnectionManager implements SerialConnectionMan
 
     private final SerialConnectionConfig config;
     private final Map<SerialDeviceIdentity, ManagedSerialConnection> connections = new ConcurrentHashMap<>();
+    private final List<SerialConnectionListener> stateListeners = new CopyOnWriteArrayList<>();
     private final ScheduledExecutorService monitorExecutor =
             Executors.newSingleThreadScheduledExecutor(r -> {
                 Thread thread = new Thread(r, "serial-connection-monitor");
@@ -81,7 +85,7 @@ public final class DefaultSerialConnectionManager implements SerialConnectionMan
     public SerialConnectionHandle connect(SerialDeviceIdentity identity, SerialParams params) {
         ManagedSerialConnection connection = connections.computeIfAbsent(
                 identity,
-                id -> new ManagedSerialConnection(id, params, config));
+                id -> new ManagedSerialConnection(id, params, config, stateListeners));
         connection.connectNow();
         return connection;
     }
@@ -97,6 +101,16 @@ public final class DefaultSerialConnectionManager implements SerialConnectionMan
 
     public void refreshConnections() {
         connections.values().forEach(ManagedSerialConnection::monitor);
+    }
+
+    @Override
+    public void addStateListener(SerialConnectionListener listener) {
+        stateListeners.add(listener);
+    }
+
+    @Override
+    public void removeStateListener(SerialConnectionListener listener) {
+        stateListeners.remove(listener);
     }
 
     @Override
