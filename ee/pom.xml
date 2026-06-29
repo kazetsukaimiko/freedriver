@@ -15,6 +15,18 @@
     <url>https://github.com/kazetsukaimiko/freedriver/ee</url>
     <packaging>jar</packaging>
 
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>io.freedriver</groupId>
+                <artifactId>freedriver-bom</artifactId>
+                <version>${project.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
     <dependencies>
         <dependency>
             <groupId>jakarta.enterprise</groupId>

@@ -14,6 +14,18 @@
     <name>DALY BMS Java Library</name>
     <packaging>jar</packaging>
 
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>io.freedriver</groupId>
+                <artifactId>freedriver-bom</artifactId>
+                <version>${project.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
     <dependencies>
 
         <dependency>
@@ -47,7 +59,6 @@
             <artifactId>base</artifactId>
             <classifier>tests</classifier>
             <type>test-jar</type>
-            <version>${project.version}</version>
             <scope>test</scope>
         </dependency>
 

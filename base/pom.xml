@@ -16,7 +16,19 @@
 
     <url>https://github.com/kazetsukaimiko/freedriver/base</url>
 
-    <dependencies>
+      <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>io.freedriver</groupId>
+                <artifactId>freedriver-bom</artifactId>
+                <version>${project.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
+  <dependencies>
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-api</artifactId>

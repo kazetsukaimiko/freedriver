@@ -39,7 +39,6 @@
     <os.detected.bitness>${sun.arch.data.model}</os.detected.bitness>
 
     <!-- dependency versions a-z -->
-    <dependency.junit.version>4.13.1</dependency.junit.version>
     <dependency.logback.version>1.2.3</dependency.logback.version>
     <dependency.nativelibloader.version>2.3.3</dependency.nativelibloader.version>
 
@@ -88,9 +87,8 @@
       <version>${dependency.nativelibloader.version}</version>
     </dependency>
     <dependency>
-      <groupId>junit</groupId>
-      <artifactId>junit</artifactId>
-      <version>${dependency.junit.version}</version>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter</artifactId>
       <scope>test</scope>
     </dependency>
     <dependency>

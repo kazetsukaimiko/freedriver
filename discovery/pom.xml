@@ -16,6 +16,18 @@
 
   <url>https://github.com/kazetsukaimiko/freedriver/discovery</url>
 
+  <dependencyManagement>
+    <dependencies>
+      <dependency>
+        <groupId>io.freedriver</groupId>
+        <artifactId>freedriver-bom</artifactId>
+        <version>${project.version}</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
+
   <dependencies>
 
     <dependency>
