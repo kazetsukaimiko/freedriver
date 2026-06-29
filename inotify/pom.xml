@@ -46,6 +46,11 @@
             <scope>test</scope>
         </dependency>
         <dependency>
+            <groupId>org.awaitility</groupId>
+            <artifactId>awaitility</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
             <groupId>io.freedriver</groupId>
             <artifactId>base</artifactId>
             <classifier>tests</classifier>

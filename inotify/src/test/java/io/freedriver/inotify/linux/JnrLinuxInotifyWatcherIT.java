@@ -1,5 +1,6 @@
 package io.freedriver.inotify.linux;
 
+import static org.awaitility.Awaitility.await;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
@@ -8,8 +9,10 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Duration;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Predicate;
 
 import io.freedriver.base.Tests;
 import io.freedriver.inotify.InotifyEvent;
@@ -124,18 +127,11 @@ class JnrLinuxInotifyWatcherIT {
         events.clear();
     }
 
-    private InotifyEvent awaitEventMatching(java.util.function.Predicate<InotifyEvent> predicate)
-            throws InterruptedException {
-        long deadline = System.nanoTime() + Duration.ofSeconds(5).toNanos();
-        while (System.nanoTime() < deadline) {
-            for (InotifyEvent event : events) {
-                if (predicate.test(event)) {
-                    return event;
-                }
-            }
-            TimeUnit.MILLISECONDS.sleep(25);
-        }
-        throw new AssertionError("Timed out waiting for inotify event matching " + predicate
-                + "; saw: " + events);
+    private InotifyEvent awaitEventMatching(Predicate<InotifyEvent> predicate) {
+        return await()
+                .atMost(Duration.ofSeconds(5))
+                .pollInterval(Duration.ofMillis(25))
+                .until(() -> events.stream().filter(predicate).findFirst(), Optional::isPresent)
+                .orElseThrow();
     }
 }
