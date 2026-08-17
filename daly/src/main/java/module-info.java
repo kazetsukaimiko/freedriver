@@ -4,6 +4,7 @@ module freedriver.daly {
     requires io.freedriver.serial.impl;
     requires io.freedriver.base;
     requires io.freedriver.serial.api;
+    requires static lombok;
     //exports io.freedriver.daly;
     exports io.freedriver.daly.bms;
     exports io.freedriver.daly.bms.checksum;

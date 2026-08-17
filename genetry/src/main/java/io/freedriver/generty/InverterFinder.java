@@ -19,7 +19,7 @@ public class InverterFinder {
     }
 
     private static boolean filter(DiscoveredService discoveredService) {
-        return Objects.equals(INVERTER_NAME, discoveredService.getName());
+        return Objects.equals(INVERTER_NAME, discoveredService.name());
     }
 
 

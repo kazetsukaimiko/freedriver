@@ -1,36 +1,13 @@
 package io.freedriver.jsonlink.jackson.schema.v1;
 
-import java.util.ArrayList;
 import java.util.List;
 
-public class BoardInfo {
-    private List<Identifier> digitals = new ArrayList<>();
-    private List<Identifier> analogs = new ArrayList<>();
+import lombok.Builder;
 
-    public BoardInfo() {
-    }
-
-    public List<Identifier> getDigitals() {
-        return digitals;
-    }
-
-    public void setDigitals(List<Identifier> digitals) {
-        this.digitals = digitals;
-    }
-
-    public List<Identifier> getAnalogs() {
-        return analogs;
-    }
-
-    public void setAnalogs(List<Identifier> analogs) {
-        this.analogs = analogs;
-    }
-
-    @Override
-    public String toString() {
-        return "BoardInfo{" +
-                "digitals=" + digitals +
-                ", analogs=" + analogs +
-                '}';
+@Builder(toBuilder = true)
+public record BoardInfo(List<Identifier> digitals, List<Identifier> analogs) {
+    public BoardInfo {
+        digitals = digitals == null ? List.of() : List.copyOf(digitals);
+        analogs = analogs == null ? List.of() : List.copyOf(analogs);
     }
 }

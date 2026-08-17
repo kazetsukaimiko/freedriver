@@ -1,6 +1,7 @@
 module io.freedriver.base {
     requires java.desktop;
     requires java.logging;
+    requires static lombok;
     exports io.freedriver.base.cli;
     exports io.freedriver.base.util;
     exports io.freedriver.base.util.accumulator;

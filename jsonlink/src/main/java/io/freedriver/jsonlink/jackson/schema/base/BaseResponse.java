@@ -1,19 +1,9 @@
 package io.freedriver.jsonlink.jackson.schema.base;
 
+import lombok.Builder;
+
 /**
  * The base-level response object, including the version of the schema.
  */
-public class BaseResponse {
-    private Version version;
-
-    public BaseResponse() {
-    }
-
-    public Version getVersion() {
-        return version;
-    }
-
-    public void setVersion(Version version) {
-        this.version = version;
-    }
-}
+@Builder(toBuilder = true)
+public record BaseResponse(Version version) {}

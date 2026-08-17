@@ -1,7 +1,7 @@
 package io.freedriver.jsonlink.jackson.schema.v1;
 
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -9,27 +9,39 @@ import java.util.stream.Stream;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.freedriver.jsonlink.Connector;
+import lombok.Builder;
 
-public class Request {
-    private UUID uuid;
-    private UUID requestId;
-    private Map<Identifier, Mode> mode = new HashMap<>();
-    private ReadRequest read;
-    private WriteRequest write;
-    private Boolean boardInfo;
-    private List<Identifier> turn_off = new ArrayList<>();
-    private List<Identifier> turn_on = new ArrayList<>();
+@Builder(toBuilder = true)
+public record Request(
+        UUID uuid,
+        UUID requestId,
+        Map<Identifier, Mode> mode,
+        ReadRequest read,
+        WriteRequest write,
+        Boolean boardInfo,
+        List<Identifier> turn_off,
+        List<Identifier> turn_on) {
+
+    public Request {
+        mode = mode == null ? Map.of() : Map.copyOf(mode);
+        turn_off = turn_off == null ? List.of() : List.copyOf(turn_off);
+        turn_on = turn_on == null ? List.of() : List.copyOf(turn_on);
+    }
+
+    public static Request empty() {
+        return Request.builder().build();
+    }
 
     public Request analogRead(AnalogRead... analogReads) {
         return analogRead(Stream.of(analogReads));
     }
 
     public Request analogRead(Stream<AnalogRead> analogReads) {
-        if (read == null) {
-            read = new ReadRequest();
+        ReadRequest next = read == null ? ReadRequest.empty() : read;
+        for (AnalogRead analogRead : analogReads.toList()) {
+            next = next.readAnalog(analogRead);
         }
-        analogReads.forEach(read::readAnalog);
-        return this;
+        return toBuilder().read(next).build();
     }
 
     public Request modeSet(ModeSet... modes) {
@@ -37,12 +49,9 @@ public class Request {
     }
 
     public Request modeSet(Stream<ModeSet> modes) {
-        modes.forEach(this::addMode);
-        return this;
-    }
-
-    private void addMode(ModeSet modeSet) {
-        getMode().put(modeSet.getPinNumber(), modeSet.getMode());
+        Map<Identifier, Mode> next = new LinkedHashMap<>(mode);
+        modes.forEach(modeSet -> next.put(modeSet.pinNumber(), modeSet.mode()));
+        return toBuilder().mode(next).build();
     }
 
     public Request digitalRead(Identifier... pins) {
@@ -50,11 +59,11 @@ public class Request {
     }
 
     public Request digitalRead(Stream<Identifier> pins) {
-        if (read == null) {
-            read = new ReadRequest();
+        ReadRequest next = read == null ? ReadRequest.empty() : read;
+        for (Identifier pin : pins.toList()) {
+            next = next.readDigital(pin);
         }
-        pins.forEach(read.getDigital()::add);
-        return this;
+        return toBuilder().read(next).build();
     }
 
     public Request digitalWrite(DigitalWrite... pinWrites) {
@@ -62,106 +71,36 @@ public class Request {
     }
 
     public Request digitalWrite(Stream<DigitalWrite> pinWrite) {
-        if (write == null) {
-            write = new WriteRequest();
+        WriteRequest next = write == null ? WriteRequest.empty() : write;
+        for (DigitalWrite digitalWrite : pinWrite.toList()) {
+            next = next.writeDigital(digitalWrite);
         }
-        pinWrite.forEach(write::writeDigital);
-        return this;
-    }
-
-    public UUID getUuid() {
-        return uuid;
-    }
-
-    public void setUuid(UUID uuid) {
-        this.uuid = uuid;
-    }
-
-    public UUID getRequestId() {
-        return requestId;
-    }
-
-    public void setRequestId(UUID requestId) {
-        this.requestId = requestId;
-    }
-
-    public ReadRequest getRead() {
-        return read;
-    }
-
-    public void setRead(ReadRequest read) {
-        this.read = read;
-    }
-
-    public WriteRequest getWrite() {
-        return write;
-    }
-
-    public void setWrite(WriteRequest write) {
-        this.write = write;
-    }
-
-    public Boolean getBoardInfo() {
-        return boardInfo;
-    }
-
-    public void setBoardInfo(Boolean boardInfo) {
-        this.boardInfo = boardInfo;
-    }
-
-    public Map<Identifier, Mode> getMode() {
-        return mode;
-    }
-
-    public void setMode(Map<Identifier, Mode> mode) {
-        this.mode = mode;
-    }
-
-    public List<Identifier> getTurn_off() {
-        return turn_off;
-    }
-
-    public void setTurn_off(List<Identifier> turn_off) {
-        this.turn_off = turn_off;
-    }
-
-    public List<Identifier> getTurn_on() {
-        return turn_on;
-    }
-
-    public void setTurn_on(List<Identifier> turn_on) {
-        this.turn_on = turn_on;
+        return toBuilder().write(next).build();
     }
 
     public Request turnOn(Stream<Identifier> pins) {
-        pins.forEach(turn_on::add);
-        return this;
+        List<Identifier> next = new ArrayList<>(turn_on);
+        pins.forEach(next::add);
+        return toBuilder().turn_on(next).build();
     }
 
     public Request turnOff(Stream<Identifier> pins) {
-        pins.forEach(turn_off::add);
-        return this;
+        List<Identifier> next = new ArrayList<>(turn_off);
+        pins.forEach(next::add);
+        return toBuilder().turn_off(next).build();
     }
 
     public Request newUuid() {
-        setUuid(UUID.randomUUID());
-        return this;
+        return toBuilder().uuid(UUID.randomUUID()).build();
     }
 
     @JsonIgnore
     public boolean isEmpty() {
-        return (read == null || read.isEmpty()) && (write == null || write.isEmpty()) &&
-               (mode.isEmpty()) && turn_on.isEmpty() && turn_off.isEmpty();
-    }
-
-    @Override
-    public String toString() {
-        return "Request{" +
-                "uuid=" + uuid +
-                ", mode=" + mode +
-                ", read=" + read +
-                ", write=" + write +
-                '}';
+        return (read == null || read.isEmpty())
+                && (write == null || write.isEmpty())
+                && mode.isEmpty()
+                && turn_on.isEmpty()
+                && turn_off.isEmpty();
     }
 
     public Response invoke(Connector connector) {

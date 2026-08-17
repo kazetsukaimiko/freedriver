@@ -8,10 +8,12 @@ import io.freedriver.math.number.NumberDelegate;
 import io.freedriver.math.number.NumberOperations;
 import io.freedriver.math.number.Scaleable;
 import io.freedriver.math.number.ScaledNumber;
+import lombok.Getter;
 
 /**
  * Class to handle (Instantaneous) Measurements of Power and Current.
  */
+@Getter
 public abstract class Measurement<M extends Measurement<M>> extends NumberDelegate implements Scaleable<M>, NumberOperations<M> {
     private ScaledNumber value;
     private Unit unit;
@@ -41,22 +43,6 @@ public abstract class Measurement<M extends Measurement<M>> extends NumberDelega
      * @return
      */
     public abstract String getFullUnitName();
-
-    public ScaledNumber getValue() {
-        return value;
-    }
-
-    public void setValue(ScaledNumber value) {
-        this.value = value;
-    }
-
-    public Unit getUnit() {
-        return unit;
-    }
-
-    public void setUnit(Unit unit) {
-        this.unit = unit;
-    }
 
     @Override
     public Number getDelegateNumber() {

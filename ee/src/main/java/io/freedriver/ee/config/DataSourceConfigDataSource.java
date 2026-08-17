@@ -11,7 +11,7 @@ import javax.sql.DataSource;
 
 public class DataSourceConfigDataSource implements DataSource {
     private final Logger LOGGER = Logger.getLogger(DataSourceConfigDataSource.class.getName());
-    private final DataSourceConfig config;
+    private DataSourceConfig config;
     private PrintWriter logWriter;
     private int loginTimeout = 0;
 
@@ -33,8 +33,7 @@ public class DataSourceConfigDataSource implements DataSource {
 
     @Override
     public Connection getConnection(String username, String password) throws SQLException {
-        config.setUsername(username);
-        config.setPassword(password);
+        config = config.toBuilder().username(username).password(password).build();
         return getConnection();
     }
 

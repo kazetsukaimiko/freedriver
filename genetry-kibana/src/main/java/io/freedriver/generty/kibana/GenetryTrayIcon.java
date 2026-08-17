@@ -37,13 +37,13 @@ public class GenetryTrayIcon implements GenetryUI {
 
     public synchronized void add(KibanaStats kibanaStats) {
         MenuItem item;
-        if (!menuItemsMap.containsKey(kibanaStats.getInverterId())) {
-            item = new MenuItem(kibanaStats.getInverterId());
-            item.setName(kibanaStats.getInverterId());
+        if (!menuItemsMap.containsKey(kibanaStats.inverterId())) {
+            item = new MenuItem(kibanaStats.inverterId());
+            item.setName(kibanaStats.inverterId());
             popupMenu.add(item);
-            menuItemsMap.put(kibanaStats.getInverterId(), item);
+            menuItemsMap.put(kibanaStats.inverterId(), item);
         } else {
-            item = menuItemsMap.get(kibanaStats.getInverterId());
+            item = menuItemsMap.get(kibanaStats.inverterId());
         }
         item.setLabel(kibanaStats.getMenuText());
     }

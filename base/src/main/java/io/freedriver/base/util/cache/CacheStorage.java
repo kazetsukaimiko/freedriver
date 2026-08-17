@@ -23,14 +23,14 @@ public abstract class CacheStorage<K, V> implements Map<K, V> {
 
     public  <E> E map(Function<Map<CacheKey<K>, V>, E> mapEFunction) {
         synchronized (backingMap) {
-            if (settings.getExpiry().compareTo(Duration.ZERO) > 0) {
+            if (settings.expiry().compareTo(Duration.ZERO) > 0) {
                 List<CacheKey<K>> expired = backingMap.keySet()
                         .stream().filter(this::expired)
                         .collect(Collectors.toList());
                 expired.forEach(backingMap::remove);
             }
             E e = mapEFunction.apply(backingMap);
-            if (settings.getMaxSize() > 0 && backingMap.size() >= settings.getMaxSize()) {
+            if (settings.maxSize() > 0 && backingMap.size() >= settings.maxSize()) {
                 Optional<CacheKey<K>> oldestKey = backingMap.keySet()
                         .stream().min(CacheKey::compareTo);
                 oldestKey.ifPresent(backingMap::remove);
@@ -39,7 +39,7 @@ public abstract class CacheStorage<K, V> implements Map<K, V> {
         }
     }
     private boolean expired(CacheKey<K> kCacheKey) {
-        return Instant.now().compareTo(kCacheKey.getCreated().plus(settings.getExpiry())) >= 0;
+        return Instant.now().compareTo(kCacheKey.created().plus(settings.expiry())) >= 0;
     }
 
     public void using(Consumer<Map<CacheKey<K>, V>> mapConsumer) {

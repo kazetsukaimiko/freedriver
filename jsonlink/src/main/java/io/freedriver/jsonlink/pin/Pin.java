@@ -18,7 +18,7 @@ public abstract class Pin {
         this.connector = connector;
         this.identifier = identifier;
         this.mode = mode;
-        connector.send(new Request().modeSet(identifier.setMode(mode)));
+        connector.send(Request.empty().modeSet(identifier.setMode(mode)));
     }
 
     public Connector getConnector() {

@@ -2,15 +2,28 @@ package io.freedriver.daly.bms.checksum.debug;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 import java.util.stream.Collectors;
+
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 /**
  * Exposes how CRC8 checksums are calculated.
  */
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder(toBuilder = true)
+@EqualsAndHashCode
 public class CRC8Steps implements CRC8Debugger {
+    @Builder.Default
     private List<CRC8Step> steps = new ArrayList<>();
-    private int crc = 0;
+    private int crc;
 
     public List<CRC8Step> getSteps() {
         if (steps == null) {
@@ -19,34 +32,9 @@ public class CRC8Steps implements CRC8Debugger {
         return steps;
     }
 
-    public void setSteps(List<CRC8Step> steps) {
-        this.steps = steps;
-    }
-
-    public int getCrc() {
-        return crc;
-    }
-
-    public void setCrc(int crc) {
-        this.crc = crc;
-    }
-
-    public void setCrc(CRC8Step step) {
-        setCrc(step.getEnd() & 0xFF);
+    public void addStep(CRC8Step step) {
+        this.crc = step.end() & 0xFF;
         getSteps().add(step);
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        CRC8Steps crc8Steps = (CRC8Steps) o;
-        return crc == crc8Steps.crc && Objects.equals(steps, crc8Steps.steps);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(steps, crc);
     }
 
     @Override
@@ -57,10 +45,6 @@ public class CRC8Steps implements CRC8Debugger {
 
     @Override
     public void append(int start, int component, int end) {
-        CRC8Step step = new CRC8Step();
-        step.setStart(start);
-        step.setComponent(component);
-        step.setEnd(end);
-        setCrc(step);
+        addStep(new CRC8Step(start, component, end));
     }
 }

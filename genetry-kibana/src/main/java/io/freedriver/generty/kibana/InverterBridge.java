@@ -128,7 +128,7 @@ public class InverterBridge {
             while (running) {
                 try {
                     Statsjson statsjson = getStats(discoveredService);
-                    KibanaStats kibanaStats = new KibanaStats(discoveredService.getDns(), statsjson);
+                    KibanaStats kibanaStats = new KibanaStats(discoveredService.dns(), statsjson);
                     app.add(kibanaStats);
                     deque.add(kibanaStats);
                 } catch (Throwable e) {
@@ -181,7 +181,7 @@ public class InverterBridge {
      */
     public static Statsjson getStats(DiscoveredService service) throws IOException, InterruptedException {
         HttpClient client = HttpClient.newHttpClient();
-        URI address = URI.create(service.getAddress()).resolve("/stats.json");
+        URI address = URI.create(service.address()).resolve("/stats.json");
         LOGGER.info("GET " + address);
         HttpRequest request = HttpRequest.newBuilder(address).GET().build();
         HttpResponse<InputStream> response = client.send(request, HttpResponse.BodyHandlers.ofInputStream());
@@ -193,7 +193,7 @@ public class InverterBridge {
             deque.removeIf(kibanaStats -> {
                 try {
                     LOGGER.info("Sending to Elastic: " + MAPPER.writeValueAsString(kibanaStats));
-                    String index = kibanaStats.getInverterId().toLowerCase();
+                    String index = kibanaStats.inverterId().toLowerCase();
                     IndexRequest<KibanaStats> indexRequest = IndexRequest.of(i -> i.index(index).document(kibanaStats));
                     client.index(indexRequest);
                     app.running(GenetryUI.TITLE);

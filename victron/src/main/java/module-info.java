@@ -4,6 +4,7 @@ module victron.java {
     requires io.freedriver.serial.impl;
     requires io.freedriver.base;
     requires io.freedriver.serial.api;
+    requires static lombok;
     exports io.freedriver.victron;
     exports io.freedriver.victron.vedirect;
 }

@@ -4,5 +4,6 @@ module io.freedriver.eletrodacus {
     requires io.freedriver.serial.api;
     requires io.freedriver.serial.impl;
     requires io.freedriver.base;
+    requires static lombok;
     exports io.freedriver.electrodacus.sbms;
 }

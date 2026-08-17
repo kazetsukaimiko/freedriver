@@ -1,27 +1,24 @@
 package io.freedriver.jsonlink.config.v3;
 
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.ToString;
+import lombok.extern.jackson.Jacksonized;
+
+@Getter
+@EqualsAndHashCode(callSuper = false)
+@ToString
+@Builder(toBuilder = true)
+@AllArgsConstructor
+@Jacksonized
 public class JoystickButtonEvent extends ControlEvent {
-    private int button;
-    private  ButtonState buttonState;
-
-    public int getButton() {
-        return button;
-    }
-
-    public void setButton(int button) {
-        this.button = button;
-    }
-
-    public ButtonState getButtonState() {
-        return buttonState;
-    }
-
-    public void setButtonState(ButtonState buttonState) {
-        this.buttonState = buttonState;
-    }
+    private final int button;
+    private final ButtonState buttonState;
 
     public enum ButtonState {
         RELEASE,
-        PRESS;
+        PRESS
     }
 }

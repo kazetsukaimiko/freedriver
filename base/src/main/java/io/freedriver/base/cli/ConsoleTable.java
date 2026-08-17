@@ -25,7 +25,7 @@ public class ConsoleTable<E> {
 
     public void renderKeyValue(List<E> entities, String idColumn) {
         ConsoleTable<ConsoleKeyValue> pivot = new ConsoleTable<>(ConsoleKeyValue.class);
-        pivot.addObjectColumn(idColumn, ConsoleKeyValue::getKey);
+        pivot.addObjectColumn(idColumn, ConsoleKeyValue::key);
 
         Map<ConsoleColumn<E, String>, ConsoleKeyValue> kvm = new LinkedHashMap<>();
 
@@ -33,26 +33,26 @@ public class ConsoleTable<E> {
             entityColumn(pivot, idColumnOf(idColumn), i, entities.get(i));
             for (ConsoleColumn<E, String> column : columns) {
                 if (!kvm.containsKey(column)) {
-                    kvm.put(column, new ConsoleKeyValue(column.getColumnName()));
+                    kvm.put(column, new ConsoleKeyValue(column.columnName()));
                 }
-                kvm.get(column).getValues().add(column.getColumnFunction().apply(entities.get(i)));
+                kvm.get(column).values().add(column.columnFunction().apply(entities.get(i)));
             }
         }
 
-        pivot.render(kvm.values().stream().filter(consoleKeyValue -> !Objects.equals(idColumn, consoleKeyValue.getKey())).collect(Collectors.toList()));
+        pivot.render(kvm.values().stream().filter(consoleKeyValue -> !Objects.equals(idColumn, consoleKeyValue.key())).collect(Collectors.toList()));
     }
 
     private Function<E, String> idColumnOf(String columnName) {
         return columns
                 .stream()
-                .filter(column -> Objects.equals(columnName, column.getColumnName()))
+                .filter(column -> Objects.equals(columnName, column.columnName()))
                 .findFirst()
-                .map(ConsoleColumn::getColumnFunction)
+                .map(ConsoleColumn::columnFunction)
                 .orElse(t -> "");
     }
 
     private static <T> void entityColumn(final ConsoleTable<ConsoleKeyValue> pivot, Function<T, String> columnFunction, final int index, T entity) {
-        pivot.addObjectColumn(columnFunction.apply(entity), consoleKeyValue -> consoleKeyValue.getValues().get(index));
+        pivot.addObjectColumn(columnFunction.apply(entity), consoleKeyValue -> consoleKeyValue.values().get(index));
     }
 
     public void render(List<E> entities) {
@@ -141,7 +141,7 @@ public class ConsoleTable<E> {
 
     public String header(Map<ConsoleColumn<E, String>, Integer> sizes) {
         List<String> parts = new ArrayList<>();
-        sizes.forEach((col, size) -> parts.add(valueFormatted(size, col.getColumnName())));
+        sizes.forEach((col, size) -> parts.add(valueFormatted(size, col.columnName())));
         return join(parts, "|");
     }
 
@@ -175,7 +175,7 @@ public class ConsoleTable<E> {
     private void setMaxes(List<ConsoleColumn<E, String>> columns, Map<ConsoleColumn<E, String>, Integer> maxColSize, E entity) {
         columns.forEach(column -> {
                    if (!maxColSize.containsKey(column)) {
-                       maxColSize.put(column, column.getColumnName().length());
+                       maxColSize.put(column, column.columnName().length());
                    }
                    String value = column.apply(entity).orElse("");
                    if (maxColSize.get(column) < value.length()) {

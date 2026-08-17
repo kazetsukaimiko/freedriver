@@ -6,29 +6,24 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import lombok.Builder;
 
-public class ConnectorConfig {
+@Builder(toBuilder = true)
+public record ConnectorConfig(List<String> ignoreDevices) {
     private static final Path CONFIG_PATH = Paths.get(System.getProperty("user.home"), ".config/jsonlink");
     private static final Path CONFIG_FILE_PATH = Paths.get(CONFIG_PATH.toAbsolutePath().toString(), "connectors.json");
     private static final Logger LOGGER = Logger.getLogger(ConnectorConfig.class.getName());
-    private List<String> ignoreDevices = new ArrayList<>();
 
-    public ConnectorConfig() {
+    public ConnectorConfig {
+        ignoreDevices = ignoreDevices == null ? List.of() : List.copyOf(ignoreDevices);
     }
 
-    public List<String> getIgnoreDevices() {
-        return ignoreDevices != null ?
-                ignoreDevices : new ArrayList<>();
-    }
-
-    public void setIgnoreDevices(List<String> ignoreDevices) {
-        this.ignoreDevices = ignoreDevices != null ?
-            ignoreDevices : new ArrayList<>();
+    public static ConnectorConfig empty() {
+        return ConnectorConfig.builder().build();
     }
 
     public static ConnectorConfig load() {
@@ -36,7 +31,7 @@ public class ConnectorConfig {
             return loadOrCreate();
         } catch (IOException e) {
             LOGGER.log(Level.WARNING, "Couldn't load connector.config, defaulting to new ", e);
-            return new ConnectorConfig();
+            return ConnectorConfig.empty();
         }
     }
 
@@ -44,17 +39,15 @@ public class ConnectorConfig {
         if (!Files.isDirectory(CONFIG_PATH)) {
             Files.createDirectories(CONFIG_PATH);
             return loadOrCreate();
+        } else if (Files.isRegularFile(CONFIG_FILE_PATH)) {
+            return MAPPER.readValue(CONFIG_FILE_PATH.toFile(), ConnectorConfig.class);
         } else {
-            if (Files.isRegularFile(CONFIG_FILE_PATH)) {
-                return MAPPER.readValue(CONFIG_FILE_PATH.toFile(), ConnectorConfig.class);
-            } else {
-                MAPPER.writeValue(CONFIG_FILE_PATH.toFile(), new ConnectorConfig());
-                return loadOrCreate();
-            }
+            MAPPER.writeValue(CONFIG_FILE_PATH.toFile(), ConnectorConfig.empty());
+            return loadOrCreate();
         }
     }
 
     public boolean doNotIgnore(String s) {
-        return !getIgnoreDevices().contains(s);
+        return !ignoreDevices.contains(s);
     }
 }
