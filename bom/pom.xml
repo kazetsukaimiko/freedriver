@@ -26,6 +26,17 @@
                 <scope>import</scope>
             </dependency>
 
+            <!-- Quarkus 3.37-aligned Jackson. Importing freedriver-bom (e.g. from
+                 autonomy-bom) must not re-pin jackson-databind 2.14 onto the Quarkus
+                 runtime; 2.14 lacks RecyclerPool and fails Quarkus 3 boot. -->
+            <dependency>
+                <groupId>com.fasterxml.jackson</groupId>
+                <artifactId>jackson-bom</artifactId>
+                <version>${jackson-bom.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+
             <dependency>
                 <groupId>org.awaitility</groupId>
                 <artifactId>awaitility</artifactId>

@@ -16,46 +16,25 @@
         <failOnMissingWebXml>false</failOnMissingWebXml>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
-        <jackson.version>2.14.1</jackson.version>
+        <!-- Align with Quarkus 3.37 (jackson-bom 2.22.0). Do not use a single
+             ${jackson.version} for every artifact: jackson-annotations is 2.22,
+             not 2.22.0. The BOM owns that split. -->
+        <jackson-bom.version>2.22.0</jackson-bom.version>
         <jaxrs.api.version>2.1.1</jaxrs.api.version>
         <jpa.api.version>2.2</jpa.api.version>
     </properties>
 
     <dependencyManagement>
         <dependencies>
-            <!-- External managed versions (jackson etc). Reactor (io.freedriver) versions for artifacts are now ONLY in the freedriver-bom child module (see bom/pom.xml).
-                 Children import the bom to get them. This allows clean release process (GH actions + maven version:set etc can bump once). -->
-
+            <!-- External managed versions. Reactor (io.freedriver) versions live in
+                 the freedriver-bom child (see bom/pom.xml). Children import that BOM. -->
             <dependency>
-                <groupId>com.fasterxml.jackson.core</groupId>
-                <artifactId>jackson-core</artifactId>
-                <version>${jackson.version}</version>
+                <groupId>com.fasterxml.jackson</groupId>
+                <artifactId>jackson-bom</artifactId>
+                <version>${jackson-bom.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
             </dependency>
-
-            <dependency>
-                <groupId>com.fasterxml.jackson.core</groupId>
-                <artifactId>jackson-databind</artifactId>
-                <version>${jackson.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>com.fasterxml.jackson.datatype</groupId>
-                <artifactId>jackson-datatype-jsr310</artifactId>
-                <version>${jackson.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>com.fasterxml.jackson.core</groupId>
-                <artifactId>jackson-annotations</artifactId>
-                <version>${jackson.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>com.fasterxml.jackson.jakarta.rs</groupId>
-                <artifactId>jackson-jakarta-rs-json-provider</artifactId>
-                <version>${jackson.version}</version>
-            </dependency>
-
         </dependencies>
     </dependencyManagement>
 
