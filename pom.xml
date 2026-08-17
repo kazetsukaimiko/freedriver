@@ -16,48 +16,9 @@
         <failOnMissingWebXml>false</failOnMissingWebXml>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
-        <jackson.version>2.14.1</jackson.version>
         <jaxrs.api.version>2.1.1</jaxrs.api.version>
         <jpa.api.version>2.2</jpa.api.version>
     </properties>
-
-    <dependencyManagement>
-        <dependencies>
-            <!-- External managed versions (jackson etc). Reactor (io.freedriver) versions for artifacts are now ONLY in the freedriver-bom child module (see bom/pom.xml).
-                 Children import the bom to get them. This allows clean release process (GH actions + maven version:set etc can bump once). -->
-
-            <dependency>
-                <groupId>com.fasterxml.jackson.core</groupId>
-                <artifactId>jackson-core</artifactId>
-                <version>${jackson.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>com.fasterxml.jackson.core</groupId>
-                <artifactId>jackson-databind</artifactId>
-                <version>${jackson.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>com.fasterxml.jackson.datatype</groupId>
-                <artifactId>jackson-datatype-jsr310</artifactId>
-                <version>${jackson.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>com.fasterxml.jackson.core</groupId>
-                <artifactId>jackson-annotations</artifactId>
-                <version>${jackson.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>com.fasterxml.jackson.jakarta.rs</groupId>
-                <artifactId>jackson-jakarta-rs-json-provider</artifactId>
-                <version>${jackson.version}</version>
-            </dependency>
-
-        </dependencies>
-    </dependencyManagement>
 
     <modules>
         <!-- bom first: provides all io.freedriver artifact versions + junit via its import. Root no longer lists reactor versions. -->
