@@ -22,7 +22,7 @@ public class MarshallingTest {
         Version expected = new Version(1,0,0);
         Version unexpected = new Version(2,0,0);
 
-        assertEquals(expected, baseResponse.getVersion());
-        assertNotEquals(unexpected, baseResponse.getVersion());
+        assertEquals(expected, baseResponse.version());
+        assertNotEquals(unexpected, baseResponse.version());
     }
 }

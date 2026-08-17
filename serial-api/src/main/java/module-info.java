@@ -2,6 +2,7 @@ module io.freedriver.serial.api {
     requires io.freedriver.math;
     requires java.logging;
     requires io.freedriver.base;
+    requires static lombok;
     exports io.freedriver.serial.api;
     exports io.freedriver.serial.api.connection;
     exports io.freedriver.serial.api.params;

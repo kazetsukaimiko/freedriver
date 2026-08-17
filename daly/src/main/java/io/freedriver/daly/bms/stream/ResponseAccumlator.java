@@ -15,13 +15,14 @@ public class ResponseAccumlator implements Accumulator<ByteArrayOutputStream, Re
      * @return
      */
     public static Response ofFullMessage(byte[] fullMessage) {
-        Response r = new Response();
-        r.setAddress(Address.ofByte(fullMessage[1]));
-        r.setQueryId(QueryId.ofByte(fullMessage[2]));
-        r.setDataLength(fullMessage[3]);
-        r.setData(Arrays.copyOfRange(fullMessage, 4, 4+r.getDataLength()));
-        r.setChecksum(fullMessage[fullMessage.length-1]);
-        return r;
+        int dataLength = fullMessage[3];
+        return Response.builder()
+                .address(Address.ofByte(fullMessage[1]))
+                .queryId(QueryId.ofByte(fullMessage[2]))
+                .dataLength(dataLength)
+                .data(Arrays.copyOfRange(fullMessage, 4, 4 + dataLength))
+                .checksum(fullMessage[fullMessage.length-1])
+                .build();
     }
 
     @Override

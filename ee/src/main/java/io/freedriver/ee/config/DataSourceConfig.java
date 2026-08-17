@@ -13,96 +13,42 @@ import javax.sql.DataSource;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.Builder;
 
-public class DataSourceConfig {
-    @JsonProperty("jakarta.persistence.jdbc.jndi")
-    private String jndi;
-    @JsonProperty("jakarta.persistence.jdbc.url")
-    private String urlString;
-    @JsonProperty("jakarta.persistence.jdbc.username")
-    private String username;
-    @JsonProperty("jakarta.persistence.jdbc.password")
-    private String password;
-    @JsonProperty("jakarta.persistence.jdbc.driver")
-    private String driverClassName;
-    @JsonProperty("jakarta.persistence.jdbc.properties")
-    private Map<String, String> driverProperties;
+@Builder(toBuilder = true)
+public record DataSourceConfig(
+        @JsonProperty("jakarta.persistence.jdbc.jndi") String jndi,
+        @JsonProperty("jakarta.persistence.jdbc.url") String urlString,
+        @JsonProperty("jakarta.persistence.jdbc.username") String username,
+        @JsonProperty("jakarta.persistence.jdbc.password") String password,
+        @JsonProperty("jakarta.persistence.jdbc.driver") String driverClassName,
+        @JsonProperty("jakarta.persistence.jdbc.properties") Map<String, String> driverProperties) {
 
-
-    public DataSourceConfig() {
-    }
-
-    public String getJndi() {
-        return jndi;
-    }
-
-    public void setJndi(String jndi) {
-        this.jndi = jndi;
-    }
-
-    public String getUrlString() {
-        return urlString;
-    }
-
-    public void setUrlString(String urlString) {
-        this.urlString = urlString;
-    }
-
-    public String getUsername() {
-        return username;
-    }
-
-    public void setUsername(String username) {
-        this.username = username;
-    }
-
-    public String getPassword() {
-        return password;
-    }
-
-    public void setPassword(String password) {
-        this.password = password;
-    }
-
-
-    public String getDriverClassName() {
-        return driverClassName;
-    }
-
-    public void setDriverClassName(String driverClassName) {
-        this.driverClassName = driverClassName;
-    }
-
-    public Map<String, String> getDriverProperties() {
-        return driverProperties != null
+    public DataSourceConfig {
+        driverProperties = driverProperties != null
                 ? driverProperties
                 : Collections.emptyMap();
-    }
-
-    public void setDriverProperties(Map<String, String> driverProperties) {
-        this.driverProperties = driverProperties;
     }
 
     @JsonIgnore
     public Properties getProperties() {
         Properties properties = new Properties();
-        getDriverProperties()
-                .forEach(properties::put);
+        driverProperties.forEach(properties::put);
         return properties;
     }
 
     @JsonIgnore
     public URL getURL() throws MalformedURLException {
-        return new URL(getUrlString());
+        return new URL(urlString);
     }
 
     @JsonIgnore
     public URI getURI() {
-        URI uri = URI.create(getUrlString());
-        if (getUsername() != null) {
-            String auth = getUsername();
-            if (getPassword() != null) {
-                auth = auth + ":" + getPassword();
+        URI uri = URI.create(urlString);
+        if (username != null) {
+            String auth = username;
+            if (password != null) {
+                auth = auth + ":" + password;
             }
             try {
                 return new URI(
@@ -124,7 +70,7 @@ public class DataSourceConfig {
     @JsonIgnore
     @SuppressWarnings("unchecked")
     public Class<? extends Driver> getDriverClass() throws ClassNotFoundException {
-        return (Class<? extends Driver>) Class.forName(getDriverClassName());
+        return (Class<? extends Driver>) Class.forName(driverClassName);
     }
 
     @JsonIgnore

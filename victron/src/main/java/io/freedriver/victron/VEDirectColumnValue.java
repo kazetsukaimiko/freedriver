@@ -1,32 +1,19 @@
 package io.freedriver.victron;
 
-import java.util.Objects;
 import java.util.Optional;
 
-public class VEDirectColumnValue {
-    private final VEDirectColumn column;
-    private final String stringRepresentation;
+import lombok.Builder;
 
-    public VEDirectColumnValue(VEDirectColumn column, String stringRepresentation) {
-        this.column = column;
-        this.stringRepresentation = stringRepresentation;
+@Builder(toBuilder = true)
+public record VEDirectColumnValue(VEDirectColumn column, String stringRepresentation) {
+
+    public Object value() {
+        return column().getDefinition().parser().apply(stringRepresentation);
     }
 
-    public Object getValue() {
-        return getColumn().getDefinition().parser().apply(stringRepresentation);
-    }
-
-    public VEDirectColumn getColumn() {
-        return column;
-    }
-
-    public String getStringRepresentation() {
-        return stringRepresentation;
-    }
-
-    public void apply(VEDirectMessage message) {
-        getColumn().getDefinition()
-                .apply(message, getStringRepresentation());
+    public VEDirectMessage apply(VEDirectMessage message) {
+        return column().getDefinition()
+                .apply(message, stringRepresentation());
     }
 
     public static Optional<VEDirectColumnValue> fromSerial(String line) {
@@ -41,22 +28,5 @@ public class VEDirectColumnValue {
 
     public String toSerialLine() {
         return column.getColumnName() + "    " + stringRepresentation;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        VEDirectColumnValue value = (VEDirectColumnValue) o;
-        return column == value.column &&
-                Objects.equals(stringRepresentation, value.stringRepresentation);
-    }
-
-    @Override
-    public String toString() {
-        return "VEDirectColumnValue{" +
-                "column=" + column +
-                ", stringRepresentation='" + stringRepresentation + '\'' +
-                '}';
     }
 }

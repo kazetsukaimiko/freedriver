@@ -1,55 +1,38 @@
 package io.freedriver.jsonlink.jackson.schema.v1;
 
-import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
-public class ReadRequest {
-    private Set<Identifier> digital = new HashSet<>();
-    private Set<AnalogRead> analog = new LinkedHashSet<>();
+import lombok.Builder;
 
-    public Set<Identifier> getDigital() {
-        return digital;
+@Builder(toBuilder = true)
+public record ReadRequest(Set<Identifier> digital, Set<AnalogRead> analog) {
+    public ReadRequest {
+        digital = digital == null ? Set.of() : Set.copyOf(digital);
+        analog = analog == null ? Set.of() : Set.copyOf(analog);
     }
 
-    public void setDigital(Set<Identifier> digital) {
-        this.digital = digital;
-    }
-
-    public Set<AnalogRead> getAnalog() {
-        return analog;
-    }
-
-    public void setAnalog(Set<AnalogRead> analog) {
-        this.analog = analog;
+    public static ReadRequest empty() {
+        return new ReadRequest(Set.of(), Set.of());
     }
 
     public ReadRequest readDigital(Identifier pinNumber) {
-        getDigital().add(pinNumber);
-        return this;
+        Set<Identifier> next = new LinkedHashSet<>(digital);
+        next.add(pinNumber);
+        return toBuilder().digital(next).build();
     }
 
     public ReadRequest readAnalog(Identifier pinNumber, float voltage, float resistance) {
-        getAnalog().add(new AnalogRead(pinNumber, voltage, resistance));
-        return this;
+        return readAnalog(new AnalogRead(pinNumber, voltage, resistance));
     }
 
     public ReadRequest readAnalog(AnalogRead analogRead) {
-        return readAnalog(
-                analogRead.getPin(),
-                analogRead.getVoltage(),
-                analogRead.getResistance());
+        Set<AnalogRead> next = new LinkedHashSet<>(analog);
+        next.add(analogRead);
+        return toBuilder().analog(next).build();
     }
 
     public boolean isEmpty() {
         return digital.isEmpty() && analog.isEmpty();
-    }
-
-    @Override
-    public String toString() {
-        return "ReadRequest{" +
-                "digital=" + digital +
-                ", analog=" + analog +
-                '}';
     }
 }

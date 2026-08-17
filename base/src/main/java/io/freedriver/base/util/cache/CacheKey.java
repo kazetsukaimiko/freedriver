@@ -4,17 +4,11 @@ import java.time.Instant;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicLong;
 
-public class CacheKey<K> implements Comparable<CacheKey<K>> {
-    private static final AtomicLong instanceCount = new AtomicLong(0);
-    private final long instanceId;
-    private final Instant created;
-    private final K key;
+import lombok.Builder;
 
-    private CacheKey(long instanceId, Instant created, K key) {
-        this.instanceId = instanceId;
-        this.created = created;
-        this.key = key;
-    }
+@Builder(toBuilder = true)
+public record CacheKey<K>(long instanceId, Instant created, K key) implements Comparable<CacheKey<K>> {
+    private static final AtomicLong instanceCount = new AtomicLong(0);
 
     public CacheKey(Instant created, K key) {
         this(instanceCount.getAndIncrement(), created, key);
@@ -22,14 +16,6 @@ public class CacheKey<K> implements Comparable<CacheKey<K>> {
 
     public CacheKey(K key) {
         this(Instant.now(), key);
-    }
-
-    public Instant getCreated() {
-        return created;
-    }
-
-    public K getKey() {
-        return key;
     }
 
     @Override

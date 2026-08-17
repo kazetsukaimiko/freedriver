@@ -6,8 +6,6 @@ public class ReadRequest extends Request {
     }
 
     public ReadRequest(QueryId queryId, Address address) {
-        super(DalyCommand.READ, new byte[8]);
-        setQueryId(queryId);
-        setAddress(address);
+        super(address, queryId, (byte) 0, DalyCommand.READ, new byte[8]);
     }
 }

@@ -13,11 +13,11 @@ public class FirmwareVersionTest {
         String fw = "C208";
         FirmwareVersion fwv = new FirmwareVersion(fw);
 
-        assertEquals(fw, fwv.getRepresentation());
-        assertEquals("C", fwv.getCandidate());
-        assertEquals(new BigDecimal("2.08"), fwv.getVersion());
-        assertNull(fwv.getBeta());
-        assertFalse(fwv.isRelease());
+        assertEquals(fw, fwv.representation());
+        assertEquals("C", fwv.candidate());
+        assertEquals(new BigDecimal("2.08"), fwv.version());
+        assertNull(fwv.beta());
+        assertFalse(fwv.release());
 
         assertEquals("v2.08-rc-C", fwv.toString());
     }
@@ -26,11 +26,11 @@ public class FirmwareVersionTest {
     public void testReleaseFWUseCase() {
         String fw = "208";
         FirmwareVersion fwv = new FirmwareVersion(fw);
-        assertEquals(fw, fwv.getRepresentation());
-        assertEquals(new BigDecimal("2.08"), fwv.getVersion());
-        assertNull(fwv.getBeta());
-        assertNull(fwv.getCandidate());
-        assertTrue(fwv.isRelease());
+        assertEquals(fw, fwv.representation());
+        assertEquals(new BigDecimal("2.08"), fwv.version());
+        assertNull(fwv.beta());
+        assertNull(fwv.candidate());
+        assertTrue(fwv.release());
 
         assertEquals("v2.08", fwv.toString());
     }
@@ -40,11 +40,11 @@ public class FirmwareVersionTest {
         String fwe = "0208FF";
         FirmwareVersion fwev = new FirmwareVersion(fwe);
 
-        assertEquals(fwe, fwev.getRepresentation());
-        assertEquals(new BigDecimal("2.08"), fwev.getVersion());
-        assertNull(fwev.getBeta());
-        assertNull(fwev.getCandidate());
-        assertTrue(fwev.isRelease());
+        assertEquals(fwe, fwev.representation());
+        assertEquals(new BigDecimal("2.08"), fwev.version());
+        assertNull(fwev.beta());
+        assertNull(fwev.candidate());
+        assertTrue(fwev.release());
 
         assertEquals("v2.08", fwev.toString());
     }
@@ -54,11 +54,11 @@ public class FirmwareVersionTest {
         String fwe = "20801";
         FirmwareVersion fwev = new FirmwareVersion(fwe);
 
-        assertEquals(fwe, fwev.getRepresentation());
-        assertEquals(new BigDecimal("2.08"), fwev.getVersion());
-        assertEquals("01", fwev.getBeta());
-        assertNull(fwev.getCandidate());
-        assertFalse(fwev.isRelease());
+        assertEquals(fwe, fwev.representation());
+        assertEquals(new BigDecimal("2.08"), fwev.version());
+        assertEquals("01", fwev.beta());
+        assertNull(fwev.candidate());
+        assertFalse(fwev.release());
 
         assertEquals("v2.08-beta-01", fwev.toString());
     }

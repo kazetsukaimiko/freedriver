@@ -20,6 +20,15 @@
         <jpa.api.version>2.2</jpa.api.version>
     </properties>
 
+    <dependencies>
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <version>${lombok.version}</version>
+            <scope>provided</scope>
+        </dependency>
+    </dependencies>
+
     <modules>
         <!-- bom first: provides all io.freedriver artifact versions + junit via its import. Root no longer lists reactor versions. -->
         <module>bom</module>

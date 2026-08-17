@@ -1,22 +1,24 @@
 package io.freedriver.jsonlink.jackson.schema.v1;
 
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
-public class WriteRequest {
-    private Map<Identifier, DigitalState> digital = new HashMap<>();
+import lombok.Builder;
 
-    public Map<Identifier, DigitalState> getDigital() {
-        return digital;
+@Builder(toBuilder = true)
+public record WriteRequest(Map<Identifier, DigitalState> digital) {
+    public WriteRequest {
+        digital = digital == null ? Map.of() : Map.copyOf(digital);
     }
 
-    public void setDigital(Map<Identifier, DigitalState> digital) {
-        this.digital = digital;
+    public static WriteRequest empty() {
+        return new WriteRequest(Map.of());
     }
 
     public WriteRequest writeDigital(DigitalWrite pinWrite) {
-        getDigital().put(pinWrite.getPinNumber(), pinWrite.getOperation());
-        return this;
+        Map<Identifier, DigitalState> next = new LinkedHashMap<>(digital);
+        next.put(pinWrite.pinNumber(), pinWrite.operation());
+        return toBuilder().digital(next).build();
     }
 
     public boolean isEmpty() {

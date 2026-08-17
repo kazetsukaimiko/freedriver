@@ -34,8 +34,8 @@ public class VEDirectMessageStream implements Iterable<VEDirectMessage> {
             public VEDirectMessage next() {
                 VEDirectMessage message = new VEDirectMessage();
                 VEDirectColumnValue columnValue = columnValueIterator.next();
-                while (columnValue.getColumn() != VEDirectColumn.CHECKSUM) {
-                    columnValue.apply(message);
+                while (columnValue.column() != VEDirectColumn.CHECKSUM) {
+                    message = columnValue.apply(message);
                     columnValue = columnValueIterator.next();
                 }
                 return message;

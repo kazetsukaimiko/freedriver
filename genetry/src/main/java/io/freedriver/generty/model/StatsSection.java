@@ -4,17 +4,10 @@ import java.math.BigDecimal;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.Builder;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class StatsSection {
-    @JsonProperty("KWh")
-    private BigDecimal KWh;
-
-    public BigDecimal getKWh() {
-        return KWh;
-    }
-
-    public void setKWh(BigDecimal KWh) {
-        this.KWh = KWh;
-    }
+@Builder(toBuilder = true)
+public record StatsSection(
+        @JsonProperty("KWh") BigDecimal KWh) {
 }

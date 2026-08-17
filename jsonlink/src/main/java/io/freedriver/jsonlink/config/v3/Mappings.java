@@ -13,32 +13,27 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import io.freedriver.base.util.file.DirectoryProviders;
 import io.freedriver.base.util.file.PathProvider;
 import io.freedriver.jsonlink.config.ConfigMapper;
+import lombok.Builder;
 
-public class Mappings {
+@Builder(toBuilder = true)
+public record Mappings(
+        Map<ApplianceDescriptor, Appliance> appliances,
+        Map<EventDescriptor, ControlEvent> controlEvents,
+        Map<EventDescriptor, List<ToggleAction>> toggleActions) {
 
     private static final String JSONLINK = "jsonlink";
     private static final String MAPPINGS = "mappings";
     private static final String APPLIANCES = "appliances";
     private static final String CONTROLS = "controls";
 
-    private final Map<ApplianceDescriptor, Appliance> appliances =  new LinkedHashMap<>();
-    private final Map<EventDescriptor, ControlEvent> controlEvents =  new LinkedHashMap<>();
-    private final Map<EventDescriptor, List<ToggleAction>> toggleActions = new LinkedHashMap<>();
-
-    public Map<ApplianceDescriptor, Appliance> getAppliances() {
-        return appliances;
-    }
-
-    public Map<EventDescriptor, ControlEvent> getControlEvents() {
-        return controlEvents;
-    }
-
-    public Map<EventDescriptor, List<ToggleAction>> getToggleActions() {
-        return toggleActions;
+    public Mappings {
+        appliances = appliances == null ? Map.of() : Map.copyOf(appliances);
+        controlEvents = controlEvents == null ? Map.of() : Map.copyOf(controlEvents);
+        toggleActions = toggleActions == null ? Map.of() : Map.copyOf(toggleActions);
     }
 
     public static Mappings load() throws IOException {
-        Mappings mappings = new Mappings();
+        Map<EventDescriptor, List<ToggleAction>> toggleActions = new LinkedHashMap<>();
         DirectoryProviders.CONFIG.getProvider()
                 .subdir(JSONLINK)
                 .subdir(MAPPINGS)
@@ -46,10 +41,12 @@ public class Mappings {
                 .files(path -> path.endsWith(".json"))
                 .map(PathProvider::get)
                 .forEach(controlFile -> loadJson(controlFile, new TypeReference<List<ToggleAction>>() {})
-                        .ifPresent(toggleAction -> mappings.getToggleActions().put(
+                        .ifPresent(toggleAction -> toggleActions.put(
                                 descriptor(EventDescriptor::new, controlFile),
                                 toggleAction
                         )));
+
+        Map<ApplianceDescriptor, Appliance> appliances = new LinkedHashMap<>();
         DirectoryProviders.CONFIG.getProvider()
                 .subdir(JSONLINK)
                 .subdir(MAPPINGS)
@@ -58,10 +55,12 @@ public class Mappings {
                 .files(path -> path.endsWith(".json"))
                 .map(PathProvider::get)
                 .forEach(applianceFile -> loadJson(applianceFile, Appliance.class)
-                        .ifPresent(appliance -> mappings.getAppliances().put(
+                        .ifPresent(appliance -> appliances.put(
                                 descriptor(ApplianceDescriptor::new, applianceFile),
                                 appliance
                         )));
+
+        Map<EventDescriptor, ControlEvent> controlEvents = new LinkedHashMap<>();
         DirectoryProviders.CONFIG.getProvider()
                 .subdir(JSONLINK)
                 .subdir(MAPPINGS)
@@ -70,20 +69,17 @@ public class Mappings {
                 .files(path -> path.endsWith(".json"))
                 .map(PathProvider::get)
                 .forEach(controlFile -> loadJson(controlFile, ControlEvent.class)
-                        .ifPresent(control -> mappings.getControlEvents().put(
+                        .ifPresent(control -> controlEvents.put(
                                 descriptor(EventDescriptor::new, controlFile),
                                 control
                         )));
 
-        return mappings;
+        return new Mappings(appliances, controlEvents, toggleActions);
     }
 
     private static <D extends Descriptor> D descriptor(Function<String, D> constructor, Path absolutePath) {
         return constructor.apply(absolutePath.getFileName().toString());
     }
-
-
-
 
     private static <T> Optional<T> loadJson(Path path, TypeReference<T> klazz) {
         try {

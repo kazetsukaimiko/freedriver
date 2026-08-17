@@ -11,6 +11,6 @@ public class AnalogPinNumberSerializer extends JsonSerializer<Identifier> {
 
     @Override
     public void serialize(Identifier pinNumber, JsonGenerator jsonGenerator, SerializerProvider serializerProvider) throws IOException {
-        jsonGenerator.writeStartObject("A"+pinNumber.getPin());
+        jsonGenerator.writeStartObject("A" + pinNumber.pin());
     }
 }

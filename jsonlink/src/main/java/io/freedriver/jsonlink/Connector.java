@@ -45,10 +45,10 @@ public interface Connector extends AutoCloseable {
      * Setup the board's UUID.
      */
     default UUID getUUID() throws ConnectorException {
-        return Optional.of(new Request())
+        return Optional.of(Request.empty())
                 .map(this::send)
-                .map(Response::getUuid)
-                .orElseGet(() -> send(new Request().newUuid()).getUuid());
+                .map(Response::uuid)
+                .orElseGet(() -> send(Request.empty().newUuid()).uuid());
     }
 
 

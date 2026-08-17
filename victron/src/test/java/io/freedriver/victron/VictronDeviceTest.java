@@ -21,29 +21,28 @@ public class VictronDeviceTest {
         Stream.of(UUID.randomUUID().toString(), UUID.randomUUID().toString())
                 .forEach(serial -> {
             Stream.of(VictronProduct.values())
-                    .map(type -> {
-                        VictronDevice vp = new VictronDevice();
-                        vp.setSerialNumber(serial);
-                        vp.setType(type);
-                        return vp;
-                    })
+                    .map(type -> VictronDevice.builder()
+                            .serialNumber(serial)
+                            .type(type)
+                            .build())
                     .peek(vp -> LOGGER.info(vp.toString()))
                     .forEach(vp -> {
-                        VEDirectMessage veDirectMessage = new VEDirectMessage();
-                        veDirectMessage.setSerialNumber(serial);
-                        veDirectMessage.setProductType(vp.getType());
+                        VEDirectMessage veDirectMessage = VEDirectMessage.builder()
+                                .serialNumber(serial)
+                                .productType(vp.type())
+                                .build();
 
                         victronDevices.add(vp);
 
-                        assertEquals(serial, vp.getSerialNumber());
-                        VictronProduct.byProductId(vp.getType().getProductId())
-                                .ifPresentOrElse(type -> assertEquals(type, vp.getType()), () ->
+                        assertEquals(serial, vp.serialNumber());
+                        VictronProduct.byProductId(vp.type().getProductId())
+                                .ifPresentOrElse(type -> assertEquals(type, vp.type()), () ->
                                         fail("Must be able to find VictronProductType by productId."));
 
-                        VictronProduct.byProductId(vp.getType().getProductIdHex())
-                                .ifPresentOrElse(type -> assertEquals(type, vp.getType()), () ->
+                        VictronProduct.byProductId(vp.type().getProductIdHex())
+                                .ifPresentOrElse(type -> assertEquals(type, vp.type()), () ->
                                         fail("Must be able to find VictronProductType by hexProductId: "
-                                        + vp.getType().getProductIdHex()
+                                        + vp.type().getProductIdHex()
                                         ));
 
                         VictronDevice.of(veDirectMessage)

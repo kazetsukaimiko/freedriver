@@ -75,14 +75,16 @@ public class SerialConnector implements Connector, AutoCloseable {
     public UUID makeRequest(Request request, Duration maxWait) throws ConnectorException {
         Future<UUID> future = pool.submit(() -> {
             try {
-                if (request.getRequestId() == null) {
-                    request.setRequestId(UUID.randomUUID());
-                    LOGGER.fine("Randomized requestId to: " + request.getRequestId());
+                Request outgoing = request.requestId() == null
+                        ? request.toBuilder().requestId(UUID.randomUUID()).build()
+                        : request;
+                if (request.requestId() == null) {
+                    LOGGER.fine("Randomized requestId to: " + outgoing.requestId());
                 }
-                String json = MAPPER.writeValueAsString(request);
+                String json = MAPPER.writeValueAsString(outgoing);
                 LOGGER.finer("Sending Request: ");
                 sendJSONRequest(json);
-                return request.getRequestId();
+                return outgoing.requestId();
             } catch (JsonProcessingException | SerialResourceException e) {
                 throw new ConnectorException("Couldn't marshall JSON", e);
             }
@@ -135,10 +137,10 @@ public class SerialConnector implements Connector, AutoCloseable {
     @Override
     public UUID getUUID() throws ConnectorException {
         if (uuid == null) {
-            uuid = Optional.of(new Request())
+            uuid = Optional.of(Request.empty())
                     .map(this::send)
-                    .map(Response::getUuid)
-                    .orElseGet(() -> send(new Request().newUuid()).getUuid());
+                    .map(Response::uuid)
+                    .orElseGet(() -> send(Request.empty().newUuid()).uuid());
         }
         return uuid;
     }

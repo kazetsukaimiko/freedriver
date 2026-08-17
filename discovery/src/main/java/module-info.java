@@ -3,4 +3,5 @@ module io.freedriver.discovery {
     requires java.desktop;
     requires java.logging;
     requires jmdns;
+    requires static lombok;
 }

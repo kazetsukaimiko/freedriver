@@ -4,17 +4,15 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import io.freedriver.jsonlink.jackson.AnalogPinNumberKeyDeserializer;
 import io.freedriver.jsonlink.jackson.AnalogPinNumberSerializer;
+import lombok.Builder;
 
+@Builder(toBuilder = true)
 @JsonSerialize(using = AnalogPinNumberSerializer.class)
 @JsonDeserialize(keyUsing = AnalogPinNumberKeyDeserializer.class)
-public class AnalogIdentifier extends Identifier {
-    public AnalogIdentifier(int pin) {
-        super(pin);
-    }
-
+public record AnalogIdentifier(int pin) {
     @Override
     public String toString() {
-        return "A"+super.toString();
+        return "A" + pin;
     }
 
     public static AnalogIdentifier of(String pin) {

@@ -57,7 +57,7 @@ public class VEDirectReaderTest {
         VEDirectDevice.allVEDirectDevices()
                 .peek(VEDirectDeviceTest::log)
                 .flatMap(VEDirectDevice::readAsColumns)
-                .takeWhile(col -> col.getColumn() != VEDirectColumn.CHECKSUM)
+                .takeWhile(col -> col.column() != VEDirectColumn.CHECKSUM)
                 .forEach(VEDirectDeviceTest::log);
     }
      */

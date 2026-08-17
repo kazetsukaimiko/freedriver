@@ -7,39 +7,11 @@ import java.util.stream.Stream;
 import io.freedriver.daly.bms.checksum.CRC8;
 
 public abstract class Signal {
-    private Address address;
-    private QueryId queryId;
-    private byte checksum;
-
-    public Signal() {
-    }
-
     public abstract int getDataLength();
     public abstract byte[] getData();
-
-    public Address getAddress() {
-        return address;
-    }
-
-    public void setAddress(Address address) {
-        this.address = address;
-    }
-
-    public QueryId getQueryId() {
-        return queryId;
-    }
-
-    public void setQueryId(QueryId queryId) {
-        this.queryId = queryId;
-    }
-
-    public byte getChecksum() {
-        return (byte) (checksum & 0xFF);
-    }
-
-    public void setChecksum(byte checksum) {
-        this.checksum = checksum;
-    }
+    public abstract Address getAddress();
+    public abstract QueryId getQueryId();
+    public abstract byte getChecksum();
 
     public static int dalyChecksum(byte[] command) {
         return CRC8.calc(command, command.length);
@@ -91,11 +63,11 @@ public abstract class Signal {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Signal signal = (Signal) o;
-        return address == signal.address && queryId == signal.queryId;
+        return getAddress() == signal.getAddress() && getQueryId() == signal.getQueryId();
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(address, queryId);
+        return Objects.hash(getAddress(), getQueryId());
     }
 }

@@ -10,5 +10,6 @@ module genetry.kibana {
     requires java.net.http;
     requires java.logging;
     requires java.desktop;
+    requires static lombok;
     exports io.freedriver.generty.kibana;
 }

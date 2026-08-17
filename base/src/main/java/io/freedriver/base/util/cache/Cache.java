@@ -69,7 +69,7 @@ public class Cache<K, V> extends CacheStorage<K, V> {
     public Set<K> keySet() {
         return map(map -> map.keySet()
                 .stream()
-                .map(CacheKey::getKey)
+                .map(CacheKey::key)
                 .collect(Collectors.toSet()));
     }
 
@@ -82,7 +82,7 @@ public class Cache<K, V> extends CacheStorage<K, V> {
     public Set<Entry<K, V>> entrySet() {
         return map(map -> map.entrySet()
                 .stream()
-                .map(e -> Map.entry(e.getKey().getKey(), e.getValue()))
+                .map(e -> Map.entry(e.getKey().key(), e.getValue()))
                 .collect(Collectors.toSet()));
     }
 }

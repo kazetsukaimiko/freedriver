@@ -1,63 +1,44 @@
 package io.freedriver.jsonlink.config;
 
-import java.util.HashSet;
-import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 import io.freedriver.jsonlink.config.v2.Appliance;
+import lombok.Builder;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.ToString;
+import lombok.extern.jackson.Jacksonized;
 
+@Getter
+@EqualsAndHashCode
+@ToString
+@Builder(toBuilder = true)
+@Jacksonized
 public class Mappings extends ConfigFile implements Migration<io.freedriver.jsonlink.config.v2.Mappings> {
-    private Set<Mapping> mappings = new HashSet<>();
+    private final Set<Mapping> mappings;
 
-    public Mappings() {
-    }
-
-    public Set<Mapping> getMappings() {
-        return mappings;
-    }
-
-    public void setMappings(Set<Mapping> mappings) {
-        this.mappings = mappings;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        Mappings mappings1 = (Mappings) o;
-        return Objects.equals(mappings, mappings1.mappings);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(mappings);
-    }
-
-    @Override
-    public String toString() {
-        return "Mappings{" +
-                "mappings=" + mappings +
-                '}';
+    public Mappings(Set<Mapping> mappings) {
+        this.mappings = mappings == null ? Set.of() : Set.copyOf(mappings);
     }
 
     @Override
     public io.freedriver.jsonlink.config.v2.Mappings migrate() {
-        io.freedriver.jsonlink.config.v2.Mappings mappings = new io.freedriver.jsonlink.config.v2.Mappings();
-        mappings.setMappings(getMappings().stream()
-                .map(this::migrateMapping).collect(Collectors.toSet()));
-        return mappings;
+        return io.freedriver.jsonlink.config.v2.Mappings.builder()
+                .mappings(mappings.stream()
+                        .map(this::migrateMapping)
+                        .collect(Collectors.toSet()))
+                .build();
     }
 
     public io.freedriver.jsonlink.config.v2.Mapping migrateMapping(Mapping config) {
-        io.freedriver.jsonlink.config.v2.Mapping mapping = new io.freedriver.jsonlink.config.v2.Mapping();
-        mapping.setConnectorId(config.getConnectorId());
-        mapping.setConnectorName(config.getConnectorName());
-        mapping.setAppliances(config.getPinNames().entrySet()
-                .stream()
-                .map(e -> new Appliance(e.getKey(), e.getValue()))
-                .collect(Collectors.toList()));
-        return mapping;
+        return io.freedriver.jsonlink.config.v2.Mapping.builder()
+                .connectorId(config.connectorId())
+                .connectorName(config.connectorName())
+                .appliances(config.pinNames().entrySet().stream()
+                        .map(e -> new Appliance(e.getKey(), e.getValue()))
+                        .collect(Collectors.toList()))
+                .build();
     }
 
     @Override

@@ -1,22 +1,7 @@
 package io.freedriver.generty.dc.model;
 
-public class LoRaEncryption {
-    private String keyId;
-    private LoRaEncryptionAlgorithm type;
+import lombok.Builder;
 
-    public String getKeyId() {
-        return keyId;
-    }
-
-    public void setKeyId(String keyId) {
-        this.keyId = keyId;
-    }
-
-    public LoRaEncryptionAlgorithm getType() {
-        return type;
-    }
-
-    public void setType(LoRaEncryptionAlgorithm type) {
-        this.type = type;
-    }
+@Builder(toBuilder = true)
+public record LoRaEncryption(String keyId, LoRaEncryptionAlgorithm type) {
 }

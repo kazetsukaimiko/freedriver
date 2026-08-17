@@ -14,7 +14,7 @@ public class Examples {
 
     @Test
     public void trySerialize() throws JsonProcessingException {
-        Request r = new Request()
+        Request r = Request.empty()
                 .analogRead(new AnalogRead(Identifier.of(0), 5, 10000));
         //r.setUuid(UUID.randomUUID());
         //r.setRequestId(UUID.randomUUID());

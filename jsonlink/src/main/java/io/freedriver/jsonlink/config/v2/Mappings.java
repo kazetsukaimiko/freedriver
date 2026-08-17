@@ -1,67 +1,32 @@
 package io.freedriver.jsonlink.config.v2;
 
 import java.time.temporal.ChronoUnit;
-import java.util.HashSet;
-import java.util.Objects;
 import java.util.Set;
 
 import io.freedriver.jsonlink.config.ConfigFile;
+import lombok.Builder;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.ToString;
+import lombok.extern.jackson.Jacksonized;
 
 @Deprecated
+@Getter
+@EqualsAndHashCode
+@ToString
+@Builder(toBuilder = true)
+@Jacksonized
 public class Mappings extends ConfigFile {
     private static final int DEFAULT_TTL_DAYS = 7;
 
-    private Integer eventTTL = DEFAULT_TTL_DAYS;
-    private ChronoUnit eventTTLUnit = ChronoUnit.DAYS;
-    private Set<Mapping> mappings = new HashSet<>();
+    private final Integer eventTTL;
+    private final ChronoUnit eventTTLUnit;
+    private final Set<Mapping> mappings;
 
-    public Mappings() {
-    }
-
-    public Integer getEventTTL() {
-        return eventTTL != null
-                ? eventTTL
-                : DEFAULT_TTL_DAYS;
-    }
-
-    public void setEventTTL(Integer eventTTL) {
-        this.eventTTL = eventTTL;
-    }
-
-    public ChronoUnit getEventTTLUnit() {
-        return eventTTLUnit;
-    }
-
-    public void setEventTTLUnit(ChronoUnit eventTTLUnit) {
-        this.eventTTLUnit = eventTTLUnit;
-    }
-
-    public Set<Mapping> getMappings() {
-        return mappings;
-    }
-
-    public void setMappings(Set<Mapping> mappings) {
-        this.mappings = mappings;
-    }
-
-    @Override
-    public String toString() {
-        return "Mappings{" +
-                "mappings=" + mappings +
-                '}';
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        Mappings mappings1 = (Mappings) o;
-        return Objects.equals(mappings, mappings1.mappings);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(mappings);
+    public Mappings(Integer eventTTL, ChronoUnit eventTTLUnit, Set<Mapping> mappings) {
+        this.eventTTL = eventTTL != null ? eventTTL : DEFAULT_TTL_DAYS;
+        this.eventTTLUnit = eventTTLUnit != null ? eventTTLUnit : ChronoUnit.DAYS;
+        this.mappings = mappings == null ? Set.of() : Set.copyOf(mappings);
     }
 
     @Override

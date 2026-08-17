@@ -1,9 +1,13 @@
 package io.freedriver.jsonlink.config.v3;
 
-import java.util.Objects;
-
 import com.fasterxml.jackson.annotation.JsonValue;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.ToString;
 
+@Getter
+@EqualsAndHashCode
+@ToString
 public abstract class Descriptor {
     private final String value;
 
@@ -14,18 +18,5 @@ public abstract class Descriptor {
     @JsonValue
     public String getValue() {
         return value;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        Descriptor that = (Descriptor) o;
-        return Objects.equals(value, that.value);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(value);
     }
 }

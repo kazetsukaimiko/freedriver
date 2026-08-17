@@ -1,22 +1,9 @@
 package io.freedriver.electrodacus.sbms;
 
-public class SBMSFieldValue {
-    private final SBMSField field;
-    private final String value;
+import lombok.Builder;
 
-    public SBMSFieldValue(SBMSField field, String value) {
-        this.field = field;
-        this.value = value;
-    }
-
-    public SBMSField getField() {
-        return field;
-    }
-
-    public String getValue() {
-        return value;
-    }
-
+@Builder(toBuilder = true)
+public record SBMSFieldValue(SBMSField field, String value) {
     @Override
     public String toString() {
         return field.name() + ": " + value;

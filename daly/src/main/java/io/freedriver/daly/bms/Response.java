@@ -1,29 +1,24 @@
 package io.freedriver.daly.bms;
 
+import lombok.Builder;
+import lombok.Getter;
+
+@Getter
 public class Response extends Signal {
 
-    private int dataLength = 0;
-    private byte[] data = new byte[0];
+    private final Address address;
+    private final QueryId queryId;
+    private final byte checksum;
+    private final int dataLength;
+    private final byte[] data;
 
-    public Response() {
-    }
-
-    @Override
-    public int getDataLength() {
-        return dataLength;
-    }
-
-    public void setDataLength(int dataLength) {
+    @Builder(toBuilder = true)
+    public Response(Address address, QueryId queryId, byte checksum, int dataLength, byte[] data) {
+        this.address = address;
+        this.queryId = queryId;
+        this.checksum = (byte) (checksum & 0xFF);
         this.dataLength = dataLength;
-    }
-
-    @Override
-    public byte[] getData() {
-        return data;
-    }
-
-    public void setData(byte[] data) {
-        this.data = data;
+        this.data = data == null ? new byte[0] : data;
     }
 
 }

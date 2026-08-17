@@ -8,4 +8,5 @@ module freedriver.genetry {
     requires io.freedriver.discovery;
     requires java.net.http;
     requires com.fasterxml.jackson.databind;
+    requires static lombok;
 }

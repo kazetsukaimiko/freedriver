@@ -57,9 +57,9 @@ public class CacheTest {
                 UUID key = UUID.randomUUID();
                 allKeys.add(key);
                 cache.put(key, UUID.randomUUID());
-                assertTrue(cache.size() <= settings.getMaxSize());
-                if (cache.size() == settings.getMaxSize()) {
-                    allKeys.subList(0, (int) (allKeys.size() - settings.getMaxSize()))
+                assertTrue(cache.size() <= settings.maxSize());
+                if (cache.size() == settings.maxSize()) {
+                    allKeys.subList(0, (int) (allKeys.size() - settings.maxSize()))
                             .forEach(deletedKey -> assertFalse(cache.containsKey(deletedKey)));
                 }
             });

@@ -5,7 +5,9 @@ import java.util.Objects;
 import io.freedriver.math.TemporalUnit;
 import io.freedriver.math.measurement.units.SIElectricalUnit;
 import io.freedriver.math.number.ScaledNumber;
+import lombok.Getter;
 
+@Getter
 public abstract class TemporalMeasurement<M extends TemporalMeasurement<M>> extends Measurement<M>  {
     private TemporalUnit temporalUnit;
     public TemporalMeasurement(ScaledNumber value, SIElectricalUnit SIUnit, TemporalUnit temporalUnit) {
@@ -14,14 +16,6 @@ public abstract class TemporalMeasurement<M extends TemporalMeasurement<M>> exte
     }
 
     public TemporalMeasurement() {
-    }
-
-    public TemporalUnit getTemporalUnit() {
-        return temporalUnit;
-    }
-
-    public void setTemporalUnit(TemporalUnit temporalUnit) {
-        this.temporalUnit = temporalUnit;
     }
 
     @Override
