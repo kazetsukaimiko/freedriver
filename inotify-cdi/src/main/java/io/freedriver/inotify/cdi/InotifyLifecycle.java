@@ -1,5 +1,6 @@
 package io.freedriver.inotify.cdi;
 
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
@@ -29,6 +30,10 @@ public class InotifyLifecycle {
     void start() {
         if (!watcher.isSupported()) {
             log.warning("inotify is not supported; filesystem hotplug events disabled");
+            return;
+        }
+        if (!Files.isDirectory(SERIAL_BY_ID)) {
+            log.warning("Serial hotplug path missing, skipping watch: " + SERIAL_BY_ID);
             return;
         }
         watcher.start();
