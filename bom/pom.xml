@@ -26,13 +26,14 @@
                 <scope>import</scope>
             </dependency>
 
-            <!-- Quarkus 3.37-aligned Jackson. Importing freedriver-bom (e.g. from
-                 autonomy-bom) must not re-pin jackson-databind 2.14 onto the Quarkus
-                 runtime; 2.14 lacks RecyclerPool and fails Quarkus 3 boot. -->
+            <!-- Jackson: same pattern as junit-bom. Single import here so the
+                 reactor and autonomy-bom (which imports freedriver-bom) share one
+                 aligned set. Quarkus 3.37 uses jackson-bom 2.22.0; annotations
+                 are 2.22, core/databind are 2.22.0. -->
             <dependency>
                 <groupId>com.fasterxml.jackson</groupId>
                 <artifactId>jackson-bom</artifactId>
-                <version>${jackson-bom.version}</version>
+                <version>2.22.0</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
