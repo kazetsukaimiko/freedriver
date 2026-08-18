@@ -179,6 +179,12 @@
 
             <dependency>
                 <groupId>io.freedriver</groupId>
+                <artifactId>mqtt-contract</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>io.freedriver</groupId>
                 <artifactId>electrodacus</artifactId>
                 <version>${project.version}</version>
             </dependency>

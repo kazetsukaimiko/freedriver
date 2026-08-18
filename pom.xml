@@ -58,6 +58,7 @@
         <module>genetry</module>
         <module>genetry-kibana</module>
         <module>jsonlink</module>
+        <module>mqtt-contract</module>
         <module>electrodacus</module>
         <module>ee</module>
 
