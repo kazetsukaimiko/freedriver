@@ -29,7 +29,9 @@ public final class LinuxByIdDiscovery {
             return links
                     .filter(Files::isSymbolicLink)
                     .filter(filter)
-                    .map(SerialDeviceIdentity::of);
+                    .map(SerialDeviceIdentity::of)
+                    .toList()
+                    .stream();
         } catch (IOException e) {
             throw new UncheckedIOException("Failed to scan " + BY_ID_ROOT, e);
         }

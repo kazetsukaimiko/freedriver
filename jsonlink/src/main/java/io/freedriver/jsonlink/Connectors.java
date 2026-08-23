@@ -111,7 +111,9 @@ public final class Connectors {
             return links
                     .filter(Files::isSymbolicLink)
                     .filter(path -> path.getFileName().toString().startsWith("usb-Arduino"))
-                    .map(Path::toAbsolutePath);
+                    .map(Path::toAbsolutePath)
+                    .toList()
+                    .stream();
         } catch (IOException e) {
             throw new UncheckedIOException("Failed to scan " + SERIAL_BY_ID, e);
         }
