@@ -30,9 +30,10 @@
     </dependencies>
 
     <modules>
-        <!-- bom first: provides all io.freedriver artifact versions + junit via its import. Root no longer lists reactor versions. -->
+        <!-- BOMs first: freedriver artifacts, Jakarta APIs, third-party. Root no longer lists reactor versions. -->
         <module>bom</module>
         <module>jakarta-bom</module>
+        <module>3p-bom</module>
 
         <module>base</module>
         <module>client</module>

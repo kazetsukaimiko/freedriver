@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+
+    <parent>
+        <groupId>io.freedriver</groupId>
+        <artifactId>freedriver-parent</artifactId>
+        <version>1.0.0-SNAPSHOT</version>
+    </parent>
+
+    <modelVersion>4.0.0</modelVersion>
+    <artifactId>freedriver-3p-bom</artifactId>
+    <packaging>pom</packaging>
+
+    <name>Freedriver Third-Party BOM</name>
+    <description>Third-party dependency versions only (not Jakarta APIs): Jackson, JUnit, Awaitility, Lombok. Import freedriver-bom for reactor artifacts and freedriver-jakarta-bom for Jakarta APIs.</description>
+
+    <dependencyManagement>
+        <dependencies>
+            <!-- Aligned with Quarkus 3.37 (jackson-bom 2.22.0). Keep this out of
+                 freedriver-bom so consumers can import artifact versions without
+                 pinning Jackson over a platform BOM. -->
+            <dependency>
+                <groupId>com.fasterxml.jackson</groupId>
+                <artifactId>jackson-bom</artifactId>
+                <version>2.22.0</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+
+            <dependency>
+                <groupId>org.junit</groupId>
+                <artifactId>junit-bom</artifactId>
+                <version>5.10.2</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+
+            <dependency>
+                <groupId>org.awaitility</groupId>
+                <artifactId>awaitility</artifactId>
+                <version>4.2.2</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.projectlombok</groupId>
+                <artifactId>lombok</artifactId>
+                <version>${lombok.version}</version>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+</project>
