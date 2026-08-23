@@ -13,53 +13,11 @@
     <packaging>pom</packaging>
 
     <name>Freedriver BOM</name>
-    <description>Bill of Materials for Freedriver library suite. Import this BOM to obtain consistent versions for all Freedriver artifacts (and transitive like JUnit 5). Root parent no longer manages these reactor versions.</description>
+    <description>Bill of Materials for Freedriver artifacts only. Import freedriver-jakarta-bom and/or freedriver-3p-bom separately for Jakarta APIs and third-party versions (Jackson, JUnit, Lombok).</description>
 
     <dependencyManagement>
         <dependencies>
-            <!-- JUnit 5 BOM: included here so importing freedriver-bom also manages junit-jupiter-* versions (no separate junit prop or list needed in root). -->
-            <dependency>
-                <groupId>org.junit</groupId>
-                <artifactId>junit-bom</artifactId>
-                <version>5.10.2</version>
-                <type>pom</type>
-                <scope>import</scope>
-            </dependency>
-
-            <!-- Jackson: same pattern as junit-bom. Single import here so the
-                 reactor and autonomy-bom (which imports freedriver-bom) share one
-                 aligned set. Quarkus 3.37 uses jackson-bom 2.22.0; annotations
-                 are 2.22, core/databind are 2.22.0. -->
-            <dependency>
-                <groupId>com.fasterxml.jackson</groupId>
-                <artifactId>jackson-bom</artifactId>
-                <version>2.22.0</version>
-                <type>pom</type>
-                <scope>import</scope>
-            </dependency>
-
-            <dependency>
-                <groupId>org.awaitility</groupId>
-                <artifactId>awaitility</artifactId>
-                <version>4.2.2</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.projectlombok</groupId>
-                <artifactId>lombok</artifactId>
-                <version>${lombok.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>io.freedriver</groupId>
-                <artifactId>freedriver-jakarta-bom</artifactId>
-                <version>${project.version}</version>
-                <type>pom</type>
-                <scope>import</scope>
-            </dependency>
-
-            <!-- Freedriver own artifacts. These were previously self-referenced with ${project.version} in the root pom's dependencyManagement.
-                 Now centralized here. Children import this BOM instead. Versions use ${project.version} so a single place for release bumps (prep for GH actions + maven version increment). -->
+            <!-- Freedriver own artifacts. Versions use ${project.version} so a single place for release bumps. -->
 
             <dependency>
                 <groupId>io.freedriver</groupId>
