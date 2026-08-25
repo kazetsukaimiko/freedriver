@@ -7,6 +7,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
@@ -103,15 +104,16 @@ public final class Connectors {
                 .findFirst();
     }
 
-    public static Stream<Path> allDevices() {
+    public static List<Path> allDevices() {
         if (!Files.isDirectory(SERIAL_BY_ID)) {
-            return Stream.empty();
+            return List.of();
         }
         try (Stream<Path> links = Files.list(SERIAL_BY_ID)) {
             return links
                     .filter(Files::isSymbolicLink)
                     .filter(path -> path.getFileName().toString().startsWith("usb-Arduino"))
-                    .map(Path::toAbsolutePath);
+                    .map(Path::toAbsolutePath)
+                    .toList();
         } catch (IOException e) {
             throw new UncheckedIOException("Failed to scan " + SERIAL_BY_ID, e);
         }

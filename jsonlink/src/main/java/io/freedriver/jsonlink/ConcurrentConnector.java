@@ -25,6 +25,11 @@ public class ConcurrentConnector extends ConcurrentConnectorBase {
     }
 
     @Override
+    public UUID getUUID() throws ConnectorException {
+        return map(Connector::getUUID);
+    }
+
+    @Override
     public String device() {
         return map(Connector::device);
     }
