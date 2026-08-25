@@ -1,6 +1,7 @@
 package io.freedriver.serial.api.connection;
 
 import java.nio.file.Path;
+import java.util.List;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
@@ -14,7 +15,7 @@ public interface SerialConnectionManager extends AutoCloseable {
 
     void stop();
 
-    Stream<SerialDeviceIdentity> discover(Predicate<Path> filter);
+    List<SerialDeviceIdentity> discover(Predicate<Path> filter);
 
     SerialConnectionHandle connect(Path byIdPath, SerialParams params);
 

@@ -5,6 +5,7 @@ import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.List;
 import java.util.Optional;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
@@ -21,17 +22,16 @@ public final class LinuxByIdDiscovery {
         return Files.isDirectory(BY_ID_ROOT);
     }
 
-    public static Stream<SerialDeviceIdentity> discover(Predicate<Path> filter) {
+    public static List<SerialDeviceIdentity> discover(Predicate<Path> filter) {
         if (!isSupported()) {
-            return Stream.empty();
+            return List.of();
         }
         try (Stream<Path> links = Files.list(BY_ID_ROOT)) {
             return links
                     .filter(Files::isSymbolicLink)
                     .filter(filter)
                     .map(SerialDeviceIdentity::of)
-                    .toList()
-                    .stream();
+                    .toList();
         } catch (IOException e) {
             throw new UncheckedIOException("Failed to scan " + BY_ID_ROOT, e);
         }

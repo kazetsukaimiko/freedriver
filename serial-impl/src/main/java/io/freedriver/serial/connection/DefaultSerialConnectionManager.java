@@ -71,7 +71,7 @@ public final class DefaultSerialConnectionManager implements SerialConnectionMan
     }
 
     @Override
-    public Stream<SerialDeviceIdentity> discover(Predicate<Path> filter) {
+    public List<SerialDeviceIdentity> discover(Predicate<Path> filter) {
         return LinuxByIdDiscovery.discover(filter);
     }
 
