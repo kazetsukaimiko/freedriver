@@ -1,12 +1,10 @@
 package io.freedriver.jsonlink;
 
 import java.io.IOException;
-import java.io.UncheckedIOException;
-import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -18,19 +16,22 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import io.freedriver.jsonlink.config.ConnectorConfig;
+import io.freedriver.jsonlink.config.DevicePathSupplier;
 import io.freedriver.serial.JSSCSerialResource;
 import io.freedriver.serial.api.SerialResource;
 import io.freedriver.serial.api.params.SerialParams;
 
 public final class Connectors {
     private static final Logger LOGGER = Logger.getLogger(Connectors.class.getName());
-    private static final Path SERIAL_BY_ID = Paths.get("/dev/serial/by-id");
     private static final Set<Connector> ALL_CONNECTORS = Collections.newSetFromMap(new ConcurrentHashMap<>());
     private static final Map<Path, FailedConnector> FAILED_CONNECTORS = new ConcurrentHashMap<>();
+    private static final Map<String, List<Path>> LAST_EXPANSIONS = new ConcurrentHashMap<>();
 
     private Connectors() {
         // Prevent Construction
@@ -49,13 +50,23 @@ public final class Connectors {
     private static synchronized Connector createConnector(ExecutorService pool, Path device) {
         LOGGER.info("Creating connector: " + device);
         SerialParams serialParams = new SerialParams();
-        //serialParams.setBaudRate(() -> SerialPort.BAUDRATE_115200);
         SerialResource serialResource = new JSSCSerialResource(device, serialParams);
         SerialConnector serialConnector = new SerialConnector(pool, serialResource);
-        LOGGER.info("Getting UUID:");
-        serialConnector.getUUID();
-        ALL_CONNECTORS.add(serialConnector);
-        return new ConcurrentConnector(serialConnector);
+        try {
+            LOGGER.info("Getting UUID from " + device);
+            UUID uuid = serialConnector.getUUID();
+            LOGGER.info("Got UUID " + uuid + " from " + device);
+            ALL_CONNECTORS.add(serialConnector);
+            return new ConcurrentConnector(serialConnector);
+        } catch (Exception e) {
+            LOGGER.log(Level.WARNING, "Failed to open connector " + device + ", closing port", e);
+            try {
+                serialConnector.close();
+            } catch (Exception close) {
+                e.addSuppressed(close);
+            }
+            throw e;
+        }
     }
 
     public static synchronized Map<Path, FailedConnector> getFailedConnectors() {
@@ -105,17 +116,49 @@ public final class Connectors {
     }
 
     public static List<Path> allDevices() {
-        if (!Files.isDirectory(SERIAL_BY_ID)) {
-            return List.of();
+        return uniqueDevicePaths(ConnectorConfig.load().devices());
+    }
+
+    static List<Path> uniqueDevicePaths(List<DevicePathSupplier> suppliers) {
+        LinkedHashMap<Path, Path> unique = new LinkedHashMap<>();
+        for (DevicePathSupplier supplier : suppliers) {
+            List<Path> expanded = List.copyOf(supplier.get());
+            logExpansion(supplier, expanded);
+            for (Path path : expanded) {
+                Path canonicalPath = canonical(path);
+                Path previous = unique.putIfAbsent(canonicalPath, path.toAbsolutePath());
+                if (previous != null) {
+                    LOGGER.fine("Skipping duplicate device path " + path + " (same as " + previous + ")");
+                }
+            }
         }
-        try (Stream<Path> links = Files.list(SERIAL_BY_ID)) {
-            return links
-                    .filter(Files::isSymbolicLink)
-                    .filter(path -> path.getFileName().toString().startsWith("usb-Arduino"))
-                    .map(Path::toAbsolutePath)
-                    .toList();
+        List<Path> discovered = List.copyOf(unique.values());
+        LOGGER.fine("Discovery unique device paths: " + discovered);
+        return discovered;
+    }
+
+    private static void logExpansion(DevicePathSupplier supplier, List<Path> expanded) {
+        String key = supplier.getClass().getSimpleName() + supplier;
+        List<Path> previous = LAST_EXPANSIONS.put(key, expanded);
+        if (Objects.equals(previous, expanded)) {
+            LOGGER.fine(() -> describeSupplier(supplier) + " expanded to paths " + expanded);
+            return;
+        }
+        LOGGER.info(describeSupplier(supplier) + " expanded to paths " + expanded);
+        if (expanded.isEmpty()) {
+            LOGGER.warning(describeSupplier(supplier) + " matched no serial device nodes");
+        }
+    }
+
+    private static String describeSupplier(DevicePathSupplier supplier) {
+        return "DevicePathSupplier " + supplier;
+    }
+
+    private static Path canonical(Path path) {
+        try {
+            return path.toRealPath();
         } catch (IOException e) {
-            throw new UncheckedIOException("Failed to scan " + SERIAL_BY_ID, e);
+            return path.toAbsolutePath().normalize();
         }
     }
 
