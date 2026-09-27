@@ -91,7 +91,11 @@ public class SerialConnector implements Connector, AutoCloseable {
         });
         try {
             return future.get(maxWait.toMillis(), TimeUnit.MILLISECONDS);
-        } catch (InterruptedException | ExecutionException | TimeoutException e) {
+        } catch (TimeoutException e) {
+            future.cancel(true);
+            throw new ConnectorTimeoutException("serial response", maxWait);
+        } catch (InterruptedException | ExecutionException e) {
+            future.cancel(true);
             throw new ConnectorException("Request failure: ", e);
         }
     }
@@ -113,7 +117,11 @@ public class SerialConnector implements Connector, AutoCloseable {
         });
         try {
             return future.get(maxWait.toMillis(), TimeUnit.MILLISECONDS);
-        } catch (InterruptedException | ExecutionException | TimeoutException e) {
+        } catch (TimeoutException e) {
+            future.cancel(true);
+            throw new ConnectorTimeoutException("serial response", maxWait);
+        } catch (InterruptedException | ExecutionException e) {
+            future.cancel(true);
             throw new ConnectorException("Request failure: ", e);
         }
     }

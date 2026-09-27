@@ -1,6 +1,7 @@
 package io.freedriver.serial.connection;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
@@ -45,6 +46,56 @@ class LinuxUsbSysfsDiscoveryTest {
         assertTrue(LinuxUsbSysfsDiscovery.discover(
                         tmp.resolve("missing"), tmp.resolve("dev"), UsbId.arduinoMega2560())
                 .isEmpty());
+    }
+
+    @Test
+    void findsRenumberedTtyAcmByVendorProduct() throws IOException {
+        Path sysClassTty = tmp.resolve("sys/class/tty");
+        Path devRoot = tmp.resolve("dev");
+        Files.createDirectories(devRoot);
+        createUsbTty(sysClassTty, devRoot, "ttyACM0", "1a86", "7523");
+        createUsbTty(sysClassTty, devRoot, "ttyACM1", "2341", "0042");
+
+        List<Path> found = LinuxUsbSysfsDiscovery.discover(
+                sysClassTty, devRoot, List.of(UsbId.ARDUINO_SA_MEGA_2560));
+
+        assertEquals(List.of(devRoot.resolve("ttyACM1")), found);
+    }
+
+    @Test
+    void discoversBoardWhenSerialByIdIsMissing() throws IOException {
+        Path sysClassTty = tmp.resolve("sys/class/tty");
+        Path devRoot = tmp.resolve("dev");
+        Files.createDirectories(devRoot);
+        createUsbTty(sysClassTty, devRoot, "ttyACM0", "2341", "0042");
+        Path byId = devRoot.resolve("serial/by-id");
+
+        assertFalse(Files.exists(byId));
+        assertEquals(
+                List.of(devRoot.resolve("ttyACM0")),
+                LinuxUsbSysfsDiscovery.discover(sysClassTty, devRoot, List.of(UsbId.ARDUINO_SA_MEGA_2560)));
+    }
+
+    @Test
+    void discoversBoardWhenSerialByIdLinkIsStale() throws IOException {
+        Path sysClassTty = tmp.resolve("sys/class/tty");
+        Path devRoot = tmp.resolve("dev");
+        Files.createDirectories(devRoot);
+        createUsbTty(sysClassTty, devRoot, "ttyACM1", "2341", "0042");
+        createUsbTty(sysClassTty, devRoot, "ttyUSB0", "1a86", "7523");
+        Path byId = devRoot.resolve("serial/by-id");
+        Files.createDirectories(byId);
+        Path dangling = byId.resolve("usb-Arduino_Mega_2560");
+        Path wrong = byId.resolve("usb-Arduino_wrong_tty");
+        Files.createSymbolicLink(dangling, devRoot.resolve("ttyACM0"));
+        Files.createSymbolicLink(wrong, devRoot.resolve("ttyUSB0"));
+
+        assertTrue(Files.isSymbolicLink(dangling));
+        assertFalse(Files.exists(dangling));
+        assertEquals(devRoot.resolve("ttyUSB0"), Files.readSymbolicLink(wrong));
+        assertEquals(
+                List.of(devRoot.resolve("ttyACM1")),
+                LinuxUsbSysfsDiscovery.discover(sysClassTty, devRoot, List.of(UsbId.ARDUINO_SA_MEGA_2560)));
     }
 
     @Test

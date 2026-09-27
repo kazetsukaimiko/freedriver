@@ -2,6 +2,8 @@ package io.freedriver.jsonlink;
 
 import java.io.IOException;
 import java.nio.file.Path;
+import java.time.Duration;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -23,8 +25,9 @@ import java.util.stream.Stream;
 
 import io.freedriver.jsonlink.config.ConnectorConfig;
 import io.freedriver.jsonlink.config.DevicePathSupplier;
-import io.freedriver.serial.JSSCSerialResource;
+import io.freedriver.serial.SerialRuntime;
 import io.freedriver.serial.api.SerialResource;
+import io.freedriver.serial.api.SerialResourceFactory;
 import io.freedriver.serial.api.params.SerialParams;
 
 public final class Connectors {
@@ -48,25 +51,125 @@ public final class Connectors {
     }
 
     private static synchronized Connector createConnector(ExecutorService pool, Path device) {
-        LOGGER.info("Creating connector: " + device);
-        SerialParams serialParams = new SerialParams();
-        SerialResource serialResource = new JSSCSerialResource(device, serialParams);
-        SerialConnector serialConnector = new SerialConnector(pool, serialResource);
-        try {
-            LOGGER.info("Getting UUID from " + device);
-            UUID uuid = serialConnector.getUUID();
-            LOGGER.info("Got UUID " + uuid + " from " + device);
-            ALL_CONNECTORS.add(serialConnector);
-            return new ConcurrentConnector(serialConnector);
-        } catch (Exception e) {
-            LOGGER.log(Level.WARNING, "Failed to open connector " + device + ", closing port", e);
+        SerialRuntime.ensureInstalled();
+        return openConnector(
+                pool,
+                device,
+                path -> SerialResourceFactory.Holder.create(path, new SerialParams()),
+                HandshakeRetry.defaults(),
+                Connectors::sleep);
+    }
+
+    /**
+     * Opens the port and reads the board UUID. Arduino auto-reset starts when the
+     * port opens, so each attempt waits {@link HandshakeRetry#retryDelay()} before
+     * the handshake. A failed attempt closes the port before the next try.
+     */
+    static synchronized Connector openConnector(
+            ExecutorService pool,
+            Path device,
+            Function<Path, SerialResource> resources,
+            HandshakeRetry retry,
+            Consumer<Duration> pause) {
+        Exception lastFailure = null;
+        for (int attempt = 1; attempt <= retry.maxAttempts(); attempt++) {
+            SerialResource serialResource = null;
+            SerialConnector serialConnector = null;
             try {
-                serialConnector.close();
-            } catch (Exception close) {
-                e.addSuppressed(close);
+                LOGGER.info("Creating connector: " + device + " (attempt " + attempt + "/" + retry.maxAttempts() + ")");
+                serialResource = resources.apply(device);
+                serialConnector = new SerialConnector(pool, serialResource);
+                if (!retry.retryDelay().isZero()) {
+                    LOGGER.info("Waiting " + retry.retryDelay().toMillis() + "ms for " + device + " to finish reset");
+                }
+                pause.accept(retry.retryDelay());
+                LOGGER.info("Getting UUID from " + device);
+                UUID uuid = serialConnector.getUUID();
+                LOGGER.info("Got UUID " + uuid + " from " + device);
+                ALL_CONNECTORS.add(serialConnector);
+                return new ConcurrentConnector(serialConnector);
+            } catch (Exception failure) {
+                lastFailure = failure;
+                LOGGER.log(
+                        Level.WARNING,
+                        "Getting UUID from " + device + " failed on attempt " + attempt + "/"
+                                + retry.maxAttempts() + " (" + describe(failure) + "), releasing serial port",
+                        failure);
+                release(serialConnector, serialResource, failure);
+                if (interrupted(failure)) {
+                    Thread.currentThread().interrupt();
+                    throw new ConnectorException("UUID handshake interrupted for " + device, failure);
+                }
             }
-            throw e;
         }
+        LOGGER.log(
+                Level.WARNING,
+                "UUID handshake failed for " + device + " after " + retry.maxAttempts()
+                        + " attempts; serial port is closed",
+                lastFailure);
+        throw new ConnectorException(
+                "UUID handshake failed for " + device + " after " + retry.maxAttempts() + " attempts",
+                lastFailure);
+    }
+
+    static synchronized void resetForTests() {
+        List<Connector> open = new ArrayList<>(ALL_CONNECTORS);
+        ALL_CONNECTORS.clear();
+        FAILED_CONNECTORS.clear();
+        for (Connector connector : open) {
+            try {
+                connector.close();
+            } catch (Exception ignored) {
+                // Tests only need the static registry empty and the port released.
+            }
+        }
+    }
+
+    private static void release(SerialConnector serialConnector, SerialResource serialResource, Exception failure) {
+        try {
+            if (serialConnector != null) {
+                serialConnector.close();
+                return;
+            }
+            if (serialResource != null) {
+                serialResource.close();
+            }
+        } catch (Exception close) {
+            failure.addSuppressed(close);
+        }
+    }
+
+    private static void sleep(Duration delay) {
+        if (delay == null || delay.isZero() || delay.isNegative()) {
+            return;
+        }
+        try {
+            Thread.sleep(delay.toMillis());
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new ConnectorException("Interrupted while waiting for the board to finish reset", e);
+        }
+    }
+
+    private static boolean interrupted(Throwable failure) {
+        for (Throwable current = failure; current != null; current = current.getCause()) {
+            if (current instanceof InterruptedException) {
+                return true;
+            }
+        }
+        return Thread.currentThread().isInterrupted();
+    }
+
+    private static String describe(Throwable failure) {
+        Throwable root = failure;
+        while (root.getCause() != null && root.getCause() != root) {
+            root = root.getCause();
+        }
+        String message = root.getMessage();
+        if (message == null || message.isBlank()) {
+            message = failure.getMessage();
+        }
+        return message == null || message.isBlank() ? failure.getClass().getSimpleName() : message;
     }
 
     public static synchronized Map<Path, FailedConnector> getFailedConnectors() {
