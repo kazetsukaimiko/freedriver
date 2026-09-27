@@ -13,12 +13,17 @@ import java.time.Duration;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.Queue;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 import java.util.logging.Handler;
 import java.util.logging.Level;
@@ -26,11 +31,15 @@ import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import io.freedriver.serial.JSSCSerialResource;
+import io.freedriver.serial.SerialRuntime;
 import io.freedriver.serial.api.SerialResource;
+import io.freedriver.serial.api.SerialResourceFactory;
 import io.freedriver.serial.api.exception.SerialResourceException;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 
 class ConnectorsHandshakeTest {
     private static final UUID BOARD_UUID = UUID.fromString("11111111-1111-1111-1111-111111111111");
@@ -55,6 +64,7 @@ class ConnectorsHandshakeTest {
         Connectors.resetForTests();
         pool.shutdownNow();
         OsExclusivePort.releaseAll();
+        SerialResourceFactory.Holder.install(JSSCSerialResource::new);
         System.clearProperty("jsonlink.handshake.maxAttempts");
         System.clearProperty("jsonlink.handshake.retryDelay");
     }
@@ -99,8 +109,73 @@ class ConnectorsHandshakeTest {
         assertTrue(ports.stream().noneMatch(FakePort::isOpened));
         assertFalse(events.contains("busy"));
         assertFalse(OsExclusivePort.isHeld(DEVICE.toString()));
+        assertTrue(Connectors.getFailedConnectors().containsKey(DEVICE));
+        assertFalse(Connectors.getFailedConnectors().get(DEVICE).failureExpired());
         OsExclusivePort reopened = OsExclusivePort.tryOpen(DEVICE.toString());
         reopened.release();
+    }
+
+    @Test
+    void findOrOpenBacksOffAfterFailedHandshake() {
+        SerialRuntime.ensureInstalled();
+        System.setProperty("jsonlink.handshake.maxAttempts", "2");
+        System.setProperty("jsonlink.handshake.retryDelay", "0");
+        SerialResourceFactory.Holder.install((path, params) -> openPort(path, Integer.MAX_VALUE, true));
+
+        ConnectorException failure = assertThrows(
+                ConnectorException.class, () -> Connectors.findOrOpen(pool, DEVICE));
+
+        assertEquals("UUID handshake failed for " + DEVICE + " after 2 attempts", failure.getMessage());
+        assertTrue(Connectors.getFailedConnectors().containsKey(DEVICE));
+        assertFalse(Connectors.getFailedConnectors().get(DEVICE).failureExpired());
+        assertEquals(2, ports.size());
+        assertTrue(ports.stream().noneMatch(FakePort::isOpened));
+        assertFalse(events.contains("busy"));
+
+        Optional<Connector> skipped = Connectors.findOrOpen(pool, DEVICE);
+        assertTrue(skipped.isEmpty());
+        assertEquals(2, ports.size());
+
+        assertFalse(OsExclusivePort.isHeld(DEVICE.toString()));
+        OsExclusivePort reopened = OsExclusivePort.tryOpen(DEVICE.toString());
+        reopened.release();
+    }
+
+    @Test
+    @Timeout(20)
+    void cancelsHungReaderAndReopensDevice() throws Exception {
+        ExecutorService readers = Executors.newSingleThreadExecutor(runnable -> {
+            Thread thread = new Thread(runnable, "jsonlink-hung-reader");
+            thread.setDaemon(true);
+            return thread;
+        });
+        AtomicBoolean interrupted = new AtomicBoolean();
+        AtomicReference<Thread> reader = new AtomicReference<>();
+        CountDownLatch entered = new CountDownLatch(1);
+        CountDownLatch exited = new CountDownLatch(1);
+        try {
+            ConnectorException failure = assertThrows(ConnectorException.class, () -> Connectors.openConnector(
+                    readers,
+                    DEVICE,
+                    path -> hungPort(path, interrupted, reader, entered, exited),
+                    new HandshakeRetry(1, Duration.ZERO),
+                    delay -> {
+                        delays.add(delay);
+                        events.add("delay");
+                    }));
+
+            assertTrue(entered.await(5, TimeUnit.SECONDS));
+            assertTrue(exited.await(5, TimeUnit.SECONDS));
+            assertTrue(interrupted.get());
+            assertTrue(events.contains("close"));
+            assertFalse(OsExclusivePort.isHeld(DEVICE.toString()));
+            assertTrue(failure.getMessage().contains(DEVICE.toString()));
+            assertTrue(failure.getMessage().contains("after 1 attempts"));
+            OsExclusivePort reopened = OsExclusivePort.tryOpen(DEVICE.toString());
+            reopened.release();
+        } finally {
+            readers.shutdownNow();
+        }
     }
 
     @Test
@@ -218,6 +293,66 @@ class ConnectorsHandshakeTest {
         ports.add(port);
         events.add("open");
         return port;
+    }
+
+    private SerialResource hungPort(
+            Path path,
+            AtomicBoolean interrupted,
+            AtomicReference<Thread> reader,
+            CountDownLatch entered,
+            CountDownLatch exited) {
+        OsExclusivePort device = OsExclusivePort.tryOpen(path.toString());
+        events.add("open");
+        return new SerialResource() {
+            private boolean opened = true;
+
+            @Override
+            public void write(byte[] array) {
+                if (!opened) {
+                    throw new SerialResourceException("Port busy");
+                }
+            }
+
+            @Override
+            public byte[] read(int size) {
+                reader.set(Thread.currentThread());
+                entered.countDown();
+                try {
+                    Thread.sleep(60_000);
+                    throw new SerialResourceException("hung read returned without cancel");
+                } catch (InterruptedException e) {
+                    interrupted.set(true);
+                    Thread.currentThread().interrupt();
+                    throw new SerialResourceException("Interrupted reading", e);
+                } finally {
+                    exited.countDown();
+                }
+            }
+
+            @Override
+            public void clear() {
+            }
+
+            @Override
+            public String getName() {
+                return path.toString();
+            }
+
+            @Override
+            public boolean isOpened() {
+                return opened;
+            }
+
+            @Override
+            public void close() {
+                if (!opened) {
+                    return;
+                }
+                opened = false;
+                device.release();
+                events.add("close");
+            }
+        };
     }
 
     /**

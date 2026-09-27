@@ -38,6 +38,16 @@ public class JSSCSerialResource implements SerialResource {
                 Thread.sleep(1000);
                 //clear();
             } catch (SerialPortException | InterruptedException e) {
+                if (serialPort.isOpened()) {
+                    try {
+                        serialPort.closePort();
+                    } catch (SerialPortException close) {
+                        e.addSuppressed(close);
+                    }
+                }
+                if (e instanceof InterruptedException) {
+                    Thread.currentThread().interrupt();
+                }
                 throw new SerialResourceException("Could not configure port " + serialPort.getPortName(), e);
             }
         }
@@ -53,6 +63,10 @@ public class JSSCSerialResource implements SerialResource {
     public byte[] read(int size) {
         try {
             while (true) {
+                if (Thread.interrupted()) {
+                    Thread.currentThread().interrupt();
+                    throw new SerialResourceException("Interrupted reading from " + serialPort.getPortName());
+                }
                 if (!serialPort.isOpened()) {
                     throw new SerialResourceException("Port closed " + serialPort.getPortName());
                 }

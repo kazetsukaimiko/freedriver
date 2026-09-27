@@ -49,7 +49,7 @@ public class EntityStream<R> implements Iterator<R>, AutoCloseable {
     public R next() {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         while (!accumulator.isComplete(baos)) {
-            if (closed) {
+            if (closed || Thread.currentThread().isInterrupted()) {
                 throw new IllegalStateException("Stream closed");
             }
             try {
@@ -59,7 +59,7 @@ public class EntityStream<R> implements Iterator<R>, AutoCloseable {
                 }
                 baos.write(value);
             } catch (IOException e) {
-                if (closed) {
+                if (closed || Thread.currentThread().isInterrupted()) {
                     throw new IllegalStateException("Stream closed", e);
                 }
             }

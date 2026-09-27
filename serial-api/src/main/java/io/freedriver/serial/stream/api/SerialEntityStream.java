@@ -15,9 +15,9 @@ public class SerialEntityStream<R> extends EntityStreamWithOutput<R> {
     }
 
     /**
-     * Releases the shared serial port. The byte streams do not close it, so a failed
-     * UUID handshake would otherwise leave the port open and the next open reports
-     * "Port busy".
+     * Closes both byte streams, each of which closes the shared port, then closes
+     * the port again. {@link SerialResource#close()} is idempotent, so a failed
+     * UUID handshake cannot leave the device open.
      */
     @Override
     public void close() throws Exception {

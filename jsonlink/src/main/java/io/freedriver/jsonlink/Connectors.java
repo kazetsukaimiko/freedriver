@@ -97,17 +97,29 @@ public final class Connectors {
                         failure);
                 release(serialConnector, serialResource, failure);
                 if (interrupted(failure)) {
+                    recordFailure(device);
                     Thread.currentThread().interrupt();
                     throw new ConnectorException("UUID handshake interrupted for " + device, failure);
                 }
             }
         }
+        recordFailure(device);
         LOGGER.warning(
                 "UUID handshake failed for " + device + " after " + retry.maxAttempts()
                         + " attempts; serial port is closed");
         throw new ConnectorException(
                 "UUID handshake failed for " + device + " after " + retry.maxAttempts() + " attempts",
                 lastFailure);
+    }
+
+    /**
+     * Keeps {@link #findOrOpen} from opening the device again until
+     * {@link FailedConnector#timedOut(String)} expires. Without this entry a caller
+     * retries immediately and, while the port is still held, logs "Port busy" on
+     * every pass.
+     */
+    private static void recordFailure(Path device) {
+        FAILED_CONNECTORS.put(device, FailedConnector.timedOut(device.toString()));
     }
 
     static synchronized void resetForTests() {
