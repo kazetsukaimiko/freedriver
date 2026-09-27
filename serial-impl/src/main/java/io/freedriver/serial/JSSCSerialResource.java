@@ -43,10 +43,27 @@ public class JSSCSerialResource implements SerialResource {
         }
     }
 
+    /**
+     * Waits for bytes with {@code FIONREAD} instead of {@code SerialPort.readBytes(int)}.
+     * That native call blocks in {@code select} and, on error or after {@code closePort},
+     * loops without returning, so the file description and {@code TIOCEXCL} lock can outlive
+     * {@code close()}. A handshake timeout then leaves the device busy for the next open.
+     */
     @Override
     public byte[] read(int size) {
         try {
-            return serialPort.readBytes(size);
+            while (true) {
+                if (!serialPort.isOpened()) {
+                    throw new SerialResourceException("Port closed " + serialPort.getPortName());
+                }
+                if (serialPort.getInputBufferBytesCount() >= size) {
+                    return serialPort.readBytes(size);
+                }
+                Thread.sleep(20);
+            }
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new SerialResourceException("Interrupted reading from " + serialPort.getPortName(), e);
         } catch (SerialPortException e) {
             throw new SerialResourceException("Exception reading from SerialResource", e);
         }

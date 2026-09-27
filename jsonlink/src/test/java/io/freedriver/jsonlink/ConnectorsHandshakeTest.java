@@ -15,6 +15,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Queue;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.function.Consumer;
@@ -52,6 +54,7 @@ class ConnectorsHandshakeTest {
     void tearDown() {
         Connectors.resetForTests();
         pool.shutdownNow();
+        OsExclusivePort.releaseAll();
         System.clearProperty("jsonlink.handshake.maxAttempts");
         System.clearProperty("jsonlink.handshake.retryDelay");
     }
@@ -95,6 +98,9 @@ class ConnectorsHandshakeTest {
         assertEquals(3, ports.size());
         assertTrue(ports.stream().noneMatch(FakePort::isOpened));
         assertFalse(events.contains("busy"));
+        assertFalse(OsExclusivePort.isHeld(DEVICE.toString()));
+        OsExclusivePort reopened = OsExclusivePort.tryOpen(DEVICE.toString());
+        reopened.release();
     }
 
     @Test
@@ -200,16 +206,51 @@ class ConnectorsHandshakeTest {
     }
 
     private SerialResource openPort(Path path, int failingOpens, boolean throwOnFail) {
-        FakePort previous = ports.isEmpty() ? null : ports.get(ports.size() - 1);
-        if (previous != null && previous.isOpened()) {
+        OsExclusivePort device;
+        try {
+            device = OsExclusivePort.tryOpen(path.toString());
+        } catch (SerialResourceException busy) {
             events.add("busy");
-            throw new SerialResourceException("Port busy");
+            throw busy;
         }
         boolean fail = ports.size() < failingOpens;
-        FakePort port = new FakePort(path, fail, throwOnFail, events);
+        FakePort port = new FakePort(path, fail, throwOnFail, events, device);
         ports.add(port);
         events.add("open");
         return port;
+    }
+
+    /**
+     * Exclusive open of one device path. A second open throws {@code Port busy} until
+     * {@link #release()} — the same rule as JSSC {@code TIOCEXCL}.
+     */
+    static final class OsExclusivePort {
+        private static final ConcurrentMap<String, OsExclusivePort> HELD = new ConcurrentHashMap<>();
+        private final String path;
+
+        private OsExclusivePort(String path) {
+            this.path = path;
+        }
+
+        static OsExclusivePort tryOpen(String path) {
+            OsExclusivePort port = new OsExclusivePort(path);
+            if (HELD.putIfAbsent(path, port) != null) {
+                throw new SerialResourceException("Port busy");
+            }
+            return port;
+        }
+
+        static boolean isHeld(String path) {
+            return HELD.containsKey(path);
+        }
+
+        static void releaseAll() {
+            HELD.clear();
+        }
+
+        void release() {
+            HELD.remove(path, this);
+        }
     }
 
     private static final class FakePort implements SerialResource {
@@ -217,15 +258,18 @@ class ConnectorsHandshakeTest {
         private final boolean fail;
         private final boolean throwOnFail;
         private final List<String> events;
+        private final OsExclusivePort device;
         private final Queue<Byte> pending = new ArrayDeque<>();
         private final ByteArrayOutputStream request = new ByteArrayOutputStream();
         private boolean opened = true;
 
-        private FakePort(Path path, boolean fail, boolean throwOnFail, List<String> events) {
+        private FakePort(
+                Path path, boolean fail, boolean throwOnFail, List<String> events, OsExclusivePort device) {
             this.name = path.toString();
             this.fail = fail;
             this.throwOnFail = throwOnFail;
             this.events = events;
+            this.device = device;
         }
 
         @Override
@@ -317,6 +361,7 @@ class ConnectorsHandshakeTest {
                 return;
             }
             opened = false;
+            device.release();
             events.add("close");
         }
 
