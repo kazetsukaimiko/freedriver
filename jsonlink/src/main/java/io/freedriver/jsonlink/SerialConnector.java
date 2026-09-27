@@ -33,6 +33,7 @@ public class SerialConnector implements Connector, AutoCloseable {
     private final ExecutorService pool;
     private final String device;
     private final SerialEntityStream<Response> serialEntityStream;
+    private final SerialResource serialResource;
 
     private UUID uuid;
 
@@ -40,18 +41,27 @@ public class SerialConnector implements Connector, AutoCloseable {
     private final Map<UUID, Response> responseMap = new ConcurrentHashMap<>();
 
     public SerialConnector(ExecutorService pool, String device, SerialEntityStream<Response> serialEntityStream) {
-        this.pool = pool;
-        this.device = device;
-        this.serialEntityStream = serialEntityStream;
-        LOGGER.info("Added Connector Device: " + device);
+        this(pool, device, serialEntityStream, null);
     }
 
     public SerialConnector(ExecutorService pool, SerialResource serialResource) {
         this(
                 pool,
                 serialResource.getName(),
-                new SerialEntityStream<>(serialResource, new ResponseAccumulator())
-        );
+                new SerialEntityStream<>(serialResource, new ResponseAccumulator()),
+                serialResource);
+    }
+
+    private SerialConnector(
+            ExecutorService pool,
+            String device,
+            SerialEntityStream<Response> serialEntityStream,
+            SerialResource serialResource) {
+        this.pool = pool;
+        this.device = device;
+        this.serialEntityStream = serialEntityStream;
+        this.serialResource = serialResource;
+        LOGGER.info("Added Connector Device: " + device);
     }
 
     /*
@@ -91,7 +101,14 @@ public class SerialConnector implements Connector, AutoCloseable {
         });
         try {
             return future.get(maxWait.toMillis(), TimeUnit.MILLISECONDS);
-        } catch (InterruptedException | ExecutionException | TimeoutException e) {
+        } catch (TimeoutException e) {
+            future.cancel(true);
+            throw new ConnectorTimeoutException("serial response", maxWait);
+        } catch (InterruptedException | ExecutionException e) {
+            future.cancel(true);
+            if (e instanceof InterruptedException) {
+                Thread.currentThread().interrupt();
+            }
             throw new ConnectorException("Request failure: ", e);
         }
     }
@@ -113,7 +130,14 @@ public class SerialConnector implements Connector, AutoCloseable {
         });
         try {
             return future.get(maxWait.toMillis(), TimeUnit.MILLISECONDS);
-        } catch (InterruptedException | ExecutionException | TimeoutException e) {
+        } catch (TimeoutException e) {
+            future.cancel(true);
+            throw new ConnectorTimeoutException("serial response", maxWait);
+        } catch (InterruptedException | ExecutionException e) {
+            future.cancel(true);
+            if (e instanceof InterruptedException) {
+                Thread.currentThread().interrupt();
+            }
             throw new ConnectorException("Request failure: ", e);
         }
     }
@@ -166,6 +190,12 @@ public class SerialConnector implements Connector, AutoCloseable {
     @Override
     public void close() throws Exception {
         LOGGER.log(Level.WARNING, "Closing serialEntityStream.");
-        serialEntityStream.close();
+        try {
+            serialEntityStream.close();
+        } finally {
+            if (serialResource != null) {
+                serialResource.close();
+            }
+        }
     }
 }

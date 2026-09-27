@@ -18,4 +18,19 @@ public class SerialInputStream extends InputStream {
         byte[] array = resource.read(1);
         return ByteConverter.byteArrayToInt(new byte[] {0x00, 0x00, 0x00, array[0]});
     }
+
+    /**
+     * {@link InputStream#close()} is a no-op. Closing this stream must release the
+     * shared port, or the next open reports "Port busy".
+     */
+    @Override
+    public void close() throws IOException {
+        try {
+            resource.close();
+        } catch (IOException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new IOException("Could not close " + resource.getName(), e);
+        }
+    }
 }

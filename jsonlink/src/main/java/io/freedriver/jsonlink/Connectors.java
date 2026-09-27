@@ -2,6 +2,9 @@ package io.freedriver.jsonlink;
 
 import java.io.IOException;
 import java.nio.file.Path;
+import java.time.Clock;
+import java.time.Duration;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -23,14 +26,16 @@ import java.util.stream.Stream;
 
 import io.freedriver.jsonlink.config.ConnectorConfig;
 import io.freedriver.jsonlink.config.DevicePathSupplier;
-import io.freedriver.serial.JSSCSerialResource;
+import io.freedriver.serial.SerialRuntime;
 import io.freedriver.serial.api.SerialResource;
+import io.freedriver.serial.api.SerialResourceFactory;
 import io.freedriver.serial.api.params.SerialParams;
 
 public final class Connectors {
     private static final Logger LOGGER = Logger.getLogger(Connectors.class.getName());
     private static final Set<Connector> ALL_CONNECTORS = Collections.newSetFromMap(new ConcurrentHashMap<>());
     private static final Map<Path, FailedConnector> FAILED_CONNECTORS = new ConcurrentHashMap<>();
+    private static final Map<Path, Object> DEVICE_LOCKS = new ConcurrentHashMap<>();
     private static final Map<String, List<Path>> LAST_EXPANSIONS = new ConcurrentHashMap<>();
 
     private Connectors() {
@@ -47,26 +52,167 @@ public final class Connectors {
                 .findFirst();
     }
 
-    private static synchronized Connector createConnector(ExecutorService pool, Path device) {
-        LOGGER.info("Creating connector: " + device);
-        SerialParams serialParams = new SerialParams();
-        SerialResource serialResource = new JSSCSerialResource(device, serialParams);
-        SerialConnector serialConnector = new SerialConnector(pool, serialResource);
-        try {
-            LOGGER.info("Getting UUID from " + device);
-            UUID uuid = serialConnector.getUUID();
-            LOGGER.info("Got UUID " + uuid + " from " + device);
-            ALL_CONNECTORS.add(serialConnector);
-            return new ConcurrentConnector(serialConnector);
-        } catch (Exception e) {
-            LOGGER.log(Level.WARNING, "Failed to open connector " + device + ", closing port", e);
-            try {
-                serialConnector.close();
-            } catch (Exception close) {
-                e.addSuppressed(close);
-            }
-            throw e;
+    private static Object deviceLock(Path device) {
+        return DEVICE_LOCKS.computeIfAbsent(device, ignored -> new Object());
+    }
+
+    private static Connector createConnector(ExecutorService pool, Path device) {
+        SerialRuntime.ensureInstalled();
+        return attemptOpen(
+                pool,
+                device,
+                path -> SerialResourceFactory.Holder.create(path, new SerialParams()),
+                HandshakeRetry.defaults(),
+                Connectors::sleep);
+    }
+
+    /**
+     * Opens the port and reads the board UUID. Attempts for one path are serialized
+     * on that path, and the registry lock is taken only to publish the connector or
+     * the backoff entry. A hung handshake on one board does not block lookup of another.
+     *
+     * <p>Arduino auto-reset starts when the port opens, so each attempt waits
+     * {@link HandshakeRetry#retryDelay()} before the handshake. The same wait runs
+     * before every attempt after the first, including when the previous open threw.
+     * A failed attempt closes the port before the next try.
+     */
+    static Connector openConnector(
+            ExecutorService pool,
+            Path device,
+            Function<Path, SerialResource> resources,
+            HandshakeRetry retry,
+            Consumer<Duration> pause) {
+        synchronized (deviceLock(device)) {
+            return attemptOpen(pool, device, resources, retry, pause);
         }
+    }
+
+    private static Connector attemptOpen(
+            ExecutorService pool,
+            Path device,
+            Function<Path, SerialResource> resources,
+            HandshakeRetry retry,
+            Consumer<Duration> pause) {
+        Exception lastFailure = null;
+        for (int attempt = 1; attempt <= retry.maxAttempts(); attempt++) {
+            if (attempt > 1) {
+                waitForReset(device, retry, pause);
+            }
+            SerialResource serialResource = null;
+            SerialConnector serialConnector = null;
+            try {
+                LOGGER.info("Creating connector: " + device + " (attempt " + attempt + "/" + retry.maxAttempts() + ")");
+                serialResource = resources.apply(device);
+                serialConnector = new SerialConnector(pool, serialResource);
+                waitForReset(device, retry, pause);
+                LOGGER.info("Getting UUID from " + device);
+                UUID uuid = serialConnector.getUUID();
+                LOGGER.info("Got UUID " + uuid + " from " + device);
+                publish(serialConnector);
+                return new ConcurrentConnector(serialConnector);
+            } catch (Exception failure) {
+                lastFailure = failure;
+                LOGGER.log(
+                        Level.WARNING,
+                        "Getting UUID from " + device + " failed on attempt " + attempt + "/"
+                                + retry.maxAttempts() + " (" + describe(failure) + "), releasing serial port",
+                        failure);
+                release(serialConnector, serialResource, failure);
+                if (interrupted(failure)) {
+                    recordFailure(device);
+                    Thread.currentThread().interrupt();
+                    throw new ConnectorException("UUID handshake interrupted for " + device, failure);
+                }
+            }
+        }
+        recordFailure(device);
+        LOGGER.warning(
+                "UUID handshake failed for " + device + " after " + retry.maxAttempts()
+                        + " attempts; serial port is closed");
+        throw new ConnectorException(
+                "UUID handshake failed for " + device + " after " + retry.maxAttempts() + " attempts",
+                lastFailure);
+    }
+
+    private static void waitForReset(Path device, HandshakeRetry retry, Consumer<Duration> pause) {
+        if (!retry.retryDelay().isZero()) {
+            LOGGER.info("Waiting " + retry.retryDelay().toMillis() + "ms for " + device + " to finish reset");
+        }
+        pause.accept(retry.retryDelay());
+    }
+
+    private static synchronized void publish(SerialConnector serialConnector) {
+        ALL_CONNECTORS.add(serialConnector);
+    }
+
+    /**
+     * Keeps {@link #findOrOpen} from opening this path again until
+     * {@link FailedConnector#timedOut(String)} expires. The key is the device path,
+     * so a board that reappears as another tty node is not held back.
+     */
+    private static synchronized void recordFailure(Path device) {
+        FAILED_CONNECTORS.put(device, FailedConnector.timedOut(device.toString()));
+    }
+
+    static synchronized void resetForTests() {
+        FailedConnector.useClock(Clock.systemUTC());
+        List<Connector> open = new ArrayList<>(ALL_CONNECTORS);
+        ALL_CONNECTORS.clear();
+        FAILED_CONNECTORS.clear();
+        for (Connector connector : open) {
+            try {
+                connector.close();
+            } catch (Exception ignored) {
+                // Tests only need the static registry empty and the port released.
+            }
+        }
+    }
+
+    private static void release(SerialConnector serialConnector, SerialResource serialResource, Exception failure) {
+        try {
+            if (serialConnector != null) {
+                serialConnector.close();
+                return;
+            }
+            if (serialResource != null) {
+                serialResource.close();
+            }
+        } catch (Exception close) {
+            failure.addSuppressed(close);
+        }
+    }
+
+    private static void sleep(Duration delay) {
+        if (delay == null || delay.isZero() || delay.isNegative()) {
+            return;
+        }
+        try {
+            Thread.sleep(delay.toMillis());
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new ConnectorException("Interrupted while waiting for the board to finish reset", e);
+        }
+    }
+
+    private static boolean interrupted(Throwable failure) {
+        for (Throwable current = failure; current != null; current = current.getCause()) {
+            if (current instanceof InterruptedException) {
+                return true;
+            }
+        }
+        return Thread.currentThread().isInterrupted();
+    }
+
+    private static String describe(Throwable failure) {
+        Throwable root = failure;
+        while (root.getCause() != null && root.getCause() != root) {
+            root = root.getCause();
+        }
+        String message = root.getMessage();
+        if (message == null || message.isBlank()) {
+            message = failure.getMessage();
+        }
+        return message == null || message.isBlank() ? failure.getClass().getSimpleName() : message;
     }
 
     public static synchronized Map<Path, FailedConnector> getFailedConnectors() {
@@ -78,33 +224,42 @@ public final class Connectors {
         return FAILED_CONNECTORS;
     }
 
-    public static synchronized Optional<Connector> findOrOpen(ExecutorService pool, Path device) {
-        Optional<Connector> found = findByDeviceId(device);
-        if (found.isPresent()) {
-            LOGGER.info("Found existing Connector device: " + device);
-            Connector inQuestion = found.get();
-            if (inQuestion.isClosed()) {
-                ALL_CONNECTORS.remove(inQuestion);
-            } else {
+    public static Optional<Connector> findOrOpen(ExecutorService pool, Path device) {
+        synchronized (deviceLock(device)) {
+            Optional<Connector> found = findOpen(device);
+            if (found.isPresent()) {
+                LOGGER.info("Found existing Connector device: " + device);
                 return found;
             }
-        } else {
             LOGGER.info("No existing Connector device: " + device);
-        }
-        if (!getFailedConnectors().containsKey(device)) {
+            if (backedOff(device)) {
+                LOGGER.info("Connector device " + device + " in failed state!");
+                return Optional.empty();
+            }
             return Optional.of(createConnector(pool, device));
         }
-        LOGGER.info("Connector device " + device + " in failed state!");
-        return Optional.empty();
     }
 
-    public static synchronized CompletableFuture<Optional<Connector>> findOrOpenAsync(
+    private static synchronized Optional<Connector> findOpen(Path device) {
+        Optional<Connector> found = findByDeviceId(device);
+        if (found.isPresent() && found.get().isClosed()) {
+            ALL_CONNECTORS.remove(found.get());
+            return Optional.empty();
+        }
+        return found;
+    }
+
+    private static synchronized boolean backedOff(Path device) {
+        return getFailedConnectors().containsKey(device);
+    }
+
+    public static CompletableFuture<Optional<Connector>> findOrOpenAsync(
             Path device, ExecutorService pool) {
         return CompletableFuture
                 .supplyAsync(() -> findOrOpen(pool, device), pool);
     }
 
-    public static synchronized CompletableFuture<Void> findOrOpenAndConsume(
+    public static CompletableFuture<Void> findOrOpenAndConsume(
             Path device, ExecutorService pool, Consumer<Connector> onCompletion) {
         return findOrOpenAsync(device, pool)
                 .thenAccept(optional -> optional.ifPresent(onCompletion));
