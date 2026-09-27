@@ -9,7 +9,11 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.io.ByteArrayOutputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
+import java.time.Clock;
 import java.time.Duration;
+import java.time.Instant;
+import java.time.ZoneId;
+import java.time.ZoneOffset;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.List;
@@ -21,8 +25,10 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 import java.util.logging.Handler;
@@ -31,6 +37,7 @@ import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import io.freedriver.jsonlink.jackson.schema.v1.Request;
 import io.freedriver.serial.JSSCSerialResource;
 import io.freedriver.serial.SerialRuntime;
 import io.freedriver.serial.api.SerialResource;
@@ -61,6 +68,7 @@ class ConnectorsHandshakeTest {
 
     @AfterEach
     void tearDown() {
+        Thread.interrupted();
         Connectors.resetForTests();
         pool.shutdownNow();
         OsExclusivePort.releaseAll();
@@ -75,9 +83,9 @@ class ConnectorsHandshakeTest {
 
         assertEquals(BOARD_UUID, connector.getUUID());
         assertEquals(
-                List.of("open", "delay", "write", "write", "close", "open", "delay", "write"),
+                List.of("open", "delay", "write", "write", "close", "delay", "open", "delay", "write"),
                 events);
-        assertEquals(List.of(RESET_DELAY, RESET_DELAY), delays);
+        assertEquals(List.of(RESET_DELAY, RESET_DELAY, RESET_DELAY), delays);
         assertEquals(2, ports.size());
         assertFalse(ports.get(0).isOpened());
         assertTrue(ports.get(1).isOpened());
@@ -101,10 +109,10 @@ class ConnectorsHandshakeTest {
         assertEquals(
                 List.of(
                         "open", "delay", "write", "close",
-                        "open", "delay", "write", "close",
-                        "open", "delay", "write", "close"),
+                        "delay", "open", "delay", "write", "close",
+                        "delay", "open", "delay", "write", "close"),
                 events);
-        assertEquals(List.of(RESET_DELAY, RESET_DELAY, RESET_DELAY), delays);
+        assertEquals(List.of(RESET_DELAY, RESET_DELAY, RESET_DELAY, RESET_DELAY, RESET_DELAY), delays);
         assertEquals(3, ports.size());
         assertTrue(ports.stream().noneMatch(FakePort::isOpened));
         assertFalse(events.contains("busy"));
@@ -209,10 +217,10 @@ class ConnectorsHandshakeTest {
         assertEquals(
                 List.of(
                         "open", "delay", "write", "write", "close",
-                        "open", "delay", "write", "write", "close",
-                        "open", "delay", "write"),
+                        "delay", "open", "delay", "write", "write", "close",
+                        "delay", "open", "delay", "write"),
                 events);
-        assertEquals(List.of(RESET_DELAY, RESET_DELAY, RESET_DELAY), delays);
+        assertEquals(List.of(RESET_DELAY, RESET_DELAY, RESET_DELAY, RESET_DELAY, RESET_DELAY), delays);
     }
 
     @Test
@@ -239,6 +247,206 @@ class ConnectorsHandshakeTest {
 
         System.setProperty("jsonlink.handshake.maxAttempts", "0");
         assertEquals(HandshakeRetry.DEFAULT_MAX_ATTEMPTS, HandshakeRetry.defaults().maxAttempts());
+    }
+
+    @Test
+    void findOrOpenRetriesAfterBackoffExpires() {
+        SerialRuntime.ensureInstalled();
+        ManualClock clock = new ManualClock(Instant.parse("2026-09-27T00:00:00Z"));
+        FailedConnector.useClock(clock);
+        System.setProperty("jsonlink.handshake.maxAttempts", "3");
+        System.setProperty("jsonlink.handshake.retryDelay", "0");
+        SerialResourceFactory.Holder.install((path, params) -> openPort(path, 3, true));
+
+        assertThrows(ConnectorException.class, () -> Connectors.findOrOpen(pool, DEVICE));
+        assertEquals(3, ports.size());
+        assertTrue(ports.stream().noneMatch(FakePort::isOpened));
+        assertTrue(Connectors.getFailedConnectors().containsKey(DEVICE));
+
+        Optional<Connector> skipped = Connectors.findOrOpen(pool, DEVICE);
+        assertTrue(skipped.isEmpty());
+        assertEquals(3, ports.size());
+
+        clock.advance(Duration.ofSeconds(31));
+        Optional<Connector> reopened = Connectors.findOrOpen(pool, DEVICE);
+        assertTrue(reopened.isPresent());
+        assertEquals(BOARD_UUID, reopened.get().getUUID());
+        assertEquals(4, ports.size());
+        assertFalse(ports.get(0).isOpened());
+        assertFalse(ports.get(1).isOpened());
+        assertFalse(ports.get(2).isOpened());
+        assertTrue(ports.get(3).isOpened());
+        assertFalse(Connectors.getFailedConnectors().containsKey(DEVICE));
+    }
+
+    @Test
+    void waitsResetDelayWhenOpenThrowsAndReleasesOpenedPorts() {
+        AtomicInteger calls = new AtomicInteger();
+        ConnectorException failure = assertThrows(ConnectorException.class, () -> Connectors.openConnector(
+                pool,
+                DEVICE,
+                path -> {
+                    if (calls.incrementAndGet() <= 2) {
+                        events.add("throw");
+                        throw new SerialResourceException("Port busy");
+                    }
+                    return openPort(path, Integer.MAX_VALUE, true);
+                },
+                new HandshakeRetry(3, RESET_DELAY),
+                delay -> {
+                    delays.add(delay);
+                    events.add("delay");
+                }));
+
+        assertEquals("UUID handshake failed for " + DEVICE + " after 3 attempts", failure.getMessage());
+        assertEquals(List.of(RESET_DELAY, RESET_DELAY, RESET_DELAY), delays);
+        assertEquals(
+                List.of("throw", "delay", "throw", "delay", "open", "delay", "write", "close"),
+                events);
+        assertEquals(1, ports.size());
+        assertFalse(ports.get(0).isOpened());
+        assertFalse(OsExclusivePort.isHeld(DEVICE.toString()));
+        OsExclusivePort reopened = OsExclusivePort.tryOpen(DEVICE.toString());
+        reopened.release();
+    }
+
+    @Test
+    @Timeout(10)
+    void sendKeepsInterruptFlagWhenCallerIsInterrupted() throws Exception {
+        CountDownLatch writeEntered = new CountDownLatch(1);
+        SerialResource blocking = new SerialResource() {
+            private boolean opened = true;
+
+            @Override
+            public void write(byte[] array) {
+                writeEntered.countDown();
+                try {
+                    Thread.sleep(60_000);
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                    throw new SerialResourceException("interrupted", e);
+                }
+            }
+
+            @Override
+            public byte[] read(int size) {
+                throw new SerialResourceException("no response");
+            }
+
+            @Override
+            public void clear() {
+            }
+
+            @Override
+            public String getName() {
+                return DEVICE.toString();
+            }
+
+            @Override
+            public boolean isOpened() {
+                return opened;
+            }
+
+            @Override
+            public void close() {
+                opened = false;
+            }
+        };
+        SerialConnector connector = new SerialConnector(pool, blocking);
+        Thread caller = Thread.currentThread();
+        Thread interrupter = new Thread(() -> {
+            try {
+                if (writeEntered.await(5, TimeUnit.SECONDS)) {
+                    caller.interrupt();
+                }
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
+        }, "interrupt-send-caller");
+        interrupter.setDaemon(true);
+        interrupter.start();
+        try {
+            assertThrows(ConnectorException.class, () -> connector.send(Request.empty()));
+            assertTrue(Thread.currentThread().isInterrupted());
+        } finally {
+            Thread.interrupted();
+            connector.close();
+            interrupter.join(1_000);
+        }
+    }
+
+    @Test
+    @Timeout(10)
+    void hungHandshakeDoesNotBlockLookupOfAnotherBoard() throws Exception {
+        Connector ready = open(0, false);
+        assertEquals(BOARD_UUID, ready.getUUID());
+
+        Path other = Path.of("/dev/ttyACM1");
+        CountDownLatch handshakeEntered = new CountDownLatch(1);
+        CountDownLatch releaseHang = new CountDownLatch(1);
+        ExecutorService readers = Executors.newSingleThreadExecutor(runnable -> {
+            Thread thread = new Thread(runnable, "other-board-reader");
+            thread.setDaemon(true);
+            return thread;
+        });
+        ExecutorService opener = Executors.newSingleThreadExecutor(runnable -> {
+            Thread thread = new Thread(runnable, "other-board-open");
+            thread.setDaemon(true);
+            return thread;
+        });
+        Future<?> hanging = opener.submit(() -> Connectors.openConnector(
+                readers,
+                other,
+                path -> hungUntil(path, handshakeEntered, releaseHang),
+                new HandshakeRetry(1, Duration.ZERO),
+                delay -> {
+                }));
+        try {
+            assertTrue(handshakeEntered.await(5, TimeUnit.SECONDS));
+            long started = System.nanoTime();
+            Optional<Connector> found = Connectors.getConnector(BOARD_UUID);
+            long elapsedMs = TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - started);
+            assertTrue(found.isPresent());
+            assertEquals(BOARD_UUID, found.get().getUUID());
+            assertTrue(elapsedMs < 1_000, "getConnector took " + elapsedMs + "ms");
+        } finally {
+            releaseHang.countDown();
+            try {
+                hanging.get(5, TimeUnit.SECONDS);
+            } catch (Exception ignored) {
+                // The hung handshake is released by failing the blocked read.
+            }
+            opener.shutdownNow();
+            readers.shutdownNow();
+        }
+    }
+
+    @Test
+    void renumberedPathOpensWhilePreviousPathIsBackedOff() {
+        SerialRuntime.ensureInstalled();
+        Path acm0 = Path.of("/dev/ttyACM0");
+        Path acm1 = Path.of("/dev/ttyACM1");
+        System.setProperty("jsonlink.handshake.maxAttempts", "3");
+        System.setProperty("jsonlink.handshake.retryDelay", "0");
+        SerialResourceFactory.Holder.install((path, params) -> {
+            boolean fail = acm0.equals(path);
+            return openPort(path, fail ? Integer.MAX_VALUE : 0, fail);
+        });
+
+        assertThrows(ConnectorException.class, () -> Connectors.findOrOpen(pool, acm0));
+        assertTrue(Connectors.getFailedConnectors().containsKey(acm0));
+        assertFalse(Connectors.getFailedConnectors().containsKey(acm1));
+
+        Optional<Connector> renamed = Connectors.findOrOpen(pool, acm1);
+        assertTrue(renamed.isPresent());
+        assertEquals(BOARD_UUID, renamed.get().getUUID());
+        assertEquals(acm1.toString(), renamed.get().device());
+        assertFalse(Connectors.getFailedConnectors().containsKey(acm1));
+        assertTrue(Connectors.getFailedConnectors().containsKey(acm0));
+        assertEquals(4, ports.size());
+        assertTrue(ports.stream().limit(3).noneMatch(FakePort::isOpened));
+        assertTrue(ports.get(3).isOpened());
+        assertEquals(acm1.toString(), ports.get(3).getName());
     }
 
     private void withWarnings(List<LogRecord> warnings, Runnable action) {
@@ -293,6 +501,56 @@ class ConnectorsHandshakeTest {
         ports.add(port);
         events.add("open");
         return port;
+    }
+
+    private SerialResource hungUntil(Path path, CountDownLatch entered, CountDownLatch release) {
+        OsExclusivePort device = OsExclusivePort.tryOpen(path.toString());
+        events.add("open");
+        return new SerialResource() {
+            private boolean opened = true;
+
+            @Override
+            public void write(byte[] array) {
+            }
+
+            @Override
+            public byte[] read(int size) {
+                entered.countDown();
+                try {
+                    if (!release.await(30, TimeUnit.SECONDS)) {
+                        throw new SerialResourceException("handshake stayed hung");
+                    }
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                    throw new SerialResourceException("interrupted", e);
+                }
+                throw new SerialResourceException("handshake released");
+            }
+
+            @Override
+            public void clear() {
+            }
+
+            @Override
+            public String getName() {
+                return path.toString();
+            }
+
+            @Override
+            public boolean isOpened() {
+                return opened;
+            }
+
+            @Override
+            public void close() {
+                if (!opened) {
+                    return;
+                }
+                opened = false;
+                device.release();
+                events.add("close");
+            }
+        };
     }
 
     private SerialResource hungPort(
@@ -514,6 +772,33 @@ class ConnectorsHandshakeTest {
             for (byte b : body.getBytes(StandardCharsets.UTF_8)) {
                 pending.add(b);
             }
+        }
+    }
+
+    private static final class ManualClock extends Clock {
+        private Instant now;
+
+        private ManualClock(Instant now) {
+            this.now = now;
+        }
+
+        void advance(Duration duration) {
+            now = now.plus(duration);
+        }
+
+        @Override
+        public ZoneId getZone() {
+            return ZoneOffset.UTC;
+        }
+
+        @Override
+        public Clock withZone(ZoneId zone) {
+            return this;
+        }
+
+        @Override
+        public Instant instant() {
+            return now;
         }
     }
 }

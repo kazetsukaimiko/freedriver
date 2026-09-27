@@ -106,6 +106,9 @@ public class SerialConnector implements Connector, AutoCloseable {
             throw new ConnectorTimeoutException("serial response", maxWait);
         } catch (InterruptedException | ExecutionException e) {
             future.cancel(true);
+            if (e instanceof InterruptedException) {
+                Thread.currentThread().interrupt();
+            }
             throw new ConnectorException("Request failure: ", e);
         }
     }
@@ -132,6 +135,9 @@ public class SerialConnector implements Connector, AutoCloseable {
             throw new ConnectorTimeoutException("serial response", maxWait);
         } catch (InterruptedException | ExecutionException e) {
             future.cancel(true);
+            if (e instanceof InterruptedException) {
+                Thread.currentThread().interrupt();
+            }
             throw new ConnectorException("Request failure: ", e);
         }
     }
