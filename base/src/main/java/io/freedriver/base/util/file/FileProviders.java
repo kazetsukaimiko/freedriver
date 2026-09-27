@@ -7,6 +7,7 @@ import java.util.stream.Stream;
 public enum FileProviders {
     // Linux, Unix, etc.
     MAPPINGS(DirectoryProviders.CONFIG.getProvider().file("mappings.json")),
+    CONNECTORS(DirectoryProviders.CONFIG.getProvider().subdir("jsonlink").file("connectors.json")),
     TEMP_FILE(DirectoryProviders.TMP.getProvider().file(UUID.randomUUID().toString()));
 
     private final FileProvider provider;

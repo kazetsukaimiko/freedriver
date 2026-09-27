@@ -32,6 +32,10 @@ public record Response(
         created = created == null ? Instant.now() : created;
     }
 
+    public static Response empty() {
+        return new Response(null, null, null, null, null, null, null, null, null, null);
+    }
+
     public Response logAnyErrors(Consumer<String> errorLogger) {
         error.forEach(errorLogger);
         return this;

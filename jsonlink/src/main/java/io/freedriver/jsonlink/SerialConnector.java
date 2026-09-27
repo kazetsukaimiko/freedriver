@@ -102,7 +102,11 @@ public class SerialConnector implements Connector, AutoCloseable {
             synchronized (responseMap) {
                 while (!responseMap.containsKey(requestId)) {
                     Response r = serialEntityStream.next();
-                    responseMap.put(requestId, r);
+                    if (r == null) {
+                        continue;
+                    }
+                    UUID key = r.requestId() != null ? r.requestId() : requestId;
+                    responseMap.put(key, r);
                 }
                 return responseMap.get(requestId);
             }
@@ -137,10 +141,11 @@ public class SerialConnector implements Connector, AutoCloseable {
     @Override
     public UUID getUUID() throws ConnectorException {
         if (uuid == null) {
-            uuid = Optional.of(Request.empty())
-                    .map(this::send)
-                    .map(Response::uuid)
+            uuid = Optional.ofNullable(send(Request.empty()).uuid())
                     .orElseGet(() -> send(Request.empty().newUuid()).uuid());
+        }
+        if (uuid == null) {
+            throw new ConnectorException("Board at " + device + " returned no UUID");
         }
         return uuid;
     }
