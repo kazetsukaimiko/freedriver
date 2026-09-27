@@ -102,11 +102,9 @@ public final class Connectors {
                 }
             }
         }
-        LOGGER.log(
-                Level.WARNING,
+        LOGGER.warning(
                 "UUID handshake failed for " + device + " after " + retry.maxAttempts()
-                        + " attempts; serial port is closed",
-                lastFailure);
+                        + " attempts; serial port is closed");
         throw new ConnectorException(
                 "UUID handshake failed for " + device + " after " + retry.maxAttempts() + " attempts",
                 lastFailure);

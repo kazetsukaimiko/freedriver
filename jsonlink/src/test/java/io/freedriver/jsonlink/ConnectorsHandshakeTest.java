@@ -2,6 +2,7 @@ package io.freedriver.jsonlink;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -17,6 +18,10 @@ import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.function.Consumer;
+import java.util.logging.Handler;
+import java.util.logging.Level;
+import java.util.logging.LogRecord;
+import java.util.logging.Logger;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import io.freedriver.serial.api.SerialResource;
@@ -68,9 +73,18 @@ class ConnectorsHandshakeTest {
 
     @Test
     void releasesPortAfterEveryFailedHandshake() {
-        ConnectorException failure = assertThrows(ConnectorException.class, () -> open(Integer.MAX_VALUE, true));
+        List<LogRecord> warnings = new ArrayList<>();
+        ConnectorException failure = assertThrows(
+                ConnectorException.class,
+                () -> withWarnings(warnings, () -> open(Integer.MAX_VALUE, true)));
 
-        assertTrue(failure.getMessage().contains("UUID handshake failed for " + DEVICE + " after 3 attempts"));
+        String giveUp = "UUID handshake failed for " + DEVICE + " after 3 attempts; serial port is closed";
+        List<LogRecord> giveUpLines = warnings.stream()
+                .filter(record -> giveUp.equals(record.getMessage()))
+                .toList();
+        assertEquals(List.of(giveUp), giveUpLines.stream().map(LogRecord::getMessage).toList());
+        assertNull(giveUpLines.get(0).getThrown());
+        assertEquals("UUID handshake failed for " + DEVICE + " after 3 attempts", failure.getMessage());
         assertEquals(
                 List.of(
                         "open", "delay", "write", "close",
@@ -81,6 +95,43 @@ class ConnectorsHandshakeTest {
         assertEquals(3, ports.size());
         assertTrue(ports.stream().noneMatch(FakePort::isOpened));
         assertFalse(events.contains("busy"));
+    }
+
+    @Test
+    void regainsBoardAfterRebootWhenFirstOpensAreStillResetting() {
+        int failuresWhileResetting = 2;
+        List<Integer> alreadyOpen = new ArrayList<>();
+        Consumer<Duration> pause = delay -> {
+            delays.add(delay);
+            events.add("delay");
+        };
+
+        Connector connector = Connectors.openConnector(
+                pool,
+                DEVICE,
+                path -> {
+                    alreadyOpen.add((int) ports.stream().filter(FakePort::isOpened).count());
+                    return openPort(path, failuresWhileResetting, false);
+                },
+                new HandshakeRetry(3, RESET_DELAY),
+                pause);
+
+        assertFalse(connector.isClosed());
+        assertEquals(BOARD_UUID, connector.getUUID());
+        assertEquals(DEVICE.toString(), connector.device());
+        assertEquals(List.of(0, 0, 0), alreadyOpen);
+        assertEquals(1, ports.stream().filter(FakePort::isOpened).count());
+        assertFalse(ports.get(0).isOpened());
+        assertFalse(ports.get(1).isOpened());
+        assertTrue(ports.get(2).isOpened());
+        assertFalse(events.contains("busy"));
+        assertEquals(
+                List.of(
+                        "open", "delay", "write", "write", "close",
+                        "open", "delay", "write", "write", "close",
+                        "open", "delay", "write"),
+                events);
+        assertEquals(List.of(RESET_DELAY, RESET_DELAY, RESET_DELAY), delays);
     }
 
     @Test
@@ -107,6 +158,32 @@ class ConnectorsHandshakeTest {
 
         System.setProperty("jsonlink.handshake.maxAttempts", "0");
         assertEquals(HandshakeRetry.DEFAULT_MAX_ATTEMPTS, HandshakeRetry.defaults().maxAttempts());
+    }
+
+    private void withWarnings(List<LogRecord> warnings, Runnable action) {
+        Logger logger = Logger.getLogger(Connectors.class.getName());
+        Handler handler = new Handler() {
+            @Override
+            public void publish(LogRecord record) {
+                if (record.getLevel().intValue() >= Level.WARNING.intValue()) {
+                    warnings.add(record);
+                }
+            }
+
+            @Override
+            public void flush() {
+            }
+
+            @Override
+            public void close() {
+            }
+        };
+        logger.addHandler(handler);
+        try {
+            action.run();
+        } finally {
+            logger.removeHandler(handler);
+        }
     }
 
     private Connector open(int failingOpens, boolean throwOnFail) {
