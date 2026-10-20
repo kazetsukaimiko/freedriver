@@ -42,13 +42,29 @@ public interface Connector extends AutoCloseable {
     Response getResponse(UUID requestId, Duration maxWait) throws ConnectorException;
 
     /**
-     * Setup the board's UUID.
+     * Reads the board UUID. Never asks the board to mint one.
+     * A missing UUID is {@link UnprovisionedBoardException}.
      */
     default UUID getUUID() throws ConnectorException {
-        return Optional.of(Request.empty())
+        UUID found = Optional.of(Request.empty())
                 .map(this::send)
                 .map(Response::uuid)
-                .orElseGet(() -> send(Request.empty().newUuid()).uuid());
+                .orElse(null);
+        if (found == null) {
+            throw new UnprovisionedBoardException("Board at " + device() + " answered without a UUID");
+        }
+        return found;
+    }
+
+    /**
+     * Mints a UUID on the board and returns it. This is the only path that sends {@link Request#newUuid()}.
+     */
+    default UUID provisionUuid() throws ConnectorException {
+        UUID minted = send(Request.empty().newUuid()).uuid();
+        if (minted == null) {
+            throw new ConnectorException("Provisioning " + device() + " returned no UUID");
+        }
+        return minted;
     }
 
 

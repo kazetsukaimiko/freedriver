@@ -55,6 +55,7 @@ class ConnectorsHandshakeTest {
 
     private ExecutorService pool;
     private List<String> events;
+    private List<String> requests;
     private List<Duration> delays;
     private List<FakePort> ports;
 
@@ -62,6 +63,7 @@ class ConnectorsHandshakeTest {
     void setUp() {
         pool = Executors.newSingleThreadExecutor();
         events = new ArrayList<>();
+        requests = new ArrayList<>();
         delays = new ArrayList<>();
         ports = new ArrayList<>();
     }
@@ -79,11 +81,11 @@ class ConnectorsHandshakeTest {
 
     @Test
     void releasesPortAfterOneFailedHandshakeThenSucceeds() {
-        Connector connector = open(1, false);
+        Connector connector = open(1, true);
 
         assertEquals(BOARD_UUID, connector.getUUID());
         assertEquals(
-                List.of("open", "delay", "write", "write", "close", "delay", "open", "delay", "write"),
+                List.of("open", "delay", "write", "close", "delay", "open", "delay", "write"),
                 events);
         assertEquals(List.of(RESET_DELAY, RESET_DELAY, RESET_DELAY), delays);
         assertEquals(2, ports.size());
@@ -200,7 +202,7 @@ class ConnectorsHandshakeTest {
                 DEVICE,
                 path -> {
                     alreadyOpen.add((int) ports.stream().filter(FakePort::isOpened).count());
-                    return openPort(path, failuresWhileResetting, false);
+                    return openPort(path, failuresWhileResetting, true);
                 },
                 new HandshakeRetry(3, RESET_DELAY),
                 pause);
@@ -216,11 +218,61 @@ class ConnectorsHandshakeTest {
         assertFalse(events.contains("busy"));
         assertEquals(
                 List.of(
-                        "open", "delay", "write", "write", "close",
-                        "delay", "open", "delay", "write", "write", "close",
+                        "open", "delay", "write", "close",
+                        "delay", "open", "delay", "write", "close",
                         "delay", "open", "delay", "write"),
                 events);
         assertEquals(List.of(RESET_DELAY, RESET_DELAY, RESET_DELAY, RESET_DELAY, RESET_DELAY), delays);
+    }
+
+    @Test
+    void answerWithoutUuidDuringHandshakeRetriesIsUnprovisionedAndSkipped() {
+        System.setProperty("jsonlink.handshake.maxAttempts", "3");
+        System.setProperty("jsonlink.handshake.retryDelay", "0");
+        AtomicInteger created = new AtomicInteger();
+        SerialResourceFactory.Holder.install((path, params) -> {
+            int n = created.incrementAndGet();
+            if (n == 1) {
+                return openPort(path, Integer.MAX_VALUE, true);
+            }
+            return openPort(path, Integer.MAX_VALUE, false);
+        });
+
+        List<LogRecord> warnings = new ArrayList<>();
+        UnprovisionedBoardException failure = assertThrows(
+                UnprovisionedBoardException.class,
+                () -> withWarnings(warnings, () -> Connectors.findOrOpen(pool, DEVICE)));
+
+        assertTrue(failure.getMessage().contains(DEVICE.toString()));
+        assertTrue(warnings.stream().anyMatch(record -> record.getMessage() != null
+                && record.getMessage().contains("unprovisioned")
+                && record.getMessage().contains(DEVICE.toString())));
+        assertEquals(2, created.get());
+        assertFalse(requests.isEmpty());
+        assertTrue(requests.stream().noneMatch(body -> body.contains("\"uuid\"")), requests.toString());
+        assertTrue(ports.stream().noneMatch(FakePort::isOpened));
+        assertTrue(Connectors.getFailedConnectors().containsKey(DEVICE));
+
+        Optional<Connector> skipped = Connectors.findOrOpen(pool, DEVICE);
+        assertTrue(skipped.isEmpty());
+        assertEquals(2, created.get());
+    }
+
+    @Test
+    void provisionUuidIsTheOnlyMint() {
+        SerialResource port = provisionPort(DEVICE);
+        SerialConnector connector = new SerialConnector(pool, port);
+
+        assertThrows(UnprovisionedBoardException.class, connector::getUUID);
+        assertEquals(1, requests.size());
+        assertFalse(requests.get(0).contains("\"uuid\""));
+
+        UUID minted = connector.provisionUuid();
+        assertEquals(2, requests.size());
+        assertTrue(requests.get(1).contains("\"uuid\""));
+        assertTrue(requests.get(1).contains(minted.toString()));
+        assertEquals(minted, connector.getUUID());
+        assertEquals(2, requests.size());
     }
 
     @Test
@@ -497,9 +549,17 @@ class ConnectorsHandshakeTest {
             throw busy;
         }
         boolean fail = ports.size() < failingOpens;
-        FakePort port = new FakePort(path, fail, throwOnFail, events, device);
+        FakePort port = new FakePort(path, fail, throwOnFail, false, events, requests, device);
         ports.add(port);
         events.add("open");
+        return port;
+    }
+
+    private SerialResource provisionPort(Path path) {
+        OsExclusivePort device = OsExclusivePort.tryOpen(path.toString());
+        events.add("open");
+        FakePort port = new FakePort(path, true, false, true, events, requests, device);
+        ports.add(port);
         return port;
     }
 
@@ -650,18 +710,28 @@ class ConnectorsHandshakeTest {
         private final String name;
         private final boolean fail;
         private final boolean throwOnFail;
+        private final boolean echoMinted;
         private final List<String> events;
+        private final List<String> requests;
         private final OsExclusivePort device;
         private final Queue<Byte> pending = new ArrayDeque<>();
         private final ByteArrayOutputStream request = new ByteArrayOutputStream();
         private boolean opened = true;
 
         private FakePort(
-                Path path, boolean fail, boolean throwOnFail, List<String> events, OsExclusivePort device) {
+                Path path,
+                boolean fail,
+                boolean throwOnFail,
+                boolean echoMinted,
+                List<String> events,
+                List<String> requests,
+                OsExclusivePort device) {
             this.name = path.toString();
             this.fail = fail;
             this.throwOnFail = throwOnFail;
+            this.echoMinted = echoMinted;
             this.events = events;
+            this.requests = requests;
             this.device = device;
         }
 
@@ -677,6 +747,7 @@ class ConnectorsHandshakeTest {
             byte[] payload = request.toByteArray();
             request.reset();
             events.add("write");
+            requests.add(new String(payload, StandardCharsets.UTF_8));
             if (fail && throwOnFail) {
                 throw new SerialResourceException("simulated handshake failure");
             }
@@ -760,15 +831,22 @@ class ConnectorsHandshakeTest {
 
         private void queueResponse(byte[] requestBytes) {
             String requestId;
+            String requestedUuid = "";
             try {
                 JsonNode node = Connector.MAPPER.readTree(requestBytes);
                 requestId = node.path("requestId").asText();
+                requestedUuid = node.path("uuid").asText("");
             } catch (Exception e) {
                 throw new SerialResourceException("Could not read handshake request", e);
             }
-            String body = fail
-                    ? "{\"requestId\":\"" + requestId + "\"}\n"
-                    : "{\"uuid\":\"" + BOARD_UUID + "\",\"requestId\":\"" + requestId + "\"}\n";
+            String body;
+            if (echoMinted && !requestedUuid.isEmpty()) {
+                body = "{\"uuid\":\"" + requestedUuid + "\",\"requestId\":\"" + requestId + "\"}\n";
+            } else if (fail) {
+                body = "{\"requestId\":\"" + requestId + "\"}\n";
+            } else {
+                body = "{\"uuid\":\"" + BOARD_UUID + "\",\"requestId\":\"" + requestId + "\"}\n";
+            }
             for (byte b : body.getBytes(StandardCharsets.UTF_8)) {
                 pending.add(b);
             }

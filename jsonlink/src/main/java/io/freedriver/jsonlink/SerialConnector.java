@@ -7,7 +7,6 @@ import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
@@ -165,13 +164,25 @@ public class SerialConnector implements Connector, AutoCloseable {
     @Override
     public UUID getUUID() throws ConnectorException {
         if (uuid == null) {
-            uuid = Optional.ofNullable(send(Request.empty()).uuid())
-                    .orElseGet(() -> send(Request.empty().newUuid()).uuid());
+            uuid = send(Request.empty()).uuid();
         }
         if (uuid == null) {
-            throw new ConnectorException("Board at " + device + " returned no UUID");
+            throw new UnprovisionedBoardException("Board at " + device + " answered without a UUID");
         }
         return uuid;
+    }
+
+    /**
+     * Mints a UUID, stores it, and returns it. Lookup never calls this.
+     */
+    @Override
+    public UUID provisionUuid() throws ConnectorException {
+        UUID minted = send(Request.empty().newUuid()).uuid();
+        if (minted == null) {
+            throw new ConnectorException("Provisioning " + device + " returned no UUID");
+        }
+        uuid = minted;
+        return minted;
     }
 
     @Override
