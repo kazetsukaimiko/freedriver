@@ -110,6 +110,12 @@ public final class Connectors {
                 LOGGER.info("Got UUID " + uuid + " from " + device);
                 publish(serialConnector);
                 return new ConcurrentConnector(serialConnector);
+            } catch (UnprovisionedBoardException unprovisioned) {
+                LOGGER.warning(
+                        "Board at " + device + " answered without a UUID and is unprovisioned; skipping");
+                release(serialConnector, serialResource, unprovisioned);
+                recordFailure(device);
+                throw unprovisioned;
             } catch (Exception failure) {
                 lastFailure = failure;
                 LOGGER.log(
