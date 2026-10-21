@@ -1,0 +1,12 @@
+{
+  "name": "freedriver-commitlint",
+  "private": true,
+  "description": "Lint pull request titles for kazetsukaimiko/freedriver.",
+  "scripts": {
+    "test": "node --test lint-pr.test.js"
+  },
+  "dependencies": {
+    "@commitlint/cli": "^19.8.1",
+    "@commitlint/config-conventional": "^19.8.1"
+  }
+}

@@ -1,0 +1,58 @@
+# Release notes for a version tag. Do not commit generated notes.
+# https://git-cliff.org/docs/configuration
+#
+# git-cliff writes the GitHub release notes. It does not choose the version.
+# Its --bumped-version also bumps the patch for refactor, perf, test, docs,
+# chore, ci, and build, and no_increment_regex suppresses breaking changes of
+# those types. .github/release/version_bump.py is the version rule:
+# a breaking change bumps major, feat bumps minor, fix bumps patch, and any
+# other type does not bump. The first tag is the Maven release version.
+
+[changelog]
+body = """
+{% if version %}\
+## [{{ version | trim_start_matches(pat="v") }}] - {{ timestamp | date(format="%Y-%m-%d") }}
+{% else %}\
+## [unreleased]
+{% endif %}\
+{% for entry in commits | commit_groups(groups=commit_parsers_groups) %}
+### {{ entry.group | striptags | trim | upper_first }}
+{% for commit in entry.commits %}
+- {% if commit.breaking %}[**breaking**] {% endif %}{% if commit.scope %}*({{ commit.scope }})* {% endif %}{{ commit.message | upper_first }}
+{% endfor %}
+{% endfor %}
+"""
+trim = true
+render_always = false
+
+[git]
+conventional_commits = true
+filter_unconventional = true
+require_conventional = false
+split_commits = false
+protect_breaking_commits = true
+filter_commits = false
+fail_on_unmatched_commit = false
+tag_pattern = "^[0-9]+\\.[0-9]+\\.[0-9]+$"
+sort_commits = "oldest"
+topo_order = false
+topo_order_commits = true
+commit_parsers = [
+    { message = "^feat", group = "<!-- 0 -->Features" },
+    { message = "^fix", group = "<!-- 1 -->Fixes" },
+    { message = "^perf", group = "<!-- 2 -->Performance" },
+    { message = "^refactor", group = "<!-- 3 -->Refactoring" },
+    { message = "^docs", group = "<!-- 4 -->Documentation" },
+    { message = "^test", group = "<!-- 5 -->Tests" },
+    { message = "^build", group = "<!-- 6 -->Build" },
+    { message = "^ci", group = "<!-- 7 -->CI" },
+    { message = "^chore", group = "<!-- 8 -->Chores" },
+    { message = ".*", skip = true },
+]
+
+[bump]
+features_always_bump_minor = true
+breaking_always_bump_major = true
+# Used only when the repository has no version tag yet. Keep it equal to the
+# Maven release version (the pom version with -SNAPSHOT removed) until then.
+initial_tag = "1.0.0"
