@@ -1,0 +1,72 @@
+name: Commitlint
+
+on:
+  pull_request:
+    branches: [master]
+    types: [opened, edited, reopened, synchronize]
+
+permissions:
+  contents: read
+
+jobs:
+  commitlint:
+    name: commitlint
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: .github/commitlint/package-lock.json
+
+      - name: Test and lint the pull request title
+        working-directory: .github/commitlint
+        env:
+          PR_TITLE: ${{ github.event.pull_request.title }}
+          PR_BODY: ${{ github.event.pull_request.body }}
+        run: |
+          npm ci
+          npm test
+          node lint-pr.js
+
+  release-rules:
+    name: release rules
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          fetch-tags: true
+
+      - name: Test the version rules
+        working-directory: .github/release
+        run: python3 version_bump_test.py
+
+      - name: Install git-cliff
+        run: bash .github/release/install-git-cliff.sh "${RUNNER_TEMP}/git-cliff"
+
+      - name: Put git-cliff on PATH
+        run: echo "${RUNNER_TEMP}/git-cliff" >> "$GITHUB_PATH"
+
+      - name: Render notes and check the first version
+        run: |
+          set -euo pipefail
+          git-cliff --config cliff.toml --unreleased --strip header --output "${RUNNER_TEMP}/notes.md"
+          test -s "${RUNNER_TEMP}/notes.md"
+          if ! git tag --list | grep -Eq '^[0-9]+\.[0-9]+\.[0-9]+$'; then
+            bumped=$(git-cliff --config cliff.toml --bumped-version)
+            expected=$(python3 .github/release/version_bump.py)
+            if [[ "$bumped" != "$expected" ]]; then
+              echo "git-cliff initial version $bumped is not the Maven release version $expected" >&2
+              exit 1
+            fi
+          fi

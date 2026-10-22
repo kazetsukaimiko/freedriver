@@ -1,0 +1,49 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "*.*.*"
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    name: release
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          fetch-tags: true
+
+      - name: Install git-cliff
+        run: bash .github/release/install-git-cliff.sh "${RUNNER_TEMP}/git-cliff"
+
+      - name: Put git-cliff on PATH
+        run: echo "${RUNNER_TEMP}/git-cliff" >> "$GITHUB_PATH"
+
+      - name: Require the Maven version and the conventional bump
+        run: python3 .github/release/version_bump.py "${GITHUB_REF_NAME}"
+
+      - name: Generate release notes since the previous tag
+        run: git-cliff --config cliff.toml --latest --strip header --output release-notes.md
+
+      - name: Publish the GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          if [[ ! -s release-notes.md ]]; then
+            echo "git-cliff produced no release notes" >&2
+            exit 1
+          fi
+          if gh release view "$GITHUB_REF_NAME" >/dev/null 2>&1; then
+            gh release edit "$GITHUB_REF_NAME" --title "$GITHUB_REF_NAME" --notes-file release-notes.md
+          else
+            gh release create "$GITHUB_REF_NAME" --title "$GITHUB_REF_NAME" --notes-file release-notes.md
+          fi
