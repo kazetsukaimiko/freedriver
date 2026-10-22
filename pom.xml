@@ -61,6 +61,7 @@
         <module>jsonlink</module>
         <module>electrodacus</module>
         <module>ee</module>
+        <module>phone-numbers</module>
 
     </modules>
 
