@@ -51,6 +51,10 @@ jobs:
         working-directory: .github/release
         run: python3 version_bump_test.py
 
+      - name: Test the jsonlink publish rules
+        working-directory: .github/release
+        run: python3 publish_jsonlink_test.py
+
       - name: Install git-cliff
         run: bash .github/release/install-git-cliff.sh "${RUNNER_TEMP}/git-cliff"
 

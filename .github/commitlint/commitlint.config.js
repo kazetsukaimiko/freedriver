@@ -36,6 +36,7 @@ const SCOPES = [
   'math',
   'math-jpa',
   'parent',
+  'phone-numbers',
   'release',
   'serial-api',
   'serial-impl',
