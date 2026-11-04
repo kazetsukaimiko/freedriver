@@ -39,7 +39,7 @@
     <os.detected.bitness>${sun.arch.data.model}</os.detected.bitness>
 
     <!-- dependency versions a-z -->
-    <dependency.logback.version>1.2.3</dependency.logback.version>
+    <dependency.logback.version>1.2.13</dependency.logback.version>
     <dependency.nativelibloader.version>2.3.3</dependency.nativelibloader.version>
 
     <!-- plugin versions a-z -->
