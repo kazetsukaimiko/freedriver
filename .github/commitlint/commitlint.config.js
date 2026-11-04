@@ -35,6 +35,7 @@ const SCOPES = [
   'jsonlink',
   'math',
   'math-jpa',
+  'metrics',
   'parent',
   'phone-numbers',
   'release',
