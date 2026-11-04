@@ -62,6 +62,7 @@
         <module>electrodacus</module>
         <module>ee</module>
         <module>phone-numbers</module>
+        <module>metrics</module>
 
     </modules>
 
