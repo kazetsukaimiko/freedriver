@@ -90,24 +90,7 @@ Keeping those getters and the builder means those files keep compiling. The type
 
 ## jsonlink `JoystickButtonEvent`
 
-**Decision:** sealed interface with a record implementation. Left as it is is not a decision while `ControlEvent` carries `Id.MINIMAL_CLASS`.
-
-`ControlEvent` is an empty abstract class annotated `@JsonTypeInfo(use = JsonTypeInfo.Id.MINIMAL_CLASS)` (`ControlEvent.java` line 5). `JoystickButtonEvent` is its only subtype, in the same package `io.freedriver.jsonlink.config.v3`, with `button` and `buttonState`, Lombok `@Builder(toBuilder = true)`, and `@Jacksonized`.
-
-`ControlEvent` becomes a sealed interface permitting only `JoystickButtonEvent`. `JoystickButtonEvent` becomes a record implementing it, keeping the builder. Binding matches `DevicePathSupplier`: `@JsonTypeInfo(use = Id.DEDUCTION)` and `@JsonSubTypes` listing `JoystickButtonEvent`.
-
-The historical id is handled before that bind, as text. Jackson's minimal-class id for `JoystickButtonEvent` is `.JoystickButtonEvent` (leading dot, same package as the base type) on the default `@class` property. The reader, a deserializer registered for `ControlEvent` and used by `ConfigMapper.MAPPER`, reads the object as a tree, and:
-
-- when `@class` is absent, or is exactly the string `.JoystickButtonEvent`, removes `@class` and then binds `JoystickButtonEvent` from the remaining fields;
-- when `@class` is any other string, including a fully qualified class name, throws before any `ControlEvent` is constructed and before any class is loaded.
-
-The check is an exact string match. It calls no `Class.forName`. A fully qualified class name is not on the allow-list. After this change, no `ObjectMapper` on a load path, `ConfigMapper.MAPPER` included, uses `Id.CLASS` or `Id.MINIMAL_CLASS` for `ControlEvent`. A file is never bound with either. `v3 Mappings.loadJson` catches `IOException` from `ConfigMapper.MAPPER.readValue` and returns `Optional.empty()`, so an empty result is not the proof that a class was not loaded.
-
-This is the `Id.DEDUCTION` path from the brief, not a `TypeIdResolver`. Deduction has no logical type id to look up. The closed set is the `@JsonSubTypes` list. A registered-name resolver of the `MappingsActionTypeIdResolver` kind is the other permitted shape; this decision does not use it, so saved files gain no new `type` property.
-
-**Release.** Autonomy does not import `ControlEvent` or `JoystickButtonEvent`. No autonomy release is required.
-
-**Saved format.** Saved control JSON written with `Id.MINIMAL_CLASS`. The implementation card's fixtures send `.JoystickButtonEvent` (accepted, `@class` removed, then bound) and an id naming a class that is not a `ControlEvent` and whose static initializer sets a flag. Both go through the migration load, `v3 Mappings.loadJson` included. The class-name fixture asserts the flag stayed false.
+`ControlEvent`'s wire contract, including `JoystickButtonEvent`, is kazetsukaimiko/freedriver#57.
 
 ## jsonlink `ControlMapping`
 
@@ -193,14 +176,14 @@ At `270c653` those files use the constructors, `getValue()`, and `subtract`. The
 - `jsonlink/mappings/appliances/*.json` loads as `Appliance`. The file name becomes the `ApplianceDescriptor` key.
 - `jsonlink/mappings/controls/*.json` loads as `ControlEvent`. The file name becomes the `EventDescriptor` key.
 
-`v2 Mapping.migrate()` builds that object graph in memory from `controlMap`, a `Map<String, List<String>>`. Each key is split on `:`. Index 0 is the button number. Index 1 equal to `"0"` is `ButtonState.RELEASE`; any other index-1 text is `PRESS`. The `EventDescriptor` is the appliance names joined with `_AND_`. Each appliance name becomes a `ToggleAction`. The value list is the toggle list for that descriptor. This path constructs `JoystickButtonEvent` with the builder; it writes no `@class` field. Saved control files that already contain `@class` are the files the `ControlEvent` reader above migrates.
+`v2 Mapping.migrate()` builds that object graph in memory from `controlMap`, a `Map<String, List<String>>`. Each key is split on `:`. Index 0 is the button number. Index 1 equal to `"0"` is `ButtonState.RELEASE`; any other index-1 text is `PRESS`. The `EventDescriptor` is the appliance names joined with `_AND_`. Each appliance name becomes a `ToggleAction`. The value list is the toggle list for that descriptor. This path constructs `JoystickButtonEvent` with the builder. Saved control files are kazetsukaimiko/freedriver#57.
 
 ## Follow-up cards
 
 The Project Manager files these. Each branches from `master` and merges on its own. Each leaves `mvn verify` green for the whole reactor. Stacking one on an unmerged pull request is not part of this order.
 
 1. **daly: `Signal` sealed, `Request`, `ReadRequest`, and `Response` as records.** Sibling `ReadRequest`, equality, and frame ownership as decided above. Fixtures: frame bytes and address-and-queryId equality. No autonomy release. Can merge before #48. `daly` is outside the `jsonlink -am` publish set.
-2. **jsonlink: `ControlEvent` sealed and `JoystickButtonEvent` a record, with `Id.DEDUCTION`.** Historical `@class` check as decided above. Fixtures: `.JoystickButtonEvent` accepted and rewritten; a class-name id whose static initializer sets a flag, through `v3 Mappings.loadJson`, flag stayed false. No autonomy release. Can merge before #48.
+2. **jsonlink `ControlEvent` and `JoystickButtonEvent`.** The wire contract is kazetsukaimiko/freedriver#57.
 3. **jsonlink: `ConfigFile` as a sealed interface, v1 and v2 `Mappings` as records.** This is the one card that edits `ConfigFile`. Keeps `StartupActionsDeserializer`. Merges after #48. Autonomy files listed under v2 `Mappings` keep compiling while the bean getters stay. Fixtures: `mappings.json`, `mappings_v2.json`, v1-to-v2 migration, logical `startupActions` types, and a refused class name.
 4. **math: `Measurement` sealed records, including the leaves and `TemporalMeasurement`.** Same pull request updates `math-jpa` converters (`MeasurementConverter`, `TemporalMeasurementConverter`, `StringMeasurementConverter`, `StringTemporalMeasurementConverter`, `CurrentConverter`, `EnergyConverter`, `PotentialConverter`, `PowerConverter`, `TemperatureConverter`) and `victron` `Column`. Merges after #48. Release follows the tag gate. Autonomy files listed under `Measurement` are the compile set. `ScaledNumber` stays a class. `FirmwareVersionConverter` stays as it is.
 
