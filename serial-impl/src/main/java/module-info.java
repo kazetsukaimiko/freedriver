@@ -5,7 +5,6 @@ module io.freedriver.serial.impl {
     requires io.freedriver.base;
     requires io.freedriver.serial.api;
     requires static lombok;
-    //requires io.freedriver.serial.natives;
 
     //exports io.freedriver.serial;
     //exports io.freedriver.serial.api.params;
