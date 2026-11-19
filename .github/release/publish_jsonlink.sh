@@ -1,7 +1,27 @@
 #!/usr/bin/env bash
-# Set the reactor to the version tag and deploy jsonlink (plus the reactor
-# modules its POM needs) to GitHub Packages on kazetsukaimiko/freedriver.
+# Publish one closed allowlist to GitHub Packages on a MAJOR.MINOR.PATCH tag.
+# --package builds that same list and does not deploy.
 set -euo pipefail
+
+# One project list. The root is the parent POM. -am adds the reactor
+# dependencies serial-impl, serial-api, base, math, and inotify.
+PROJECTS='.,bom,jakarta-bom,3p-bom,jsonlink,math-jpa,victron,victron-jpa,inotify-cdi,metrics'
+
+if [[ "${1:-}" == "--package" ]]; then
+  shift
+  for arg in "$@"; do
+    if [[ "$arg" != -* ]]; then
+      echo "package mode takes no version argument" >&2
+      exit 1
+    fi
+  done
+  exec mvn --batch-mode --no-transfer-progress \
+    package \
+    -DskipTests \
+    -pl "${PROJECTS}" \
+    -am \
+    "$@"
+fi
 
 tag=${1:?version tag}
 
@@ -10,8 +30,13 @@ if [[ ! "$tag" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
   exit 1
 fi
 
+if [[ $# -ne 1 ]]; then
+  echo "deploy takes only the version tag" >&2
+  exit 1
+fi
+
 if [[ "${DRY_RUN:-}" == "1" ]]; then
-  echo "set Maven version ${tag} and deploy -pl jsonlink -am"
+  echo "mvn --batch-mode --no-transfer-progress deploy -pl ${PROJECTS} -am -DskipTests -DdeployAtEnd=true"
   exit 0
 fi
 
@@ -21,7 +46,8 @@ mvn --batch-mode org.codehaus.mojo:versions-maven-plugin:2.18.0:set \
   -DprocessAllModules=true
 
 mvn --batch-mode --no-transfer-progress \
-  -pl jsonlink \
+  deploy \
+  -pl "${PROJECTS}" \
   -am \
-  -Dmaven.test.skip=true \
-  deploy
+  -DskipTests \
+  -DdeployAtEnd=true

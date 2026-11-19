@@ -1,19 +1,51 @@
 #!/usr/bin/env python3
-"""Checks for publishing jsonlink jars from a version tag."""
+"""Checks for publishing the release allowlist from a version tag."""
 
 from __future__ import annotations
 
 import os
+import re
+import stat
 import subprocess
+import tempfile
 import unittest
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
 SCRIPT = Path(__file__).resolve().parent / "publish_jsonlink.sh"
 WORKFLOW = ROOT / ".github" / "workflows" / "publish-jsonlink.yml"
+CI_WORKFLOW = ROOT / ".github" / "workflows" / "ci.yml"
 RELEASE_WORKFLOW = ROOT / ".github" / "workflows" / "release.yml"
 POM = ROOT / "pom.xml"
 PACKAGES = "https://maven.pkg.github.com/kazetsukaimiko/freedriver"
+PROJECTS = [
+    ".",
+    "bom",
+    "jakarta-bom",
+    "3p-bom",
+    "jsonlink",
+    "math-jpa",
+    "victron",
+    "victron-jpa",
+    "inotify-cdi",
+    "metrics",
+]
+
+
+def project_tokens(script_text: str) -> list[str]:
+    match = re.search(r"^PROJECTS='([^']+)'", script_text, re.MULTILINE)
+    if match is None:
+        raise AssertionError("publish script has no PROJECTS list")
+    return match.group(1).split(",")
+
+
+def command_tokens(line: str) -> list[str]:
+    return line.split()
+
+
+def pl_tokens(tokens: list[str]) -> list[str]:
+    index = tokens.index("-pl")
+    return tokens[index + 1].split(",")
 
 
 class PublishJsonlinkConfigTest(unittest.TestCase):
@@ -31,7 +63,7 @@ class PublishJsonlinkConfigTest(unittest.TestCase):
         self.assertNotIn("deploy", text)
         self.assertNotIn("packages: write", text)
 
-    def test_publish_workflow_deploys_jsonlink_on_a_version_tag(self) -> None:
+    def test_publish_workflow_deploys_on_a_version_tag(self) -> None:
         text = WORKFLOW.read_text(encoding="utf-8")
         self.assertIn('tags:\n      - "*.*.*"', text)
         self.assertIn("packages: write", text)
@@ -41,39 +73,106 @@ class PublishJsonlinkConfigTest(unittest.TestCase):
         self.assertNotIn("security-review", text)
         self.assertNotIn("manual-review", text)
 
-    def test_script_deploys_jsonlink_at_the_tag_version(self) -> None:
+    def test_ci_runs_package_mode_on_pull_requests(self) -> None:
+        text = CI_WORKFLOW.read_text(encoding="utf-8")
+        self.assertIn("contents: read", text)
+        self.assertNotIn("packages: write", text)
+        self.assertIn("mvn --batch-mode --no-transfer-progress verify", text)
+        self.assertIn("publish_jsonlink.sh --package", text)
+        self.assertIn("maven.repo.local", text)
+
+    def test_script_has_one_project_list(self) -> None:
         text = SCRIPT.read_text(encoding="utf-8")
-        self.assertIn("-pl jsonlink", text)
-        self.assertIn("-am", text)
-        self.assertIn("deploy", text)
+        self.assertEqual(project_tokens(text), PROJECTS)
+        for match in re.finditer(r"-pl\s+(\S+)", text):
+            self.assertIn(match.group(1), ('"${PROJECTS}"', "${PROJECTS}"))
         self.assertIn("versions-maven-plugin:2.18.0:set", text)
-        self.assertIn("-DnewVersion=\"${tag}\"", text)
-        self.assertIn("-Dmaven.test.skip=true", text)
+        self.assertIn('-DnewVersion="${tag}"', text)
+        self.assertIn("-DskipTests", text)
+        self.assertIn("-DdeployAtEnd=true", text)
+        self.assertNotIn("maven.test.skip", text)
         self.assertNotIn("GITHUB_TOKEN=", text)
 
 
 class PublishJsonlinkScriptTest(unittest.TestCase):
-    def run_script(self, tag: str, dry_run: bool = True) -> subprocess.CompletedProcess[str]:
-        env = {"DRY_RUN": "1"} if dry_run else {}
+    def run_script(
+        self,
+        args: list[str],
+        dry_run: bool = False,
+        path: str | None = None,
+    ) -> subprocess.CompletedProcess[str]:
+        env = os.environ.copy()
+        if dry_run:
+            env["DRY_RUN"] = "1"
+        else:
+            env.pop("DRY_RUN", None)
+        if path is not None:
+            env["PATH"] = path
         return subprocess.run(
-            ["bash", str(SCRIPT), tag],
+            ["bash", str(SCRIPT), *args],
             check=False,
             capture_output=True,
             text=True,
-            env={**os.environ, **env},
+            env=env,
         )
 
     def test_rejects_a_snapshot_or_prefixed_tag(self) -> None:
         for tag in ("1.0.0-SNAPSHOT", "v1.0.0", "latest", ""):
             with self.subTest(tag=tag):
-                result = self.run_script(tag or " ")
+                result = self.run_script([tag or " "], dry_run=True)
                 self.assertNotEqual(result.returncode, 0, result.stderr)
 
-    def test_dry_run_accepts_the_maven_release_version(self) -> None:
-        result = self.run_script("1.0.0")
-        self.assertEqual(result.returncode, 0, result.stderr)
-        self.assertIn("1.0.0", result.stdout)
-        self.assertIn("-pl jsonlink -am", result.stdout)
+    def test_dry_run_echoes_the_project_list_and_skips_maven(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            log = Path(directory) / "mvn.log"
+            stub = self.maven_stub(Path(directory), log)
+            result = self.run_script(["1.0.0"], dry_run=True, path=stub)
+            self.assertEqual(result.returncode, 0, result.stderr)
+            tokens = command_tokens(result.stdout.strip())
+            self.assertEqual(pl_tokens(tokens), PROJECTS)
+            self.assertEqual(
+                pl_tokens(tokens),
+                project_tokens(SCRIPT.read_text(encoding="utf-8")),
+            )
+            self.assertIn("-DskipTests", tokens)
+            self.assertIn("-DdeployAtEnd=true", tokens)
+            self.assertIn("deploy", tokens)
+            self.assertEqual(log.read_text(encoding="utf-8"), "")
+
+    def test_package_skips_the_tag_gate_and_does_not_deploy(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            log = Path(directory) / "mvn.log"
+            stub = self.maven_stub(Path(directory), log)
+            result = self.run_script(
+                ["--package", "-Dmaven.repo.local=/tmp/empty-m2"],
+                dry_run=True,
+                path=stub,
+            )
+            self.assertEqual(result.returncode, 0, result.stderr)
+            tokens = log.read_text(encoding="utf-8").split()
+            self.assertEqual(pl_tokens(tokens), PROJECTS)
+            self.assertIn("package", tokens)
+            self.assertIn("-DskipTests", tokens)
+            self.assertNotIn("deploy", tokens)
+            self.assertNotIn("-DdeployAtEnd=true", tokens)
+            self.assertIn("-Dmaven.repo.local=/tmp/empty-m2", tokens)
+            self.assertNotIn("versions-maven-plugin:2.18.0:set", tokens)
+
+            log.write_text("", encoding="utf-8")
+            rejected = self.run_script(["--package", "1.0.0"], path=stub)
+            self.assertNotEqual(rejected.returncode, 0, rejected.stderr)
+            self.assertIn("no version argument", rejected.stderr)
+            self.assertEqual(log.read_text(encoding="utf-8"), "")
+
+    def maven_stub(self, directory: Path, log: Path) -> str:
+        log.write_text("", encoding="utf-8")
+        path = directory / "mvn"
+        path.write_text(
+            "#!/bin/sh\n" f"printf '%s\\n' \"$@\" >> {log}\nexit 0\n",
+            encoding="utf-8",
+        )
+        path.chmod(path.stat().st_mode | stat.S_IEXEC)
+        return f"{directory}:{os.environ.get('PATH', '')}"
 
 
 if __name__ == "__main__":
