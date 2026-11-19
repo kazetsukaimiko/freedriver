@@ -1,1 +1,0 @@
-#cmakedefine JSSC_VERSION "@JSSC_VERSION@"
