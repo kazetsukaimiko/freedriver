@@ -27,6 +27,9 @@ class NitriteCredentialsLoaderTest {
     @Test
     void readsUserIdAndPasswordFromTheCredentialsFile() throws IOException {
         writeCredentials(temp, USER, PASSWORD);
+        assertEquals(
+                Set.of(PosixFilePermission.OWNER_READ, PosixFilePermission.OWNER_WRITE),
+                Files.getPosixFilePermissions(temp.resolve(NitriteProducer.CREDENTIALS_FILE)));
         NitriteCredentials credentials = NitriteProducer.loadCredentials(temp);
         assertEquals(USER, credentials.userId());
         assertEquals(PASSWORD, credentials.password());
@@ -62,8 +65,7 @@ class NitriteCredentialsLoaderTest {
 
     @Test
     void malformedFileNamesTheFileAndLeaksNothing() throws IOException {
-        Path file = temp.resolve(NitriteProducer.CREDENTIALS_FILE);
-        Files.writeString(file, "{ \"userId\": \"" + USER + "\", \"password\": \"" + PASSWORD + "\"");
+        writeCredentialsJson(temp, "{ \"userId\": \"" + USER + "\", \"password\": \"" + PASSWORD + "\"");
         try (EeLogCapture logs = new EeLogCapture()) {
             IllegalArgumentException error = assertThrows(IllegalArgumentException.class,
                     () -> NitriteProducer.loadCredentials(temp));
@@ -77,7 +79,7 @@ class NitriteCredentialsLoaderTest {
 
     @Test
     void nullRootNamesTheFile() throws IOException {
-        Files.writeString(temp.resolve(NitriteProducer.CREDENTIALS_FILE), "null");
+        writeCredentialsJson(temp, "null");
         IllegalArgumentException error = assertThrows(IllegalArgumentException.class,
                 () -> NitriteProducer.loadCredentials(temp));
         assertTrue(error.getMessage().contains(NitriteProducer.CREDENTIALS_FILE));
@@ -112,7 +114,7 @@ class NitriteCredentialsLoaderTest {
     }
 
     private void assertWrongType(String json, String field, String leaked) throws IOException {
-        Files.writeString(temp.resolve(NitriteProducer.CREDENTIALS_FILE), json);
+        writeCredentialsJson(temp, json);
         IllegalArgumentException error = assertThrows(IllegalArgumentException.class,
                 () -> NitriteProducer.loadCredentials(temp));
         assertTrue(error.getMessage().contains(field));
@@ -123,7 +125,7 @@ class NitriteCredentialsLoaderTest {
     }
 
     private void assertBlank(String json, String field) throws IOException {
-        Files.writeString(temp.resolve(NitriteProducer.CREDENTIALS_FILE), json);
+        writeCredentialsJson(temp, json);
         IllegalArgumentException error = assertThrows(IllegalArgumentException.class,
                 () -> NitriteProducer.loadCredentials(temp));
         assertTrue(error.getMessage().contains(field));
@@ -133,7 +135,16 @@ class NitriteCredentialsLoaderTest {
     }
 
     private static void writeCredentials(Path directory, String userId, String password) throws IOException {
-        Files.writeString(directory.resolve(NitriteProducer.CREDENTIALS_FILE), credentialsJson(userId, password));
+        writeCredentialsJson(directory, credentialsJson(userId, password));
+    }
+
+    /**
+     * Mode 0600. A later owner-only check refuses a credentials file that is readable by group or others.
+     */
+    private static void writeCredentialsJson(Path directory, String json) throws IOException {
+        Path file = directory.resolve(NitriteProducer.CREDENTIALS_FILE);
+        Files.writeString(file, json);
+        Files.setPosixFilePermissions(file, Set.of(PosixFilePermission.OWNER_READ, PosixFilePermission.OWNER_WRITE));
     }
 
     private static String credentialsJson(String userId, String password) {
