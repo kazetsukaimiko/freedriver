@@ -1,9 +1,8 @@
 package io.freedriver.ee.config;
 
 import java.io.PrintWriter;
-import java.net.URI;
 import java.sql.Connection;
-import java.sql.Driver;
+import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.SQLFeatureNotSupportedException;
 import java.util.logging.Logger;
@@ -23,9 +22,10 @@ public class DataSourceConfigDataSource implements DataSource {
     @Override
     public Connection getConnection() throws SQLException {
         try {
-            Driver driver = config.getDriver();
-            URI uri = config.getURI();
-            return driver.connect(uri.toString(), config.getProperties());
+            config.getDriver();
+            return DriverManager.getConnection(config.urlString(), config.connectionProperties());
+        } catch (SQLException e) {
+            throw e;
         } catch (Exception e) {
             throw new SQLException("Couldn't connect: ", e);
         }

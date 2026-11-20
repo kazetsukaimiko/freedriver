@@ -6,6 +6,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -30,9 +31,9 @@ public class AppData {
     public static <T> Optional<T> loadAs(Class<T> klazz, Path path) {
         LOGGER.info("Loading " + path.toString());
         try {
-            return Optional.of(OBJECT_MAPPER.readValue(path.toFile(), klazz));
+            return Optional.ofNullable(OBJECT_MAPPER.readValue(path.toFile(), klazz));
         } catch (IOException e) {
-            e.printStackTrace();
+            LOGGER.log(Level.WARNING, "Failed to load " + path + " (" + e.getClass().getName() + ")");
             return Optional.empty();
         }
     }
