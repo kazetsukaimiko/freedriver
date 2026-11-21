@@ -16,6 +16,7 @@ SCRIPT = Path(__file__).resolve().parent / "publish_jsonlink.sh"
 WORKFLOW = ROOT / ".github" / "workflows" / "publish-jsonlink.yml"
 CI_WORKFLOW = ROOT / ".github" / "workflows" / "ci.yml"
 RELEASE_WORKFLOW = ROOT / ".github" / "workflows" / "release.yml"
+COMMITLINT_WORKFLOW = ROOT / ".github" / "workflows" / "commitlint.yml"
 POM = ROOT / "pom.xml"
 PACKAGES = "https://maven.pkg.github.com/kazetsukaimiko/freedriver"
 PROJECTS = [
@@ -48,6 +49,26 @@ def pl_tokens(tokens: list[str]) -> list[str]:
     return tokens[index + 1].split(",")
 
 
+def workflow_preamble(text: str) -> str:
+    marker = "\njobs:\n"
+    index = text.find(marker)
+    if index < 0:
+        raise AssertionError("workflow has no jobs block")
+    return text[:index]
+
+
+def job_block(text: str, job_id: str) -> str:
+    marker = f"\n  {job_id}:\n"
+    index = text.find(marker)
+    if index < 0:
+        raise AssertionError(f"workflow has no {job_id} job")
+    rest = text[index + len(marker) :]
+    next_job = re.search(r"\n  [A-Za-z0-9_-]+:\n", rest)
+    if next_job is None:
+        return rest
+    return rest[: next_job.start()]
+
+
 class PublishJsonlinkConfigTest(unittest.TestCase):
     def test_packages_url_is_this_repository(self) -> None:
         pom = POM.read_text(encoding="utf-8")
@@ -65,13 +86,24 @@ class PublishJsonlinkConfigTest(unittest.TestCase):
 
     def test_publish_workflow_deploys_on_a_version_tag(self) -> None:
         text = WORKFLOW.read_text(encoding="utf-8")
+        preamble = workflow_preamble(text)
+        job = job_block(text, "publish-jsonlink")
         self.assertIn('tags:\n      - "*.*.*"', text)
-        self.assertIn("packages: write", text)
+        self.assertIn("\n    environment: packages\n", job)
+        self.assertNotIn("packages: write", preamble)
+        self.assertIn("packages: write", job)
+        self.assertEqual(text.count("packages: write"), 1)
         self.assertIn("publish_jsonlink.sh", text)
         self.assertIn("version_bump.py", text)
         self.assertIn("server-id: github", text)
         self.assertNotIn("security-review", text)
         self.assertNotIn("manual-review", text)
+        for workflow in (CI_WORKFLOW, RELEASE_WORKFLOW, COMMITLINT_WORKFLOW):
+            with self.subTest(workflow=workflow.name):
+                self.assertNotIn(
+                    "packages: write",
+                    workflow.read_text(encoding="utf-8"),
+                )
 
     def test_ci_runs_package_mode_on_pull_requests(self) -> None:
         text = CI_WORKFLOW.read_text(encoding="utf-8")
