@@ -9,6 +9,7 @@ import stat
 import subprocess
 import tempfile
 import unittest
+import xml.etree.ElementTree as ET
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -17,6 +18,32 @@ WORKFLOW = ROOT / ".github" / "workflows" / "publish-jsonlink.yml"
 CI_WORKFLOW = ROOT / ".github" / "workflows" / "ci.yml"
 RELEASE_WORKFLOW = ROOT / ".github" / "workflows" / "release.yml"
 POM = ROOT / "pom.xml"
+BOM = ROOT / "bom" / "pom.xml"
+PUBLISHED_ARTIFACTS = ROOT / ".github" / "release" / "published-artifacts.txt"
+MAVEN_POM = "http://maven.apache.org/POM/4.0.0"
+POM_ARTIFACTS = {
+    "freedriver-parent",
+    "freedriver-bom",
+    "freedriver-3p-bom",
+    "freedriver-jakarta-bom",
+}
+PUBLISHED_IDS = [
+    "freedriver-parent",
+    "freedriver-bom",
+    "freedriver-3p-bom",
+    "freedriver-jakarta-bom",
+    "jsonlink",
+    "serial-impl",
+    "serial-api",
+    "base",
+    "math",
+    "math-jpa",
+    "victron",
+    "victron-jpa",
+    "inotify",
+    "inotify-cdi",
+    "metrics",
+]
 PACKAGES = "https://maven.pkg.github.com/kazetsukaimiko/freedriver"
 PROJECTS = [
     ".",
@@ -173,6 +200,64 @@ class PublishJsonlinkScriptTest(unittest.TestCase):
         )
         path.chmod(path.stat().st_mode | stat.S_IEXEC)
         return f"{directory}:{os.environ.get('PATH', '')}"
+
+
+def published_ids(path: Path) -> list[str]:
+    lines = path.read_text(encoding="utf-8").splitlines()
+    if not lines or any(line.strip() != line or line == "" for line in lines):
+        raise AssertionError("published artifact ids are one id per line")
+    if len(lines) != len(set(lines)):
+        raise AssertionError(f"duplicate published artifact ids: {lines}")
+    return lines
+
+
+def managed_coordinates(path: Path) -> list[dict[str, str]]:
+    root = ET.parse(path).getroot()
+    if root.tag != f"{{{MAVEN_POM}}}project":
+        raise AssertionError(f"unexpected pom root {root.tag}")
+    namespace = {"m": MAVEN_POM}
+    coordinates = []
+    for dependency in root.findall(
+        "m:dependencyManagement/m:dependencies/m:dependency",
+        namespace,
+    ):
+        coordinate = {}
+        for child in list(dependency):
+            name = child.tag.removeprefix(f"{{{MAVEN_POM}}}")
+            coordinate[name] = (child.text or "").strip()
+        coordinates.append(coordinate)
+    return coordinates
+
+
+class PublishedAllowlistBomTest(unittest.TestCase):
+    def test_published_artifact_file_is_the_release_allowlist(self) -> None:
+        self.assertEqual(published_ids(PUBLISHED_ARTIFACTS), PUBLISHED_IDS)
+        self.assertEqual(POM_ARTIFACTS, set(PUBLISHED_IDS[:4]))
+
+    def test_bom_manages_the_published_jars_and_base_tests(self) -> None:
+        ids = published_ids(PUBLISHED_ARTIFACTS)
+        jars = [artifact_id for artifact_id in ids if artifact_id not in POM_ARTIFACTS]
+        coordinates = managed_coordinates(BOM)
+        jars_seen: list[str] = []
+        test_jars: list[str] = []
+        for coordinate in coordinates:
+            self.assertEqual(coordinate.get("groupId"), "io.freedriver", coordinate)
+            self.assertEqual(coordinate.get("version"), "${project.version}", coordinate)
+            artifact_id = coordinate.get("artifactId", "")
+            declared_type = coordinate.get("type", "jar")
+            classifier = coordinate.get("classifier")
+            if declared_type == "test-jar":
+                self.assertEqual(artifact_id, "base", coordinate)
+                self.assertEqual(classifier, "tests", coordinate)
+                test_jars.append(artifact_id)
+                continue
+            self.assertEqual(declared_type, "jar", coordinate)
+            self.assertNotIn("classifier", coordinate, coordinate)
+            self.assertNotIn(artifact_id, POM_ARTIFACTS, coordinate)
+            jars_seen.append(artifact_id)
+        self.assertCountEqual(jars_seen, jars)
+        self.assertEqual(test_jars, ["base"])
+        self.assertEqual(len(jars_seen), len(set(jars_seen)))
 
 
 if __name__ == "__main__":

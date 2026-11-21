@@ -47,6 +47,7 @@
         <dependency>
             <groupId>io.freedriver</groupId>
             <artifactId>genetry</artifactId>
+            <version>${project.version}</version>
         </dependency>
 
         <dependency>
