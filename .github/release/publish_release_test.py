@@ -13,8 +13,9 @@ import xml.etree.ElementTree as ET
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
-SCRIPT = Path(__file__).resolve().parent / "publish_jsonlink.sh"
-WORKFLOW = ROOT / ".github" / "workflows" / "publish-jsonlink.yml"
+SCRIPT = Path(__file__).resolve().parent / "publish_release.sh"
+WORKFLOW = ROOT / ".github" / "workflows" / "publish-release.yml"
+COMMITLINT_WORKFLOW = ROOT / ".github" / "workflows" / "commitlint.yml"
 CI_WORKFLOW = ROOT / ".github" / "workflows" / "ci.yml"
 RELEASE_WORKFLOW = ROOT / ".github" / "workflows" / "release.yml"
 POM = ROOT / "pom.xml"
@@ -58,7 +59,7 @@ def pl_tokens(tokens: list[str]) -> list[str]:
     return tokens[index + 1].split(",")
 
 
-class PublishJsonlinkConfigTest(unittest.TestCase):
+class PublishReleaseConfigTest(unittest.TestCase):
     def test_packages_url_is_this_repository(self) -> None:
         pom = POM.read_text(encoding="utf-8")
         self.assertIn("<distributionManagement>", pom)
@@ -77,7 +78,8 @@ class PublishJsonlinkConfigTest(unittest.TestCase):
         text = WORKFLOW.read_text(encoding="utf-8")
         self.assertIn('tags:\n      - "*.*.*"', text)
         self.assertIn("packages: write", text)
-        self.assertIn("publish_jsonlink.sh", text)
+        self.assertIn("publish_release.sh", text)
+        self.assertIn("publish-release:", text)
         self.assertIn("version_bump.py", text)
         self.assertIn("server-id: github", text)
         self.assertNotIn("security-review", text)
@@ -88,8 +90,15 @@ class PublishJsonlinkConfigTest(unittest.TestCase):
         self.assertIn("contents: read", text)
         self.assertNotIn("packages: write", text)
         self.assertIn("mvn --batch-mode --no-transfer-progress verify", text)
-        self.assertIn("publish_jsonlink.sh --package", text)
+        self.assertIn("publish_release.sh --package", text)
+        self.assertIn("published-artifacts.txt", text)
+        self.assertNotIn('"freedriver-parent"', text)
         self.assertIn("maven.repo.local", text)
+
+    def test_commitlint_runs_the_allowlist_rules(self) -> None:
+        text = COMMITLINT_WORKFLOW.read_text(encoding="utf-8")
+        self.assertIn("publish_release_test.py", text)
+        self.assertIn("Test the release allowlist rules", text)
 
     def test_script_has_one_project_list(self) -> None:
         text = SCRIPT.read_text(encoding="utf-8")
@@ -104,7 +113,7 @@ class PublishJsonlinkConfigTest(unittest.TestCase):
         self.assertNotIn("GITHUB_TOKEN=", text)
 
 
-class PublishJsonlinkScriptTest(unittest.TestCase):
+class PublishReleaseScriptTest(unittest.TestCase):
     def run_script(
         self,
         args: list[str],
