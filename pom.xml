@@ -58,6 +58,7 @@
 
         <module>genetry</module>
         <module>genetry-kibana</module>
+        <module>jsonlink-api</module>
         <module>jsonlink</module>
         <module>electrodacus</module>
         <module>ee</module>

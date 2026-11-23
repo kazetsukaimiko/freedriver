@@ -33,6 +33,7 @@ const SCOPES = [
   'inotify-cdi',
   'jakarta-bom',
   'jsonlink',
+  'jsonlink-api',
   'math',
   'math-jpa',
   'metrics',
