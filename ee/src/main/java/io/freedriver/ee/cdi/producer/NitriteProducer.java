@@ -5,9 +5,12 @@ import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
+import java.nio.file.attribute.PosixFilePermission;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Supplier;
 import java.util.logging.Logger;
@@ -27,6 +30,10 @@ import org.dizitart.no2.Nitrite;
 public class NitriteProducer {
     private static final Logger LOGGER = Logger.getLogger(NitriteProducer.class.getName());
     static final String CREDENTIALS_FILE = "nitrite-credentials.json";
+    static final String STORE_BACKUP_SUFFIX = ".open-bak";
+    private static final Set<PosixFilePermission> OWNER_READ_WRITE = EnumSet.of(
+            PosixFilePermission.OWNER_READ,
+            PosixFilePermission.OWNER_WRITE);
 
     private final Map<NitriteDatabase, Nitrite> cache = new ConcurrentHashMap<>(new HashMap<>());
 
@@ -91,7 +98,8 @@ public class NitriteProducer {
     /**
      * Opens {@code store} with {@code credentials}. Nitrite opens the MVStore before it checks the
      * password, which writes the file; on failure the previous bytes are put back, and a store that
-     * did not exist is removed.
+     * did not exist is removed. The backup sits beside the store, mode 0600, and is removed when
+     * the open returns.
      */
     static Nitrite open(Path store, NitriteCredentials credentials) {
         boolean existed = Files.isRegularFile(store);
@@ -99,8 +107,7 @@ public class NitriteProducer {
         boolean attempted = false;
         try {
             if (existed) {
-                backup = Files.createTempFile("nitrite-store-", ".bak");
-                Files.copy(store, backup, StandardCopyOption.REPLACE_EXISTING);
+                backup = copyStoreBackup(store);
             }
             attempted = true;
             return Nitrite.builder()
@@ -127,6 +134,18 @@ public class NitriteProducer {
                 }
             }
         }
+    }
+
+    /**
+     * Copies {@code store} to a sibling {@code .open-bak} file owned by this user, mode 0600.
+     */
+    static Path copyStoreBackup(Path store) throws IOException {
+        Path backup = store.resolveSibling(store.getFileName().toString() + STORE_BACKUP_SUFFIX);
+        Files.copy(store, backup, StandardCopyOption.REPLACE_EXISTING);
+        if (backup.getFileSystem().supportedFileAttributeViews().contains("posix")) {
+            Files.setPosixFilePermissions(backup, OWNER_READ_WRITE);
+        }
+        return backup;
     }
 
     private static void undoFailedOpen(Path store, boolean existed, Path backup) {
