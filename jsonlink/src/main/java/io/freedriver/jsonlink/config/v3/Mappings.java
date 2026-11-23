@@ -38,7 +38,7 @@ public record Mappings(
                 .subdir(JSONLINK)
                 .subdir(MAPPINGS)
                 .createIfNeeded()
-                .files(path -> path.endsWith(".json"))
+                .files(path -> path.getFileName().toString().endsWith(".json"))
                 .map(PathProvider::get)
                 .forEach(controlFile -> loadJson(controlFile, new TypeReference<List<ToggleAction>>() {})
                         .ifPresent(toggleAction -> toggleActions.put(
@@ -52,7 +52,7 @@ public record Mappings(
                 .subdir(MAPPINGS)
                 .subdir(APPLIANCES)
                 .createIfNeeded()
-                .files(path -> path.endsWith(".json"))
+                .files(path -> path.getFileName().toString().endsWith(".json"))
                 .map(PathProvider::get)
                 .forEach(applianceFile -> loadJson(applianceFile, Appliance.class)
                         .ifPresent(appliance -> appliances.put(
@@ -83,18 +83,26 @@ public record Mappings(
 
     private static <T> Optional<T> loadJson(Path path, TypeReference<T> klazz) {
         try {
-            return Optional.of(ConfigMapper.MAPPER.readValue(path.toFile(), klazz));
+            Optional<T> value = Optional.ofNullable(ConfigMapper.MAPPER.readValue(path.toFile(), klazz));
+            if (value.isEmpty()) {
+                ConfigMapper.LOGGER.log(Level.WARNING, "Couldn't load JSON: " + path);
+            }
+            return value;
         } catch (IOException e) {
-            ConfigMapper.LOGGER.log(Level.WARNING, "Couldn't load JSON:", e);
+            ConfigMapper.LOGGER.log(Level.WARNING, "Couldn't load JSON: " + path, e);
             return Optional.empty();
         }
     }
 
     private static <T> Optional<T> loadJson(Path path, Class<T> klazz) {
         try {
-            return Optional.of(ConfigMapper.MAPPER.readValue(path.toFile(), klazz));
+            Optional<T> value = Optional.ofNullable(ConfigMapper.MAPPER.readValue(path.toFile(), klazz));
+            if (value.isEmpty()) {
+                ConfigMapper.LOGGER.log(Level.WARNING, "Couldn't load JSON: " + path);
+            }
+            return value;
         } catch (IOException e) {
-            ConfigMapper.LOGGER.log(Level.WARNING, "Couldn't load JSON:", e);
+            ConfigMapper.LOGGER.log(Level.WARNING, "Couldn't load JSON: " + path, e);
             return Optional.empty();
         }
     }
