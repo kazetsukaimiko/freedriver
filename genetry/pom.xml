@@ -55,6 +55,7 @@
         <dependency>
             <groupId>io.freedriver</groupId>
             <artifactId>discovery</artifactId>
+            <version>${project.version}</version>
         </dependency>
 
         <dependency>
