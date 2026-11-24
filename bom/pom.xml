@@ -13,7 +13,7 @@
     <packaging>pom</packaging>
 
     <name>Freedriver BOM</name>
-    <description>Bill of Materials for Freedriver artifacts only. Import freedriver-jakarta-bom and/or freedriver-3p-bom separately for Jakarta APIs and third-party versions (Jackson, JUnit, Lombok).</description>
+    <description>Bill of Materials for the published Freedriver allowlist jars. Import freedriver-jakarta-bom and freedriver-3p-bom separately for Jakarta APIs and third-party versions (Jackson, JUnit, Lombok).</description>
 
     <dependencyManagement>
         <dependencies>
@@ -28,21 +28,6 @@
             <dependency>
                 <groupId>io.freedriver</groupId>
                 <artifactId>base</artifactId>
-                <classifier>tests</classifier>
-                <type>test-jar</type>
-                <version>${project.version}</version>
-                <scope>test</scope>
-            </dependency>
-
-            <dependency>
-                <groupId>io.freedriver</groupId>
-                <artifactId>client</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>io.freedriver</groupId>
-                <artifactId>client</artifactId>
                 <classifier>tests</classifier>
                 <type>test-jar</type>
                 <version>${project.version}</version>
@@ -69,14 +54,6 @@
 
             <dependency>
                 <groupId>io.freedriver</groupId>
-                <artifactId>serial-api</artifactId>
-                <version>${project.version}</version>
-                <classifier>tests</classifier>
-                <scope>test</scope>
-            </dependency>
-
-            <dependency>
-                <groupId>io.freedriver</groupId>
                 <artifactId>serial-impl</artifactId>
                 <version>${project.version}</version>
             </dependency>
@@ -95,12 +72,6 @@
 
             <dependency>
                 <groupId>io.freedriver</groupId>
-                <artifactId>discovery</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>io.freedriver</groupId>
                 <artifactId>victron</artifactId>
                 <version>${project.version}</version>
             </dependency>
@@ -113,49 +84,7 @@
 
             <dependency>
                 <groupId>io.freedriver</groupId>
-                <artifactId>daly</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>io.freedriver</groupId>
-                <artifactId>genetry</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>io.freedriver</groupId>
-                <artifactId>genetry-kibana</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>io.freedriver</groupId>
-                <artifactId>jsonlink-api</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>io.freedriver</groupId>
                 <artifactId>jsonlink</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>io.freedriver</groupId>
-                <artifactId>electrodacus</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>io.freedriver</groupId>
-                <artifactId>ee</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>io.freedriver</groupId>
-                <artifactId>phone-numbers</artifactId>
                 <version>${project.version}</version>
             </dependency>
 

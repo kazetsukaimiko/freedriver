@@ -9,14 +9,25 @@ import stat
 import subprocess
 import tempfile
 import unittest
+import xml.etree.ElementTree as ET
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
-SCRIPT = Path(__file__).resolve().parent / "publish_jsonlink.sh"
-WORKFLOW = ROOT / ".github" / "workflows" / "publish-jsonlink.yml"
+SCRIPT = Path(__file__).resolve().parent / "publish_release.sh"
+WORKFLOW = ROOT / ".github" / "workflows" / "publish-release.yml"
+COMMITLINT_WORKFLOW = ROOT / ".github" / "workflows" / "commitlint.yml"
 CI_WORKFLOW = ROOT / ".github" / "workflows" / "ci.yml"
 RELEASE_WORKFLOW = ROOT / ".github" / "workflows" / "release.yml"
 POM = ROOT / "pom.xml"
+BOM = ROOT / "bom" / "pom.xml"
+PUBLISHED_ARTIFACTS = ROOT / ".github" / "release" / "published-artifacts.txt"
+MAVEN_POM = "http://maven.apache.org/POM/4.0.0"
+POM_ARTIFACTS = {
+    "freedriver-parent",
+    "freedriver-bom",
+    "freedriver-3p-bom",
+    "freedriver-jakarta-bom",
+}
 PACKAGES = "https://maven.pkg.github.com/kazetsukaimiko/freedriver"
 PROJECTS = [
     ".",
@@ -48,7 +59,7 @@ def pl_tokens(tokens: list[str]) -> list[str]:
     return tokens[index + 1].split(",")
 
 
-class PublishJsonlinkConfigTest(unittest.TestCase):
+class PublishReleaseConfigTest(unittest.TestCase):
     def test_packages_url_is_this_repository(self) -> None:
         pom = POM.read_text(encoding="utf-8")
         self.assertIn("<distributionManagement>", pom)
@@ -67,7 +78,8 @@ class PublishJsonlinkConfigTest(unittest.TestCase):
         text = WORKFLOW.read_text(encoding="utf-8")
         self.assertIn('tags:\n      - "*.*.*"', text)
         self.assertIn("packages: write", text)
-        self.assertIn("publish_jsonlink.sh", text)
+        self.assertIn("publish_release.sh", text)
+        self.assertIn("publish-release:", text)
         self.assertIn("version_bump.py", text)
         self.assertIn("server-id: github", text)
         self.assertNotIn("security-review", text)
@@ -78,8 +90,15 @@ class PublishJsonlinkConfigTest(unittest.TestCase):
         self.assertIn("contents: read", text)
         self.assertNotIn("packages: write", text)
         self.assertIn("mvn --batch-mode --no-transfer-progress verify", text)
-        self.assertIn("publish_jsonlink.sh --package", text)
+        self.assertIn("publish_release.sh --package", text)
+        self.assertIn("published-artifacts.txt", text)
+        self.assertNotIn('"freedriver-parent"', text)
         self.assertIn("maven.repo.local", text)
+
+    def test_commitlint_runs_the_allowlist_rules(self) -> None:
+        text = COMMITLINT_WORKFLOW.read_text(encoding="utf-8")
+        self.assertIn("publish_release_test.py", text)
+        self.assertIn("Test the release allowlist rules", text)
 
     def test_script_has_one_project_list(self) -> None:
         text = SCRIPT.read_text(encoding="utf-8")
@@ -94,7 +113,7 @@ class PublishJsonlinkConfigTest(unittest.TestCase):
         self.assertNotIn("GITHUB_TOKEN=", text)
 
 
-class PublishJsonlinkScriptTest(unittest.TestCase):
+class PublishReleaseScriptTest(unittest.TestCase):
     def run_script(
         self,
         args: list[str],
@@ -173,6 +192,64 @@ class PublishJsonlinkScriptTest(unittest.TestCase):
         )
         path.chmod(path.stat().st_mode | stat.S_IEXEC)
         return f"{directory}:{os.environ.get('PATH', '')}"
+
+
+def published_ids(path: Path) -> list[str]:
+    lines = path.read_text(encoding="utf-8").splitlines()
+    if not lines or any(line.strip() != line or line == "" for line in lines):
+        raise AssertionError("published artifact ids are one id per line")
+    if len(lines) != len(set(lines)):
+        raise AssertionError(f"duplicate published artifact ids: {lines}")
+    return lines
+
+
+def managed_coordinates(path: Path) -> list[dict[str, str]]:
+    root = ET.parse(path).getroot()
+    if root.tag != f"{{{MAVEN_POM}}}project":
+        raise AssertionError(f"unexpected pom root {root.tag}")
+    namespace = {"m": MAVEN_POM}
+    coordinates = []
+    for dependency in root.findall(
+        "m:dependencyManagement/m:dependencies/m:dependency",
+        namespace,
+    ):
+        coordinate = {}
+        for child in list(dependency):
+            name = child.tag.removeprefix(f"{{{MAVEN_POM}}}")
+            coordinate[name] = (child.text or "").strip()
+        coordinates.append(coordinate)
+    return coordinates
+
+
+class PublishedAllowlistBomTest(unittest.TestCase):
+    def test_published_artifact_file_is_the_release_allowlist(self) -> None:
+        ids = published_ids(PUBLISHED_ARTIFACTS)
+        self.assertTrue(POM_ARTIFACTS <= set(ids))
+
+    def test_bom_manages_the_published_jars_and_base_tests(self) -> None:
+        ids = published_ids(PUBLISHED_ARTIFACTS)
+        jars = [artifact_id for artifact_id in ids if artifact_id not in POM_ARTIFACTS]
+        coordinates = managed_coordinates(BOM)
+        jars_seen: list[str] = []
+        test_jars: list[str] = []
+        for coordinate in coordinates:
+            self.assertEqual(coordinate.get("groupId"), "io.freedriver", coordinate)
+            self.assertEqual(coordinate.get("version"), "${project.version}", coordinate)
+            artifact_id = coordinate.get("artifactId", "")
+            declared_type = coordinate.get("type", "jar")
+            classifier = coordinate.get("classifier")
+            if declared_type == "test-jar":
+                self.assertEqual(artifact_id, "base", coordinate)
+                self.assertEqual(classifier, "tests", coordinate)
+                test_jars.append(artifact_id)
+                continue
+            self.assertEqual(declared_type, "jar", coordinate)
+            self.assertNotIn("classifier", coordinate, coordinate)
+            self.assertNotIn(artifact_id, POM_ARTIFACTS, coordinate)
+            jars_seen.append(artifact_id)
+        self.assertCountEqual(jars_seen, jars)
+        self.assertEqual(test_jars, ["base"])
+        self.assertEqual(len(jars_seen), len(set(jars_seen)))
 
 
 if __name__ == "__main__":
