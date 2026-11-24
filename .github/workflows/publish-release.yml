@@ -1,4 +1,4 @@
-name: Publish jsonlink
+name: Publish the release allowlist
 
 on:
   push:
@@ -10,8 +10,8 @@ permissions:
   packages: write
 
 jobs:
-  publish-jsonlink:
-    name: publish jsonlink
+  publish-release:
+    name: publish the release allowlist
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -36,7 +36,7 @@ jobs:
           server-username: GITHUB_ACTOR
           server-password: GITHUB_TOKEN
 
-      - name: Publish jsonlink to GitHub Packages
+      - name: Publish the release allowlist to GitHub Packages
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: bash .github/release/publish_jsonlink.sh "${GITHUB_REF_NAME}"
+        run: bash .github/release/publish_release.sh "${GITHUB_REF_NAME}"

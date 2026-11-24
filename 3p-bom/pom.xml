@@ -13,7 +13,7 @@
     <packaging>pom</packaging>
 
     <name>Freedriver Third-Party BOM</name>
-    <description>Third-party dependency versions only (not Jakarta APIs): Jackson, JUnit, Awaitility, Lombok. Import freedriver-bom for reactor artifacts and freedriver-jakarta-bom for Jakarta APIs.</description>
+    <description>Third-party dependency versions only (not Jakarta APIs): Jackson, JUnit, Awaitility, Lombok. Import freedriver-bom for published Freedriver artifacts and freedriver-jakarta-bom for Jakarta APIs.</description>
 
     <dependencyManagement>
         <dependencies>

@@ -26,3 +26,43 @@ jobs:
 
       - name: Build, test, and Spotless check
         run: mvn --batch-mode --no-transfer-progress verify
+
+      - name: Package the release allowlist
+        run: |
+          set -euo pipefail
+          repo="${RUNNER_TEMP}/empty-m2"
+          mkdir -p "${repo}"
+          log="${RUNNER_TEMP}/publish-package.log"
+          bash .github/release/publish_release.sh --package -Dmaven.repo.local="${repo}" | tee "${log}"
+          python3 - "${log}" <<'PY'
+          import re
+          import sys
+
+          required = set()
+          with open(".github/release/published-artifacts.txt", encoding="utf-8") as allowlist:
+              for raw in allowlist:
+                  artifact_id = raw.strip()
+                  if artifact_id:
+                      required.add(artifact_id)
+          if not required:
+              print("published-artifacts.txt is empty", file=sys.stderr)
+              sys.exit(1)
+          # Jar modules log "@ <artifactId>" on each mojo. POM modules run no
+          # mojo, so their artifact id is on the project line
+          # "< io.freedriver:<artifactId> >" rather than the reactor summary name.
+          mojo = re.compile(r"@ ([A-Za-z0-9._-]+)\s*(?:---)?\s*$")
+          project = re.compile(r"< io\.freedriver:([A-Za-z0-9._-]+) >")
+          found = set()
+          for line in open(sys.argv[1], encoding="utf-8"):
+              for pattern in (mojo, project):
+                  match = pattern.search(line)
+                  if match:
+                      found.add(match.group(1))
+          extra = sorted(found - required)
+          missing = sorted(required - found)
+          if extra or missing or found != required:
+              print(f"packaged artifact ids: {' '.join(sorted(found))}", file=sys.stderr)
+              print(f"missing: {' '.join(missing)}", file=sys.stderr)
+              print(f"extra: {' '.join(extra)}", file=sys.stderr)
+              sys.exit(1)
+          PY

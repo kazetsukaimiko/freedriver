@@ -1,0 +1,15 @@
+freedriver-parent
+freedriver-bom
+freedriver-3p-bom
+freedriver-jakarta-bom
+jsonlink
+serial-impl
+serial-api
+base
+math
+math-jpa
+victron
+victron-jpa
+inotify
+inotify-cdi
+metrics
