@@ -31,7 +31,7 @@ release-please computes the version from the conventional commits on `master` si
 
 `release-please-config.json` lists `feat` and `fix` as the visible changelog sections and hides every other type. release-please opens a release pull request only when the changelog has a visible entry, so a merge of a hidden type alone leaves the release pull request as it is.
 
-Tags are `MAJOR.MINOR.PATCH` with no `v` prefix. The reactor is one release-please package at the repository root: one version, one tag, one release pull request. There are 24 `pom.xml` files; `serial-natives/pom.xml` is among them. `genetry-kibana/dependency-reduced-pom.xml` is a build output and stays as it is.
+Tags are `MAJOR.MINOR.PATCH` with no `v` prefix. The reactor is one release-please package at the repository root: one version, one tag, one release pull request. Every `pom.xml` in the repository gets the version: the root pom and each module pom. `genetry-kibana/dependency-reduced-pom.xml` is a build output and stays as it is.
 
 History starts after tag `1.0.0` (`6d2e3cad9b0f391501a8e1b52643c24f00dc1164`): `bootstrap-sha` names that commit and the manifest starts at `1.0.0`.
 
