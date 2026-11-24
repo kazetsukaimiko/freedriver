@@ -33,39 +33,20 @@ jobs:
           repo="${RUNNER_TEMP}/empty-m2"
           mkdir -p "${repo}"
           log="${RUNNER_TEMP}/publish-package.log"
-          bash .github/release/publish_jsonlink.sh --package -Dmaven.repo.local="${repo}" | tee "${log}"
+          bash .github/release/publish_release.sh --package -Dmaven.repo.local="${repo}" | tee "${log}"
           python3 - "${log}" <<'PY'
           import re
           import sys
 
-          required = {
-              "freedriver-parent",
-              "freedriver-bom",
-              "freedriver-3p-bom",
-              "freedriver-jakarta-bom",
-              "jsonlink",
-              "serial-impl",
-              "serial-api",
-              "base",
-              "math",
-              "math-jpa",
-              "victron",
-              "victron-jpa",
-              "inotify",
-              "inotify-cdi",
-              "metrics",
-          }
-          excluded = {
-              "client",
-              "daly",
-              "discovery",
-              "ee",
-              "electrodacus",
-              "genetry",
-              "genetry-kibana",
-              "phone-numbers",
-              "serial-natives",
-          }
+          required = set()
+          with open(".github/release/published-artifacts.txt", encoding="utf-8") as allowlist:
+              for raw in allowlist:
+                  artifact_id = raw.strip()
+                  if artifact_id:
+                      required.add(artifact_id)
+          if not required:
+              print("published-artifacts.txt is empty", file=sys.stderr)
+              sys.exit(1)
           # Jar modules log "@ <artifactId>" on each mojo. POM modules run no
           # mojo, so their artifact id is on the project line
           # "< io.freedriver:<artifactId> >" rather than the reactor summary name.
@@ -79,11 +60,9 @@ jobs:
                       found.add(match.group(1))
           extra = sorted(found - required)
           missing = sorted(required - found)
-          forbidden = sorted(found & excluded)
-          if extra or missing or forbidden or found != required:
+          if extra or missing or found != required:
               print(f"packaged artifact ids: {' '.join(sorted(found))}", file=sys.stderr)
               print(f"missing: {' '.join(missing)}", file=sys.stderr)
               print(f"extra: {' '.join(extra)}", file=sys.stderr)
-              print(f"forbidden: {' '.join(forbidden)}", file=sys.stderr)
               sys.exit(1)
           PY
