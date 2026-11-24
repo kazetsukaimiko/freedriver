@@ -1,6 +1,6 @@
 # Releasing freedriver
 
-freedriver is released by [release-please](https://github.com/googleapis/release-please) with the `maven` release type. A release is a pull request that kazetsukaimiko approves and merges. Merging it creates the version tag and the GitHub Release, and the tag publishes the packages.
+freedriver is released by [release-please](https://github.com/googleapis/release-please) with the `maven` release type. A release is a pull request that kazetsukaimiko approves and merges. Merging it creates the version tag and the GitHub Release, and the tag starts the package publish, which kazetsukaimiko approves in the `packages` environment.
 
 Agents never merge a release pull request. kazetsukaimiko calls each release through the Project Manager.
 
@@ -13,7 +13,7 @@ Agents never merge a release pull request. kazetsukaimiko calls each release thr
    - a **release pull request**, `chore(release): release X.Y.Z`, when `master` has a `feat`, a `fix` or a breaking change since the last release. It sets `X.Y.Z` on those same pom versions, writes `CHANGELOG.md` and updates `.release-please-manifest.json`.
 4. kazetsukaimiko approves and squash-merges the release pull request when he calls the release.
 5. That merge is a push to `master`. The gate passes the merged release pull request, and release-please creates the tag `X.Y.Z` on its merge commit and a GitHub Release whose notes are the changelog for that version.
-6. The tag push runs `.github/workflows/publish-jsonlink.yml`, which publishes the release allowlist to GitHub Packages at version `X.Y.Z`.
+6. The tag push starts `.github/workflows/publish-release.yml`. From #70 on, its publish job runs in the `packages` environment and waits there for kazetsukaimiko's deployment approval. After that approval it publishes the release allowlist to GitHub Packages at version `X.Y.Z`. So a release takes two approvals from kazetsukaimiko: the review on the release pull request, and the `packages` deployment after the tag.
 7. The same push opens the snapshot pull request for the next development version. It needs one approving review and creates no tag, GitHub Release or package.
 
 The first run after this flow lands opens a snapshot pull request for `1.0.1-SNAPSHOT`: tag `1.0.0` was cut by hand while the poms stayed on `1.0.0-SNAPSHOT`, and release-please moves the poms past a released version before it proposes the next one. The first release pull request follows once that snapshot pull request merges.
@@ -44,9 +44,9 @@ The GitHub Release title and the heading of its notes are the released version. 
 | Actor | Does |
 | --- | --- |
 | `freedriver-release[bot]`, the release GitHub App | Authors the release and snapshot pull requests, creates the tag and the GitHub Release |
-| kazetsukaimiko | Approves and merges release pull requests |
+| kazetsukaimiko | Approves and merges release pull requests, and approves the `packages` deployment that publishes |
 | Any reviewer | Approves the snapshot pull request |
-| `publish-jsonlink.yml` | Publishes the packages from the tag |
+| `publish-release.yml` | Publishes the packages from the tag, after kazetsukaimiko's approval in the `packages` environment (#70) |
 
 No workflow merges a pull request, and nothing acts as kazetsukaimiko.
 
@@ -61,7 +61,9 @@ Release and snapshot pull requests carry the footer `Refs: #81`. #81 is the stan
 
 Only the release-please job runs in the `release` environment, and only it reads the two secrets. It mints a token for one run with `actions/create-github-app-token`. Every action that receives that token is pinned to a full commit SHA. When a secret is missing, the release-please job fails with a message naming the secret and the `release` environment.
 
-An App token starts other workflows, so CI and commitlint run on the release and snapshot pull requests, and the tag push starts the publish.
+An App token starts other workflows, so CI and commitlint run on the release and snapshot pull requests, and the tag push starts `publish-release.yml`.
+
+commitlint requires a `Refs:` footer on every pull request. release-please writes `Refs: #81` on both of its pull requests. As a fallback, `lint-pr.js` lifts that one rule for a pull request that carries `autorelease: snapshot` and whose author is `freedriver-release[bot]`; the label alone lifts nothing, because any writer can set a label.
 
 ## Authorization
 
@@ -104,7 +106,9 @@ It finds candidates the way release-please does: merged pull requests into `mast
 | `merge-commit` | the pull request has a merge commit and it is on `master` at the pushed head |
 | `manifest-version` | the version in the pull request title equals the `"."` version in `.release-please-manifest.json` at that merge commit |
 
-When any candidate fails any check, the gate fails with a message naming the pull request number and the failed check, and the release-please job is skipped: no tag, no GitHub Release, no package. The gate only refuses. Tags come from release-please alone.
+For `approval`, a `COMMENTED` review leaves the approval as it was, as on GitHub; a later `CHANGES_REQUESTED` or `DISMISSED` review from kazetsukaimiko removes it.
+
+When any candidate fails any check, the gate fails with a message naming the pull request number and the failed check (`release gate: pull request #N refused on <check>: …`), and the release-please job is skipped: no tag, no GitHub Release, no package. The gate only refuses. Tags come from release-please alone.
 
 ## A release pull request merged without kazetsukaimiko's approval
 

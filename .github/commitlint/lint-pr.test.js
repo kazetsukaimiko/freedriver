@@ -4,19 +4,29 @@ const path = require('node:path');
 const test = require('node:test');
 
 const { SCOPES } = require('./commitlint.config.js');
-const { lintMessage, messageFromPullRequest } = require('./lint-pr.js');
+const {
+  RELEASE_BOT,
+  SNAPSHOT_LABEL,
+  isReleaseSnapshot,
+  lintMessage,
+  messageFromPullRequest,
+  parseLabels,
+} = require('./lint-pr.js');
 
-function lint(title, body) {
-  return lintMessage(messageFromPullRequest(title, body));
+function lint(title, body, pullRequest) {
+  const releaseSnapshot = pullRequest
+    ? isReleaseSnapshot(pullRequest.author, parseLabels(pullRequest.labels))
+    : false;
+  return lintMessage(messageFromPullRequest(title, body), { releaseSnapshot });
 }
 
-function accepted(title, body) {
-  const result = lint(title, body);
+function accepted(title, body, pullRequest) {
+  const result = lint(title, body, pullRequest);
   assert.equal(result.ok, true, result.output);
 }
 
-function rejected(title, body, pattern) {
-  const result = lint(title, body);
+function rejected(title, body, pattern, pullRequest) {
+  const result = lint(title, body, pullRequest);
   assert.equal(result.ok, false, result.output);
   if (pattern) {
     assert.match(result.output, pattern);
@@ -29,7 +39,18 @@ test('a scoped title and a Refs footer pass', () => {
 });
 
 test('every allowed type passes with a scope', () => {
-  for (const type of ['feat', 'fix', 'refactor', 'test', 'docs', 'chore', 'ci', 'build', 'perf']) {
+  for (const type of [
+    'feat',
+    'fix',
+    'refactor',
+    'test',
+    'docs',
+    'chore',
+    'ci',
+    'build',
+    'perf',
+    'revert',
+  ]) {
     accepted(`${type}(base): adjust the scanner`, 'Refs: #24');
   }
 });
@@ -68,6 +89,71 @@ test('a breaking change needs both markers', () => {
     'feat(jsonlink)!: change the mapping shape',
     'The old list is gone.\n\nBREAKING CHANGE: callers must send startupActions.\nRefs: #24',
   );
+});
+
+test('a revert of a release commit passes with a scope and a Refs footer', () => {
+  accepted(
+    'revert(release): release 1.1.0',
+    'This reverts commit 6d2e3cad9b0f391501a8e1b52643c24f00dc1164.\n\nRefs: #81',
+  );
+  rejected('revert: release 1.1.0', 'Refs: #81', /scope-empty/);
+  rejected('revert(release): release 1.1.0', '', /Refs:/);
+});
+
+const SNAPSHOT_TITLE = 'chore(release): release 1.0.1-SNAPSHOT';
+const SNAPSHOT_BODY_WITHOUT_REFS =
+  ':robot: I have created a release *beep* *boop*\n---\n\n\n### Updating meta-information for bleeding-edge SNAPSHOT release.\n\n---\nThis PR was generated with Release Please.';
+const SNAPSHOT_LABELS = JSON.stringify([SNAPSHOT_LABEL]);
+
+test('the release App is the bot the release gate names', () => {
+  assert.equal(RELEASE_BOT, 'freedriver-release[bot]');
+  assert.equal(SNAPSHOT_LABEL, 'autorelease: snapshot');
+  const gate = fs.readFileSync(path.join(__dirname, '..', 'release', 'release_gate.py'), 'utf8');
+  assert.ok(gate.includes(`RELEASE_BOT = "${RELEASE_BOT}"`));
+});
+
+test('a snapshot pull request the release App opened passes without a Refs footer', () => {
+  accepted(SNAPSHOT_TITLE, SNAPSHOT_BODY_WITHOUT_REFS, {
+    author: RELEASE_BOT,
+    labels: SNAPSHOT_LABELS,
+  });
+});
+
+test('the snapshot label on anyone else\'s pull request still needs a Refs footer', () => {
+  for (const author of ['kazetsukaiyuni', 'kazetsukaimiko', 'freedriver-release', '']) {
+    rejected(SNAPSHOT_TITLE, SNAPSHOT_BODY_WITHOUT_REFS, /Refs:/, {
+      author,
+      labels: SNAPSHOT_LABELS,
+    });
+  }
+});
+
+test('an unlabelled pull request from the release App still needs a Refs footer', () => {
+  for (const labels of ['[]', JSON.stringify(['autorelease: pending']), '', 'not json']) {
+    rejected(SNAPSHOT_TITLE, SNAPSHOT_BODY_WITHOUT_REFS, /Refs:/, { author: RELEASE_BOT, labels });
+  }
+});
+
+test('the snapshot exemption lifts the Refs footer rule only', () => {
+  const snapshot = { author: RELEASE_BOT, labels: SNAPSHOT_LABELS };
+  rejected('chore(master): release 1.0.1-SNAPSHOT', SNAPSHOT_BODY_WITHOUT_REFS, /scope-enum/, snapshot);
+  rejected('style(release): release 1.0.1-SNAPSHOT', SNAPSHOT_BODY_WITHOUT_REFS, /type-enum/, snapshot);
+  const base = require('./commitlint.config.js');
+  const lifted = require('./commitlint.snapshot.config.js');
+  const changed = Object.keys(base.rules).filter(
+    (rule) => JSON.stringify(base.rules[rule]) !== JSON.stringify(lifted.rules[rule]),
+  );
+  assert.deepEqual(changed, ['refs-footer']);
+  assert.deepEqual(Object.keys(lifted.rules), Object.keys(base.rules));
+});
+
+test('release-please pull requests pass as release-please writes them', () => {
+  const release =
+    ':robot: I have created a release *beep* *boop*\n---\n\n\n<details><summary>1.0.1</summary>\n\n## [1.0.1](https://github.com/kazetsukaimiko/freedriver/compare/1.0.0...1.0.1) (2026-11-23)\n\n\n### Bug Fixes\n\n* **jsonlink:** read every toggle and appliance json file ([#68](https://github.com/kazetsukaimiko/freedriver/issues/68))\n</details>\n\n---\nRefs: #81';
+  const snapshot =
+    ':robot: I have created a release *beep* *boop*\n---\n\n\n<details><summary>1.0.1-SNAPSHOT</summary>\n\n### Updating meta-information for bleeding-edge SNAPSHOT release.\n</details>\n\n---\nRefs: #81';
+  accepted('chore(release): release 1.0.1', release);
+  accepted(SNAPSHOT_TITLE, snapshot);
 });
 
 test('merge titles are linted', () => {

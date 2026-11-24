@@ -17,7 +17,14 @@ SCRIPT = Path(__file__).resolve().parent / "publish_release.sh"
 WORKFLOW = ROOT / ".github" / "workflows" / "publish-release.yml"
 COMMITLINT_WORKFLOW = ROOT / ".github" / "workflows" / "commitlint.yml"
 CI_WORKFLOW = ROOT / ".github" / "workflows" / "ci.yml"
-RELEASE_WORKFLOW = ROOT / ".github" / "workflows" / "release.yml"
+RETIRED = [
+    ROOT / ".github" / "workflows" / "release.yml",
+    ROOT / ".github" / "release" / "version_bump.py",
+    ROOT / ".github" / "release" / "version_bump_test.py",
+    ROOT / ".github" / "release" / "install-git-cliff.sh",
+    ROOT / "cliff.toml",
+]
+WORKFLOWS = ROOT / ".github" / "workflows"
 POM = ROOT / "pom.xml"
 BOM = ROOT / "bom" / "pom.xml"
 PUBLISHED_ARTIFACTS = ROOT / ".github" / "release" / "published-artifacts.txt"
@@ -67,12 +74,26 @@ class PublishReleaseConfigTest(unittest.TestCase):
         self.assertIn("<id>github</id>", pom)
         self.assertNotIn("SNAPSHOT", pom[pom.index("<distributionManagement>") :])
 
-    def test_release_notes_workflow_stays_notes(self) -> None:
-        text = RELEASE_WORKFLOW.read_text(encoding="utf-8")
-        self.assertIn("Publish the GitHub release", text)
-        self.assertIn("git-cliff", text)
-        self.assertNotIn("deploy", text)
-        self.assertNotIn("packages: write", text)
+    def test_the_hand_cut_release_path_is_retired(self) -> None:
+        for path in RETIRED:
+            with self.subTest(path=path.name):
+                self.assertFalse(path.exists(), path)
+        for workflow in sorted(WORKFLOWS.glob("*.yml")):
+            text = workflow.read_text(encoding="utf-8")
+            with self.subTest(workflow=workflow.name):
+                self.assertNotIn("version_bump", text)
+                self.assertNotIn("git-cliff", text)
+
+    def test_only_the_publish_job_writes_packages(self) -> None:
+        for workflow in sorted(WORKFLOWS.glob("*.yml")):
+            text = workflow.read_text(encoding="utf-8")
+            with self.subTest(workflow=workflow.name):
+                if workflow == WORKFLOW:
+                    self.assertEqual(text.count("jobs:"), 1)
+                    self.assertEqual(len(re.findall(r"^  [\w-]+:$", text.split("jobs:")[1], re.MULTILINE)), 1)
+                    self.assertIn("packages: write", text)
+                else:
+                    self.assertNotIn("packages:", text)
 
     def test_publish_workflow_deploys_on_a_version_tag(self) -> None:
         text = WORKFLOW.read_text(encoding="utf-8")
@@ -80,7 +101,7 @@ class PublishReleaseConfigTest(unittest.TestCase):
         self.assertIn("packages: write", text)
         self.assertIn("publish_release.sh", text)
         self.assertIn("publish-release:", text)
-        self.assertIn("version_bump.py", text)
+        self.assertNotIn("version_bump.py", text)
         self.assertIn("server-id: github", text)
         self.assertNotIn("security-review", text)
         self.assertNotIn("manual-review", text)
@@ -97,8 +118,10 @@ class PublishReleaseConfigTest(unittest.TestCase):
 
     def test_commitlint_runs_the_allowlist_rules(self) -> None:
         text = COMMITLINT_WORKFLOW.read_text(encoding="utf-8")
-        self.assertIn("publish_release_test.py", text)
-        self.assertIn("Test the release allowlist rules", text)
+        # One discover step runs every test file in .github/release, so a new
+        # test file runs in CI without a workflow change.
+        self.assertIn("python3 -m unittest discover -s .github/release -p '*_test.py'", text)
+        self.assertNotIn("_test.py\n", text.replace("'*_test.py'\n", ""))
 
     def test_script_has_one_project_list(self) -> None:
         text = SCRIPT.read_text(encoding="utf-8")
