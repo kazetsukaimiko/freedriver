@@ -8,13 +8,12 @@ module's only dependency is `jackson-annotations`.
 | JSON | Type | Wire form |
 | --- | --- | --- |
 | request | `BoardRequest` | object; property names are the component names (`turn_off`, `turn_on` included) |
-| response | `BoardResponse` | object; property names are the component names |
+| response | `BoardResponse` | object; property names are the component names. The firmware's `version` array is skipped when read |
 | pin, as a value | `Identifier` | number, `13` |
 | pin, as a map key | `Identifier` | the pin's decimal digits, `"13"` |
 | analog pin | `AnalogIdentifier` | text, `"A3"` |
 | mode | `Mode` | boolean: `OUTPUT` is `true`, `INPUT` is `false` |
 | digital state | `DigitalState` | boolean: `LOW` is `true`, `HIGH` is `false` |
-| version | `Version` | array of three numbers, `[1, 2, 3]` |
 
 ```java
 BoardRequest request = BoardRequest.empty()

@@ -3,6 +3,7 @@ package io.freedriver.jsonlink.api.v1;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.List;
@@ -13,6 +14,7 @@ import java.util.UUID;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.exc.UnrecognizedPropertyException;
 import org.junit.jupiter.api.Test;
 
 /**
@@ -43,7 +45,6 @@ class BoardSchemaRoundTripTest {
 
     private static BoardResponse response() {
         return new BoardResponse(
-                new Version(1, 2, 3),
                 UUID.fromString("7d4f6f0e-3c1b-4e0a-9d55-0a4f4d2f6b11"),
                 UUID.fromString("0b9c2a52-8a43-4c0e-b0a5-6d1c3b7e9f20"),
                 new BoardInfo(List.of(PIN_2, PIN_13), List.of(Identifier.of(14))),
@@ -117,20 +118,18 @@ class BoardSchemaRoundTripTest {
     void boardResponseWireForm() {
         JsonNode json = MAPPER.valueToTree(response());
 
-        assertEquals(List.of(1, 2, 3), MAPPER.convertValue(json.get("version"), List.class));
         assertTrue(json.get("digital").get("2").booleanValue());
         assertFalse(json.get("digital").get("13").booleanValue());
         assertEquals(14, json.get("analog").get(0).get("pin").intValue());
         assertEquals(
-                Set.of("version", "uuid", "requestId", "boardInfo", "info", "error", "debug", "digital", "analog"),
+                Set.of("uuid", "requestId", "boardInfo", "info", "error", "debug", "digital", "analog"),
                 Set.copyOf(fieldNames(json)));
     }
 
     @Test
-    void boardReplyWithOnlySomePropertiesReads() throws JsonProcessingException {
+    void boardReplyWithOnlySomePropertiesReadsAndSkipsTheFirmwareVersion() throws JsonProcessingException {
         BoardResponse read = MAPPER.readValue("{\"version\":[1,0,0],\"digital\":{\"13\":true}}", BoardResponse.class);
 
-        assertEquals(new Version(1, 0, 0), read.version());
         assertEquals(Map.of(PIN_13, true), read.digital());
         assertEquals(List.of(), read.error());
     }
@@ -178,12 +177,12 @@ class BoardSchemaRoundTripTest {
                         MAPPER.getTypeFactory().constructMapType(Map.class, AnalogIdentifier.class, Integer.class)));
     }
 
-    @Test
-    void baseResponseReadsBackEqual() throws JsonProcessingException {
-        BaseResponse original = new BaseResponse(new Version(1, 2, 3));
 
-        assertEquals("{\"version\":[1,2,3]}", MAPPER.writeValueAsString(original));
-        assertEquals(original, MAPPER.readValue(MAPPER.writeValueAsString(original), BaseResponse.class));
+    @Test
+    void anotherUnknownReplyPropertyStillFails() {
+        assertThrows(
+                UnrecognizedPropertyException.class,
+                () -> MAPPER.readValue("{\"versoin\":[1,0,0]}", BoardResponse.class));
     }
 
     private static List<String> fieldNames(JsonNode node) {

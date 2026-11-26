@@ -5,12 +5,18 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.function.Consumer;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 /**
  * One response from a board. JSON property names are the component names. The record holds
  * what the board sent; a consumer that wants a receive time records it itself.
+ * <p>
+ * The jsonlink firmware still writes a {@code version} array in every reply. Nothing uses it, so
+ * the contract has no version type and a reply's {@code version} is skipped when read; any other
+ * unknown property still fails on a mapper that fails on unknown properties.
  */
+@JsonIgnoreProperties("version")
 public record BoardResponse(
-        Version version,
         UUID uuid,
         UUID requestId,
         BoardInfo boardInfo,
@@ -29,7 +35,7 @@ public record BoardResponse(
     }
 
     public static BoardResponse empty() {
-        return new BoardResponse(null, null, null, null, null, null, null, null, null);
+        return new BoardResponse(null, null, null, null, null, null, null, null);
     }
 
     public BoardResponse logAnyErrors(Consumer<String> errorLogger) {
