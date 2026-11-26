@@ -33,7 +33,19 @@ jobs:
           repo="${RUNNER_TEMP}/empty-m2"
           mkdir -p "${repo}"
           log="${RUNNER_TEMP}/publish-package.log"
+          # The verify step above already wrote base's tests jar here. Delete
+          # it so the jar required below comes from the --package run.
+          rm -rf base/target
           bash .github/release/publish_release.sh --package -Dmaven.repo.local="${repo}" | tee "${log}"
+          # freedriver-bom manages base's tests test-jar, so the release
+          # allowlist build has to attach it.
+          shopt -s nullglob
+          tests_jars=(base/target/base-*-tests.jar)
+          shopt -u nullglob
+          if [[ ${#tests_jars[@]} -ne 1 ]]; then
+            echo "expected exactly one base/target/base-*-tests.jar from the --package run, found ${#tests_jars[@]}: ${tests_jars[*]}" >&2
+            exit 1
+          fi
           python3 - "${log}" <<'PY'
           import re
           import sys
