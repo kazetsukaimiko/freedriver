@@ -59,13 +59,6 @@
       <scope>provided</scope>
     </dependency>
 
-    <!--
-    <dependency>
-      <groupId>io.freedriver</groupId>
-      <artifactId>serial-natives</artifactId>
-    </dependency>
-    -->
-
     <dependency>
       <groupId>io.github.java-native</groupId>
       <artifactId>jssc</artifactId>
