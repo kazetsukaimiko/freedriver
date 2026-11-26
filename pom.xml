@@ -41,9 +41,6 @@
         <module>math-jpa</module>
 
         <module>serial-api</module>
-        <!--
-        <module>serial-natives</module>
-        -->
         <module>serial-impl</module>
 
         <module>inotify</module>
@@ -58,6 +55,7 @@
 
         <module>genetry</module>
         <module>genetry-kibana</module>
+        <module>jsonlink-api</module>
         <module>jsonlink</module>
         <module>electrodacus</module>
         <module>ee</module>

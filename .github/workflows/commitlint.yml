@@ -3,7 +3,7 @@ name: Commitlint
 on:
   pull_request:
     branches: [master]
-    types: [opened, edited, reopened, synchronize]
+    types: [opened, edited, reopened, synchronize, labeled, unlabeled]
 
 permissions:
   contents: read
@@ -30,6 +30,8 @@ jobs:
         env:
           PR_TITLE: ${{ github.event.pull_request.title }}
           PR_BODY: ${{ github.event.pull_request.body }}
+          PR_AUTHOR: ${{ github.event.pull_request.user.login }}
+          PR_LABELS: ${{ toJSON(github.event.pull_request.labels.*.name) }}
         run: |
           npm ci
           npm test
@@ -47,30 +49,5 @@ jobs:
           fetch-depth: 0
           fetch-tags: true
 
-      - name: Test the version rules
-        working-directory: .github/release
-        run: python3 version_bump_test.py
-
-      - name: Test the release allowlist rules
-        working-directory: .github/release
-        run: python3 publish_release_test.py
-
-      - name: Install git-cliff
-        run: bash .github/release/install-git-cliff.sh "${RUNNER_TEMP}/git-cliff"
-
-      - name: Put git-cliff on PATH
-        run: echo "${RUNNER_TEMP}/git-cliff" >> "$GITHUB_PATH"
-
-      - name: Render notes and check the first version
-        run: |
-          set -euo pipefail
-          git-cliff --config cliff.toml --unreleased --strip header --output "${RUNNER_TEMP}/notes.md"
-          test -s "${RUNNER_TEMP}/notes.md"
-          if ! git tag --list | grep -Eq '^[0-9]+\.[0-9]+\.[0-9]+$'; then
-            bumped=$(git-cliff --config cliff.toml --bumped-version)
-            expected=$(python3 .github/release/version_bump.py)
-            if [[ "$bumped" != "$expected" ]]; then
-              echo "git-cliff initial version $bumped is not the Maven release version $expected" >&2
-              exit 1
-            fi
-          fi
+      - name: Test the release rules
+        run: python3 -m unittest discover -s .github/release -p '*_test.py'

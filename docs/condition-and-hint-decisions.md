@@ -46,7 +46,7 @@ Autonomy at `270c6530a1bfe2520ced881a2dd33fac69683e36` imports jsonlink types ot
 
 Condition removal changes public types on the classpath jar `.github/release/publish_jsonlink.sh` deploys. Autonomy still compiles without a source change, because it does not name those types, and no autonomy pull request is required before the freedriver follow-up merges. Hint removal changes public classes in packages `io.freedriver.base` does not export, so the commit is non-breaking. Autonomy still compiles without a source change for the same reason.
 
-This docs commit is `docs(docs)`. `.github/release/version_bump.py` leaves a `docs` commit's version unchanged. `.github/release/publish_jsonlink.sh` stays unchanged and runs only on a `MAJOR.MINOR.PATCH` tag. A later base or jsonlink Java change reaches GitHub Packages only on a tag `version_bump.py` accepts (`feat`, `fix`, or breaking). That tag deploys jsonlink plus the reactor modules its POM needs (`mvn -pl jsonlink -am`). jsonlink depends on `serial-impl`, and `serial-impl` depends on `base`, so base is in that set. kazetsukaimiko/freedriver#48 is the existing card for publishing the parent POM, the three BOMs, math-jpa, victron, and victron-jpa. These follow-ups do not wait on #48 for autonomy to keep building.
+This docs commit is `docs(docs)`. release-please leaves the version unchanged for a `docs` commit. `.github/release/publish_jsonlink.sh` stays unchanged and runs only on a `MAJOR.MINOR.PATCH` tag. A later base or jsonlink Java change reaches GitHub Packages only on a tag release-please creates (for a `feat`, a `fix`, or a breaking change). That tag deploys jsonlink plus the reactor modules its POM needs (`mvn -pl jsonlink -am`). jsonlink depends on `serial-impl`, and `serial-impl` depends on `base`, so base is in that set. kazetsukaimiko/freedriver#48 is the existing card for publishing the parent POM, the three BOMs, math-jpa, victron, and victron-jpa. These follow-ups do not wait on #48 for autonomy to keep building.
 
 ## Follow-up cards
 
@@ -66,7 +66,7 @@ BREAKING CHANGE: delete public jsonlink types Condition, ConditionType, Conditio
 Refs: #<card>
 ```
 
-`version_bump.py` ranks a `!` after the scope, or a `BREAKING CHANGE:` footer, as a major bump. The pair is required because these types are public on the classpath jar `publish_jsonlink.sh` deploys. A plain `refactor` header is not that mark.
+release-please ranks a `!` after the scope, or a `BREAKING CHANGE:` footer, as a major bump. The pair is required because these types are public on the classpath jar `publish_jsonlink.sh` deploys. A plain `refactor` header is not that mark.
 
 ### 2. Remove the notify-send Hint types
 

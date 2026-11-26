@@ -12,6 +12,8 @@ const TYPES = [
   'ci',
   'build',
   'perf',
+  // A revert of a release commit is `revert(release): …` (docs/release.md).
+  'revert',
 ];
 
 const SCOPES = [
@@ -33,6 +35,7 @@ const SCOPES = [
   'inotify-cdi',
   'jakarta-bom',
   'jsonlink',
+  'jsonlink-api',
   'math',
   'math-jpa',
   'metrics',
