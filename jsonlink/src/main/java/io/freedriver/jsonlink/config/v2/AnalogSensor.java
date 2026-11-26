@@ -1,8 +1,8 @@
 package io.freedriver.jsonlink.config.v2;
 
-import io.freedriver.jsonlink.jackson.schema.v1.AnalogRead;
-import io.freedriver.jsonlink.jackson.schema.v1.Identifier;
-import io.freedriver.jsonlink.jackson.schema.v1.Request;
+import io.freedriver.jsonlink.api.v1.AnalogRead;
+import io.freedriver.jsonlink.api.v1.BoardRequest;
+import io.freedriver.jsonlink.api.v1.Identifier;
 import lombok.Builder;
 
 @Builder(toBuilder = true)
@@ -19,7 +19,7 @@ public record AnalogSensor(
         private long averageOver = -1L;
     }
 
-    public Request applyToRequest(Request r) {
+    public BoardRequest applyToRequest(BoardRequest r) {
         return r.analogRead(asAnalogRead());
     }
 

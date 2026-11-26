@@ -8,9 +8,9 @@ import java.util.Map;
 import java.util.Objects;
 
 import io.freedriver.base.util.accumulator.Accumulator;
-import io.freedriver.jsonlink.jackson.schema.v1.Response;
+import io.freedriver.jsonlink.api.v1.BoardResponse;
 
-public class ResponseAccumulator implements Accumulator<ByteArrayOutputStream, Response> {
+public class ResponseAccumulator implements Accumulator<ByteArrayOutputStream, BoardResponse> {
 
     @Override
     public boolean isComplete(ByteArrayOutputStream baos) {
@@ -27,9 +27,9 @@ public class ResponseAccumulator implements Accumulator<ByteArrayOutputStream, R
     }
 
     @Override
-    public Response convert(ByteArrayOutputStream input) {
+    public BoardResponse convert(ByteArrayOutputStream input) {
         try {
-            return Connector.MAPPER.readValue(input.toByteArray(), Response.class);
+            return Connector.MAPPER.readValue(input.toByteArray(), BoardResponse.class);
         } catch (IOException e) {
             return null;
         }

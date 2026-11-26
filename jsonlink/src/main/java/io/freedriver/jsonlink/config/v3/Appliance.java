@@ -3,7 +3,7 @@ package io.freedriver.jsonlink.config.v3;
 import java.util.Set;
 import java.util.UUID;
 
-import io.freedriver.jsonlink.jackson.schema.v1.Identifier;
+import io.freedriver.jsonlink.api.v1.Identifier;
 import lombok.Builder;
 
 @Builder(toBuilder = true)

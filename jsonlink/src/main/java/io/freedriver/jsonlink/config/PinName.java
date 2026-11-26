@@ -5,7 +5,7 @@ import java.util.Objects;
 import java.util.Optional;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import io.freedriver.jsonlink.jackson.schema.v1.Identifier;
+import io.freedriver.jsonlink.api.v1.Identifier;
 import lombok.Builder;
 
 @Builder(toBuilder = true)

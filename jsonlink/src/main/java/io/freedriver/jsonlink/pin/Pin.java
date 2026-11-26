@@ -2,9 +2,9 @@ package io.freedriver.jsonlink.pin;
 
 import io.freedriver.jsonlink.Connector;
 import io.freedriver.jsonlink.ConnectorException;
-import io.freedriver.jsonlink.jackson.schema.v1.Identifier;
-import io.freedriver.jsonlink.jackson.schema.v1.Mode;
-import io.freedriver.jsonlink.jackson.schema.v1.Request;
+import io.freedriver.jsonlink.api.v1.BoardRequest;
+import io.freedriver.jsonlink.api.v1.Identifier;
+import io.freedriver.jsonlink.api.v1.Mode;
 
 /**
  * Class designed to perform atomic pin operations.
@@ -18,7 +18,7 @@ public abstract class Pin {
         this.connector = connector;
         this.identifier = identifier;
         this.mode = mode;
-        connector.send(Request.empty().modeSet(identifier.setMode(mode)));
+        connector.send(BoardRequest.empty().modeSet(identifier.setMode(mode)));
     }
 
     public Connector getConnector() {

@@ -18,9 +18,8 @@ import java.util.Set;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.freedriver.jsonlink.api.v1.Identifier;
 import io.freedriver.jsonlink.config.ConfigMapper;
-import io.freedriver.jsonlink.jackson.JsonLinkModule;
-import io.freedriver.jsonlink.jackson.schema.v1.Identifier;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Valid;
 import jakarta.validation.Validation;
@@ -80,7 +79,7 @@ class MappingsStartupActionsTest {
                   }]
                 }
                 """;
-        Mappings mappings = JsonLinkModule.getMapper().readValue(json, Mappings.class);
+        Mappings mappings = mapper.readValue(json, Mappings.class);
         assertEquals(7, mappings.getEventTTL());
         assertEquals(ChronoUnit.DAYS, mappings.getEventTTLUnit());
         assertEquals(Map.of(), mappings.getStartupActions());
@@ -170,9 +169,6 @@ class MappingsStartupActionsTest {
         assertNull(mapper.getDeserializationConfig().getDefaultTyper(mapper.constructType(MappingsAction.class)));
         assertNull(ConfigMapper.MAPPER.getDeserializationConfig()
                 .getDefaultTyper(ConfigMapper.MAPPER.constructType(MappingsAction.class)));
-        ObjectMapper moduleMapper = JsonLinkModule.getMapper();
-        assertNull(moduleMapper.getDeserializationConfig()
-                .getDefaultTyper(moduleMapper.constructType(MappingsAction.class)));
     }
 
     @Test

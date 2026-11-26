@@ -11,21 +11,19 @@ import java.util.logging.Logger;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.freedriver.jsonlink.jackson.JsonLinkModule;
-import io.freedriver.jsonlink.jackson.schema.v1.Request;
-import io.freedriver.jsonlink.jackson.schema.v1.Response;
+import io.freedriver.jsonlink.api.v1.BoardRequest;
+import io.freedriver.jsonlink.api.v1.BoardResponse;
 
 public interface Connector extends AutoCloseable {
     Logger LOGGER = Logger.getLogger(Connector.class.getName());
     ObjectMapper MAPPER = new ObjectMapper()
-            .registerModule(new JsonLinkModule())
             .setSerializationInclusion(JsonInclude.Include.NON_NULL)
             .setSerializationInclusion(JsonInclude.Include.NON_EMPTY);
 
     /**
      * Send a request, receiving a response.
      */
-    default Response send(Request request) throws ConnectorException {
+    default BoardResponse send(BoardRequest request) throws ConnectorException {
         UUID requestId = makeRequest(request, Duration.of(2, SECONDS));
         return getResponse(requestId, Duration.of(2, SECONDS));
     }
@@ -34,21 +32,21 @@ public interface Connector extends AutoCloseable {
     /**
      * Send a request, returning a Request Id by which to get a response.
      */
-    UUID makeRequest(Request request, Duration maxWait) throws ConnectorException;
+    UUID makeRequest(BoardRequest request, Duration maxWait) throws ConnectorException;
 
     /**
      * Block-waits for a response with a given request id to appear, then removes it from the response pool for return.
      */
-    Response getResponse(UUID requestId, Duration maxWait) throws ConnectorException;
+    BoardResponse getResponse(UUID requestId, Duration maxWait) throws ConnectorException;
 
     /**
      * Reads the board UUID. Never asks the board to mint one.
      * A missing UUID is {@link UnprovisionedBoardException}.
      */
     default UUID getUUID() throws ConnectorException {
-        UUID found = Optional.of(Request.empty())
+        UUID found = Optional.of(BoardRequest.empty())
                 .map(this::send)
-                .map(Response::uuid)
+                .map(BoardResponse::uuid)
                 .orElse(null);
         if (found == null) {
             throw new UnprovisionedBoardException("Board at " + device() + " answered without a UUID");
@@ -57,10 +55,10 @@ public interface Connector extends AutoCloseable {
     }
 
     /**
-     * Mints a UUID on the board and returns it. This is the only path that sends {@link Request#newUuid()}.
+     * Mints a UUID on the board and returns it. This is the only path that sends {@link BoardRequest#newUuid()}.
      */
     default UUID provisionUuid() throws ConnectorException {
-        UUID minted = send(Request.empty().newUuid()).uuid();
+        UUID minted = send(BoardRequest.empty().newUuid()).uuid();
         if (minted == null) {
             throw new ConnectorException("Provisioning " + device() + " returned no UUID");
         }
