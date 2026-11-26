@@ -124,6 +124,13 @@ class PublishReleaseConfigTest(unittest.TestCase):
         self.assertNotIn("packages: write", preamble)
         self.assertIn("packages: write", job)
         self.assertEqual(text.count("packages: write"), 1)
+        self.assertEqual(job.count("packages: write"), 1)
+        grants = []
+        for workflow in sorted(WORKFLOWS.glob("*.yml")):
+            count = workflow.read_text(encoding="utf-8").count("packages: write")
+            if count:
+                grants.append((workflow.name, count))
+        self.assertEqual(grants, [("publish-release.yml", 1)])
         self.assertIn("publish_release.sh", text)
         self.assertIn("publish-release:", text)
         self.assertNotIn("version_bump.py", text)
