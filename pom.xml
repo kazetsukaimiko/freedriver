@@ -60,6 +60,7 @@
         <module>ee</module>
         <module>phone-numbers</module>
         <module>metrics</module>
+        <module>architecture-rules</module>
 
     </modules>
 

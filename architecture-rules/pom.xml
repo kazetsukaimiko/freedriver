@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>io.freedriver</groupId>
+        <artifactId>freedriver-parent</artifactId>
+        <version>2.0.1-SNAPSHOT</version>
+    </parent>
+    <artifactId>architecture-rules</artifactId>
+    <name>architecture-rules</name>
+    <description>The API quality gate as ArchUnit rules, and the tests a consuming repository runs them from.</description>
+
+    <properties>
+        <!-- The abstract test classes ship in the jar, so the JUnit API is a compile dependency.
+             This module leaves freedriver-3p-bom unimported: that BOM manages JUnit 5.10.2, and the
+             gate's tests are written against the 5.13.4 line freedriver-web records. -->
+        <junit.version>5.13.4</junit.version>
+    </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-api</artifactId>
+            <version>${junit.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter</artifactId>
+            <version>${junit.version}</version>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+</project>
