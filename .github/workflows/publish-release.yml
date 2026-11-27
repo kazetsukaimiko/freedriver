@@ -7,12 +7,12 @@ on:
 
 permissions:
   contents: read
-  packages: write
 
 jobs:
   publish-release:
     name: publish the release allowlist
     runs-on: ubuntu-latest
+    environment: packages
     permissions:
       contents: read
       packages: write

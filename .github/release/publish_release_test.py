@@ -15,8 +15,8 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[2]
 SCRIPT = Path(__file__).resolve().parent / "publish_release.sh"
 WORKFLOW = ROOT / ".github" / "workflows" / "publish-release.yml"
-COMMITLINT_WORKFLOW = ROOT / ".github" / "workflows" / "commitlint.yml"
 CI_WORKFLOW = ROOT / ".github" / "workflows" / "ci.yml"
+COMMITLINT_WORKFLOW = ROOT / ".github" / "workflows" / "commitlint.yml"
 RETIRED = [
     ROOT / ".github" / "workflows" / "release.yml",
     ROOT / ".github" / "release" / "version_bump.py",
@@ -67,6 +67,26 @@ def pl_tokens(tokens: list[str]) -> list[str]:
     return tokens[index + 1].split(",")
 
 
+def workflow_preamble(text: str) -> str:
+    marker = "\njobs:\n"
+    index = text.find(marker)
+    if index < 0:
+        raise AssertionError("workflow has no jobs block")
+    return text[:index]
+
+
+def job_block(text: str, job_id: str) -> str:
+    marker = f"\n  {job_id}:\n"
+    index = text.find(marker)
+    if index < 0:
+        raise AssertionError(f"workflow has no {job_id} job")
+    rest = text[index + len(marker) :]
+    next_job = re.search(r"\n  [A-Za-z0-9_-]+:\n", rest)
+    if next_job is None:
+        return rest
+    return rest[: next_job.start()]
+
+
 class PublishReleaseConfigTest(unittest.TestCase):
     def test_packages_url_is_this_repository(self) -> None:
         pom = POM.read_text(encoding="utf-8")
@@ -98,8 +118,20 @@ class PublishReleaseConfigTest(unittest.TestCase):
 
     def test_publish_workflow_deploys_on_a_version_tag(self) -> None:
         text = WORKFLOW.read_text(encoding="utf-8")
+        preamble = workflow_preamble(text)
+        job = job_block(text, "publish-release")
         self.assertIn('tags:\n      - "*.*.*"', text)
-        self.assertIn("packages: write", text)
+        self.assertIn("\n    environment: packages\n", job)
+        self.assertNotIn("packages: write", preamble)
+        self.assertIn("packages: write", job)
+        self.assertEqual(text.count("packages: write"), 1)
+        self.assertEqual(job.count("packages: write"), 1)
+        grants = []
+        for workflow in sorted(WORKFLOWS.glob("*.yml")):
+            count = workflow.read_text(encoding="utf-8").count("packages: write")
+            if count:
+                grants.append((workflow.name, count))
+        self.assertEqual(grants, [("publish-release.yml", 1)])
         self.assertIn("publish_release.sh", text)
         self.assertIn("publish-release:", text)
         self.assertNotIn("version_bump.py", text)
