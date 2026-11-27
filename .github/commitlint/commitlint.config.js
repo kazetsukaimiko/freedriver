@@ -18,6 +18,7 @@ const TYPES = [
 
 const SCOPES = [
   '3p-bom',
+  'architecture-rules',
   'base',
   'bom',
   'build',
