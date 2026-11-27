@@ -10,7 +10,7 @@ import java.nio.file.Path;
  * @param artifactId the module's artifact id
  * @param packaging the pom packaging; {@code jar} when the pom omits it
  */
-public record ReactorModule(Path directory, String groupId, String artifactId, String packaging) {
+record ReactorModule(Path directory, String groupId, String artifactId, String packaging) {
 
     public ReactorModule {
         if (directory == null || artifactId == null || artifactId.isBlank()) {

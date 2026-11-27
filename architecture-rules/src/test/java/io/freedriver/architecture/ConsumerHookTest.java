@@ -1,10 +1,14 @@
 package io.freedriver.architecture;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
@@ -34,7 +38,7 @@ public class ConsumerHookTest {
                     return root;
                 }
             };
-            ConsumerGate gate = test.gate();
+            ConsumerGate gate = test.binding().gate();
             assertEquals(WEB_UTILITIES, gate.utilityArtifacts());
             assertEquals(root.toAbsolutePath().normalize(), gate.reactorRoot());
             assertEquals(ReactorBinding.DEFAULT_GROUP_PREFIX, gate.groupPrefix());
@@ -57,7 +61,8 @@ public class ConsumerHookTest {
                 return root;
             }
         };
-        assertEquals(List.of("stereotypes"), test.gate().utilityArtifacts());
+        assertEquals(List.of("stereotypes"), test.binding().gate().utilityArtifacts());
+        assertSame(test.binding(), test.binding());
     }
 
     @Test
@@ -80,7 +85,7 @@ public class ConsumerHookTest {
             }
         };
         assertEquals("io.freedriver.example.api", test.exceptionPackage());
-        assertEquals(WEB_UTILITIES, test.gate().utilityArtifacts());
+        assertEquals(WEB_UTILITIES, test.binding().gate().utilityArtifacts());
         assertEquals(23, LayeringTest.RECORDED_JAVA);
     }
 
@@ -96,13 +101,34 @@ public class ConsumerHookTest {
                     return WEB_UTILITIES;
                 }
             };
-            IllegalStateException failure = assertThrows(IllegalStateException.class, missing::gate);
+            IllegalStateException failure = assertThrows(IllegalStateException.class, missing::binding);
             assertTrue(failure.getMessage().contains(ReactorBinding.MAVEN_REACTOR_ROOT));
+            assertTrue(failure.getMessage().contains("systemPropertyVariables"));
+            assertTrue(failure.getMessage().contains("maven-surefire-plugin"));
             System.setProperty(ReactorBinding.MAVEN_REACTOR_ROOT, root.toString());
-            assertEquals(root.toAbsolutePath().normalize(), missing.gate().reactorRoot());
+            assertEquals(root.toAbsolutePath().normalize(), missing.binding().gate().reactorRoot());
         } finally {
             restore(previous);
         }
+    }
+
+    @Test
+    public void published_surface_is_the_hook() throws NoSuchMethodException, NoSuchFieldException {
+        assertTrue(Modifier.isPublic(ApiQualityTest.class.getModifiers()));
+        assertTrue(Modifier.isPublic(RolesTest.class.getModifiers()));
+        assertTrue(Modifier.isPublic(LayeringTest.class.getModifiers()));
+        assertFalse(Modifier.isPublic(ArchitectureHook.class.getModifiers()));
+        assertFalse(Modifier.isPublic(ReactorBinding.class.getModifiers()));
+        assertFalse(Modifier.isPublic(ReactorModule.class.getModifiers()));
+        assertFalse(Modifier.isPublic(ConsumerGate.class.getModifiers()));
+        Method binding = ArchitectureHook.class.getDeclaredMethod("binding");
+        assertFalse(Modifier.isPublic(binding.getModifiers()));
+        assertFalse(Modifier.isProtected(binding.getModifiers()));
+        assertTrue(Modifier.isProtected(ArchitectureHook.class.getDeclaredMethod("utilityArtifacts").getModifiers()));
+        assertTrue(Modifier.isProtected(ArchitectureHook.class.getDeclaredMethod("reactorRoot").getModifiers()));
+        assertTrue(Modifier.isProtected(ArchitectureHook.class.getDeclaredMethod("groupPrefix").getModifiers()));
+        assertTrue(Modifier.isProtected(LayeringTest.class.getDeclaredMethod("exceptionPackage").getModifiers()));
+        assertTrue(Modifier.isPublic(LayeringTest.class.getField("RECORDED_JAVA").getModifiers()));
     }
 
     private static void restore(String previous) {

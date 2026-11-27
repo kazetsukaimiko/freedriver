@@ -18,12 +18,26 @@ import org.w3c.dom.Node;
  * <p>The root is that directory alone. A parent pom that happens to contain the directory is another
  * reactor, and it stays out of this binding unless the root pom lists it as a module.
  */
-public final class ReactorBinding {
+final class ReactorBinding {
 
     /** Group prefix that accepts {@code io.freedriver} and {@code io.freedriver.*}. */
     public static final String DEFAULT_GROUP_PREFIX = "io.freedriver";
 
-    /** Surefire property Maven sets to the reactor root of the consuming build. */
+    /**
+     * System property holding the consuming build's reactor root. Surefire leaves it unset. The
+     * consumer passes it through Surefire {@code systemPropertyVariables}:
+     *
+     * <pre>
+     * &lt;plugin&gt;
+     *   &lt;artifactId&gt;maven-surefire-plugin&lt;/artifactId&gt;
+     *   &lt;configuration&gt;
+     *     &lt;systemPropertyVariables&gt;
+     *       &lt;maven.multiModuleProjectDirectory&gt;${maven.multiModuleProjectDirectory}&lt;/maven.multiModuleProjectDirectory&gt;
+     *     &lt;/systemPropertyVariables&gt;
+     *   &lt;/configuration&gt;
+     * &lt;/plugin&gt;
+     * </pre>
+     */
     public static final String MAVEN_REACTOR_ROOT = "maven.multiModuleProjectDirectory";
 
     private final ConsumerGate gate;
@@ -35,15 +49,19 @@ public final class ReactorBinding {
     }
 
     /**
-     * The reactor root Maven passed to the consuming build.
+     * The reactor root the consuming build passed through Surefire {@code systemPropertyVariables}.
      *
-     * @throws IllegalStateException when {@value #MAVEN_REACTOR_ROOT} is unset or blank
+     * @throws IllegalStateException when {@value #MAVEN_REACTOR_ROOT} is unset or blank. The
+     *         message names the {@code maven-surefire-plugin} {@code systemPropertyVariables}
+     *         configuration that passes the property.
      */
     public static Path mavenReactorRoot() {
         String value = System.getProperty(MAVEN_REACTOR_ROOT);
         if (value == null || value.isBlank()) {
-            throw new IllegalStateException(
-                    "reactor root cannot be resolved: looked for system property " + MAVEN_REACTOR_ROOT);
+            throw new IllegalStateException("reactor root cannot be resolved: looked for system property "
+                    + MAVEN_REACTOR_ROOT + ". Pass it through maven-surefire-plugin systemPropertyVariables: "
+                    + "<maven.multiModuleProjectDirectory>${maven.multiModuleProjectDirectory}"
+                    + "</maven.multiModuleProjectDirectory>");
         }
         return Path.of(value);
     }

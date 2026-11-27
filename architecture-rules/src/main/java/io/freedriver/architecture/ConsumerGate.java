@@ -14,7 +14,7 @@ import java.util.List;
  * @param utilityArtifacts artifact ids of this repository's utility modules, in description order
  * @param groupPrefix a group id the root must equal, or a prefix it must start with followed by a dot
  */
-public record ConsumerGate(Path reactorRoot, List<String> utilityArtifacts, String groupPrefix) {
+record ConsumerGate(Path reactorRoot, List<String> utilityArtifacts, String groupPrefix) {
 
     public ConsumerGate {
         if (reactorRoot == null) {

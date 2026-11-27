@@ -2,6 +2,7 @@ package io.freedriver.architecture;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -144,6 +145,32 @@ public class ReactorBindingTest {
     }
 
     @Test
+    public void maven_reactor_root_reads_the_pom_surefire_was_given() throws IOException {
+        Path root = ReactorBinding.mavenReactorRoot().toAbsolutePath().normalize();
+        String pom = Files.readString(root.resolve("pom.xml"));
+        assertTrue(pom.contains("<module>architecture-rules</module>"), root.toString());
+    }
+
+    @Test
+    public void binding_checks_compiled_output_for_the_module_under_test() {
+        ApiQualityTest test = new ApiQualityTest() {
+            @Override
+            protected List<String> utilityArtifacts() {
+                return List.of();
+            }
+        };
+        ReactorBinding binding = test.binding();
+        assertSame(binding, test.binding());
+        Path here = Path.of("").toAbsolutePath().normalize();
+        ReactorModule underTest = binding.modules().stream()
+                .filter(module -> here.equals(module.directory()))
+                .findFirst()
+                .orElseThrow();
+        assertEquals("architecture-rules", underTest.artifactId());
+        binding.requireCompiledOutput(underTest);
+    }
+
+    @Test
     public void maven_reactor_root_reads_the_surefire_property() {
         String previous = System.getProperty(ReactorBinding.MAVEN_REACTOR_ROOT);
         Path root = Path.of("src").toAbsolutePath();
@@ -153,6 +180,8 @@ public class ReactorBindingTest {
             System.clearProperty(ReactorBinding.MAVEN_REACTOR_ROOT);
             IllegalStateException failure = assertThrows(IllegalStateException.class, ReactorBinding::mavenReactorRoot);
             assertTrue(failure.getMessage().contains(ReactorBinding.MAVEN_REACTOR_ROOT));
+            assertTrue(failure.getMessage().contains("systemPropertyVariables"));
+            assertTrue(failure.getMessage().contains("maven-surefire-plugin"));
             assertTrue(failure.getMessage().contains("looked for"));
         } finally {
             if (previous == null) {
