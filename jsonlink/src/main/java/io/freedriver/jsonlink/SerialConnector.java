@@ -18,8 +18,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import io.freedriver.jsonlink.jackson.schema.v1.Request;
-import io.freedriver.jsonlink.jackson.schema.v1.Response;
+import io.freedriver.jsonlink.api.v1.BoardRequest;
+import io.freedriver.jsonlink.api.v1.BoardResponse;
 import io.freedriver.serial.api.SerialResource;
 import io.freedriver.serial.api.exception.SerialResourceException;
 import io.freedriver.serial.stream.api.SerialEntityStream;
@@ -31,15 +31,15 @@ public class SerialConnector implements Connector, AutoCloseable {
 
     private final ExecutorService pool;
     private final String device;
-    private final SerialEntityStream<Response> serialEntityStream;
+    private final SerialEntityStream<BoardResponse> serialEntityStream;
     private final SerialResource serialResource;
 
     private UUID uuid;
 
     // Buffer to fetch responses
-    private final Map<UUID, Response> responseMap = new ConcurrentHashMap<>();
+    private final Map<UUID, BoardResponse> responseMap = new ConcurrentHashMap<>();
 
-    public SerialConnector(ExecutorService pool, String device, SerialEntityStream<Response> serialEntityStream) {
+    public SerialConnector(ExecutorService pool, String device, SerialEntityStream<BoardResponse> serialEntityStream) {
         this(pool, device, serialEntityStream, null);
     }
 
@@ -54,7 +54,7 @@ public class SerialConnector implements Connector, AutoCloseable {
     private SerialConnector(
             ExecutorService pool,
             String device,
-            SerialEntityStream<Response> serialEntityStream,
+            SerialEntityStream<BoardResponse> serialEntityStream,
             SerialResource serialResource) {
         this.pool = pool;
         this.device = device;
@@ -81,11 +81,19 @@ public class SerialConnector implements Connector, AutoCloseable {
      */
 
     @Override
-    public UUID makeRequest(Request request, Duration maxWait) throws ConnectorException {
+    public UUID makeRequest(BoardRequest request, Duration maxWait) throws ConnectorException {
         Future<UUID> future = pool.submit(() -> {
             try {
-                Request outgoing = request.requestId() == null
-                        ? request.toBuilder().requestId(UUID.randomUUID()).build()
+                BoardRequest outgoing = request.requestId() == null
+                        ? new BoardRequest(
+                                request.uuid(),
+                                UUID.randomUUID(),
+                                request.mode(),
+                                request.read(),
+                                request.write(),
+                                request.boardInfo(),
+                                request.turn_off(),
+                                request.turn_on())
                         : request;
                 if (request.requestId() == null) {
                     LOGGER.fine("Randomized requestId to: " + outgoing.requestId());
@@ -113,11 +121,11 @@ public class SerialConnector implements Connector, AutoCloseable {
     }
 
     @Override
-    public Response getResponse(UUID requestId, Duration maxWait) throws ConnectorException {
-        Future<Response> future = pool.submit(() -> {
+    public BoardResponse getResponse(UUID requestId, Duration maxWait) throws ConnectorException {
+        Future<BoardResponse> future = pool.submit(() -> {
             synchronized (responseMap) {
                 while (!responseMap.containsKey(requestId)) {
-                    Response r = serialEntityStream.next();
+                    BoardResponse r = serialEntityStream.next();
                     if (r == null) {
                         continue;
                     }
@@ -164,7 +172,7 @@ public class SerialConnector implements Connector, AutoCloseable {
     @Override
     public UUID getUUID() throws ConnectorException {
         if (uuid == null) {
-            uuid = send(Request.empty()).uuid();
+            uuid = send(BoardRequest.empty()).uuid();
         }
         if (uuid == null) {
             throw new UnprovisionedBoardException("Board at " + device + " answered without a UUID");
@@ -177,7 +185,7 @@ public class SerialConnector implements Connector, AutoCloseable {
      */
     @Override
     public UUID provisionUuid() throws ConnectorException {
-        UUID minted = send(Request.empty().newUuid()).uuid();
+        UUID minted = send(BoardRequest.empty().newUuid()).uuid();
         if (minted == null) {
             throw new ConnectorException("Provisioning " + device + " returned no UUID");
         }

@@ -3,9 +3,11 @@
 # --package builds that same list and does not deploy.
 set -euo pipefail
 
-# One project list. The root is the parent POM. -am adds the reactor
+# One project list. The root is the parent POM. jsonlink-api is named
+# here so the allowlist publishes the schema contract; -am would also
+# build it once jsonlink depends on it, and -am adds the reactor
 # dependencies serial-impl, serial-api, base, math, and inotify.
-PROJECTS='.,bom,jakarta-bom,3p-bom,jsonlink,math-jpa,victron,victron-jpa,inotify-cdi,metrics'
+PROJECTS='.,bom,jakarta-bom,3p-bom,jsonlink-api,jsonlink,math-jpa,victron,victron-jpa,inotify-cdi,metrics'
 
 if [[ "${1:-}" == "--package" ]]; then
   shift

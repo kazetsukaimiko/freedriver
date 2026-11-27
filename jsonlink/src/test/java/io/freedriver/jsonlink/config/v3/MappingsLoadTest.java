@@ -21,8 +21,8 @@ import java.util.logging.Logger;
 import java.util.stream.Stream;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import io.freedriver.jsonlink.api.v1.Identifier;
 import io.freedriver.jsonlink.config.ConfigMapper;
-import io.freedriver.jsonlink.jackson.schema.v1.Identifier;
 import org.junit.jupiter.api.Test;
 
 class MappingsLoadTest {

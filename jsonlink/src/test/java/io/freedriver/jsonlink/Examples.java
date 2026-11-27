@@ -3,9 +3,9 @@ package io.freedriver.jsonlink;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.freedriver.jsonlink.jackson.schema.v1.AnalogRead;
-import io.freedriver.jsonlink.jackson.schema.v1.Identifier;
-import io.freedriver.jsonlink.jackson.schema.v1.Request;
+import io.freedriver.jsonlink.api.v1.AnalogRead;
+import io.freedriver.jsonlink.api.v1.BoardRequest;
+import io.freedriver.jsonlink.api.v1.Identifier;
 import org.junit.jupiter.api.Test;
 
 public class Examples {
@@ -14,7 +14,7 @@ public class Examples {
 
     @Test
     public void trySerialize() throws JsonProcessingException {
-        Request r = Request.empty()
+        BoardRequest r = BoardRequest.empty()
                 .analogRead(new AnalogRead(Identifier.of(0), 5, 10000));
         //r.setUuid(UUID.randomUUID());
         //r.setRequestId(UUID.randomUUID());

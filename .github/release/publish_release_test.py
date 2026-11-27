@@ -41,6 +41,7 @@ PROJECTS = [
     "bom",
     "jakarta-bom",
     "3p-bom",
+    "jsonlink-api",
     "jsonlink",
     "math-jpa",
     "victron",

@@ -37,7 +37,7 @@ import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import io.freedriver.jsonlink.jackson.schema.v1.Request;
+import io.freedriver.jsonlink.api.v1.BoardRequest;
 import io.freedriver.serial.JSSCSerialResource;
 import io.freedriver.serial.SerialRuntime;
 import io.freedriver.serial.api.SerialResource;
@@ -418,7 +418,7 @@ class ConnectorsHandshakeTest {
         interrupter.setDaemon(true);
         interrupter.start();
         try {
-            assertThrows(ConnectorException.class, () -> connector.send(Request.empty()));
+            assertThrows(ConnectorException.class, () -> connector.send(BoardRequest.empty()));
             assertTrue(Thread.currentThread().isInterrupted());
         } finally {
             Thread.interrupted();

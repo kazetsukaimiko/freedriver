@@ -3,8 +3,8 @@ package io.freedriver.jsonlink;
 import java.time.Duration;
 import java.util.UUID;
 
-import io.freedriver.jsonlink.jackson.schema.v1.Request;
-import io.freedriver.jsonlink.jackson.schema.v1.Response;
+import io.freedriver.jsonlink.api.v1.BoardRequest;
+import io.freedriver.jsonlink.api.v1.BoardResponse;
 
 /**
  * Connector delegator that forces synchronization across all methods.
@@ -15,12 +15,12 @@ public class ConcurrentConnector extends ConcurrentConnectorBase {
     }
 
     @Override
-    public UUID makeRequest(Request request, Duration maxWait) throws ConnectorException {
+    public UUID makeRequest(BoardRequest request, Duration maxWait) throws ConnectorException {
         return map(c -> c.makeRequest(request, maxWait));
     }
 
     @Override
-    public Response getResponse(UUID requestId, Duration maxWait) throws ConnectorException {
+    public BoardResponse getResponse(UUID requestId, Duration maxWait) throws ConnectorException {
         return map(c -> c.getResponse(requestId, maxWait));
     }
 

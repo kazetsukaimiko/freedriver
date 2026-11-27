@@ -2,6 +2,7 @@ freedriver-parent
 freedriver-bom
 freedriver-3p-bom
 freedriver-jakarta-bom
+jsonlink-api
 jsonlink
 serial-impl
 serial-api
