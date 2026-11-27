@@ -1,14 +1,16 @@
 package io.freedriver.ee.config;
 
-import java.lang.reflect.InvocationTargetException;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.sql.Driver;
+import java.sql.DriverManager;
+import java.sql.SQLException;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Properties;
+import java.util.logging.Logger;
 import javax.sql.DataSource;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -24,6 +26,8 @@ public record DataSourceConfig(
         @JsonProperty("jakarta.persistence.jdbc.driver") String driverClassName,
         @JsonProperty("jakarta.persistence.jdbc.properties") Map<String, String> driverProperties) {
 
+    private static final Logger LOGGER = Logger.getLogger(DataSourceConfig.class.getName());
+
     public DataSourceConfig {
         driverProperties = driverProperties != null
                 ? driverProperties
@@ -34,6 +38,22 @@ public record DataSourceConfig(
     public Properties getProperties() {
         Properties properties = new Properties();
         driverProperties.forEach(properties::put);
+        return properties;
+    }
+
+    /**
+     * Driver options plus the JDBC user and password. A null username or password leaves that key
+     * unset. A non-null value replaces the same key from {@code driverProperties}.
+     */
+    @JsonIgnore
+    public Properties connectionProperties() {
+        Properties properties = getProperties();
+        if (username != null) {
+            properties.setProperty("user", username);
+        }
+        if (password != null) {
+            properties.setProperty("password", password);
+        }
         return properties;
     }
 
@@ -67,17 +87,16 @@ public record DataSourceConfig(
         return uri;
     }
 
+    /**
+     * The driver {@link DriverManager} has registered for {@code urlString}. {@code driverClassName}
+     * is ignored so configuration cannot choose a class to load.
+     */
     @JsonIgnore
-    @SuppressWarnings("unchecked")
-    public Class<? extends Driver> getDriverClass() throws ClassNotFoundException {
-        return (Class<? extends Driver>) Class.forName(driverClassName);
-    }
-
-    @JsonIgnore
-    public Driver getDriver() throws ClassNotFoundException, NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
-        return getDriverClass()
-                .getConstructor()
-                .newInstance();
+    public Driver getDriver() throws SQLException {
+        if (driverClassName != null && !driverClassName.isBlank()) {
+            LOGGER.warning("jakarta.persistence.jdbc.driver is ignored");
+        }
+        return DriverManager.getDriver(urlString);
     }
 
     public DataSource getDatasource() {
